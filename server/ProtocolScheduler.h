@@ -1,4 +1,5 @@
-
+#ifndef _PROTOCOL_SCHEDULER_H_
+#define _PROTOCOL_SCHEDULER_H_
 
 class ProtocolScheduler {
     public:
@@ -24,3 +25,4 @@ class ProtocolScheduler {
         std::map<TransactionId, std::queue<WSEntry*>> pendingWriteSets;
 
 }
+#endif

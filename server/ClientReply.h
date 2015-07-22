@@ -1,4 +1,5 @@
-
+#ifndef _CLIENT_REPLY_H_
+#define _CLIENT_REPLY_H_
 
 class ClientReply {
     public:
@@ -14,4 +15,6 @@ class ClientReply {
         LockInfo* lockInfo;
         Value* value;
 };
+
+#endif
 

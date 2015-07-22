@@ -1,3 +1,5 @@
+#ifndef _INTERFACE_DESCRIPTOR_H_
+#define _INTERFACE_DESCRIPTOR_H_
 
 class InterfaceDescriptor {
     public:
@@ -10,3 +12,5 @@ class InterfaceDescriptor {
         // the conflict table, encoded operation attributes
         
 }
+
+#endif
