@@ -1,7 +1,7 @@
 
 class InterfaceDescriptor {
     public:
-        InterfaceDescriptor(ConfigFile config);
+        InterfaceDescriptor(std::string configFile);
         ~InterfaceDescriptor();
 
         bool conflictsWith(Operation *operation, Version* version);
