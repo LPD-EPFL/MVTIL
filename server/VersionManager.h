@@ -14,7 +14,7 @@ class VersionManager {
         VersionManager(Log* log); //recover version manager from existing log
         ~VersionManager();
 
-        Version getVersion(Key k, TimestampInterval interval, OpType flag);
+        //Version getVersion(Key k, TimestampInterval interval, OpType flag);
         LockInfo* getReadLock(Version& v, TimestampInterval interval);
         LockInfo* getWriteLock(Version& v, TimestampInterval interval);
 
@@ -23,6 +23,8 @@ class VersionManager {
         
         int32_t createNewEntry(key k);
         VersionManagerEntry* getVersionsEntry(Key k);
+
+        persist(Version& v);
 
     private:
         Log* log;

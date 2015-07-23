@@ -15,6 +15,8 @@ class ProtocolScheduler {
     
         ClientReply* handleAbort(TransacrionId tid);
 
+        ClientReply* handleHintRequest(TimestampInterval t_interval, Key k);
+
     private:
         VersionManager* versionManager;
         DataStore* dataStore;
