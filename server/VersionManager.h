@@ -15,8 +15,8 @@ class VersionManager {
         ~VersionManager();
 
         Version getVersion(Key k, TimestampInterval interval, OpType flag);
-        LockInfo getReadLock(Version& v, TimestampInterval interval);
-        LockInfo getWriteLock(Version& v, TimestampInterval interval);
+        LockInfo* getReadLock(Version& v, TimestampInterval interval);
+        LockInfo* getWriteLock(Version& v, TimestampInterval interval);
 
         void markReadNotFound(Key k, Timestamp ts);
         Timestamp getMaxReadMark(Key k);
