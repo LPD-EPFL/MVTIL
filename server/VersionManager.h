@@ -3,38 +3,43 @@
 #define _VERSION_MANAGER_H_
 
 #include <set>
-#include "version.h"
+#include "Version.h"
 #include "common.h"
-
-typedef enum {OP_READ, OP_WRITE} op_type;
 
 class VersionManager {
     public:
+        
         VersionManager();
         VersionManager(Log* log); //recover version manager from existing log
         ~VersionManager();
-
+    
+        //trylocks
         //Version getVersion(Key k, TimestampInterval interval, OpType flag);
-        LockInfo* getReadLock(Version& v, TimestampInterval interval);
-        LockInfo* getWriteLock(Version& v, TimestampInterval interval);
+        LockInfo* tryReadLock(Version& v, TimestampInterval interval);
+        LockInfo* tryWriteLock(Version& v, TimestampInterval interval);
 
+        //marks for failed reads
         void markReadNotFound(Key k, Timestamp ts);
         Timestamp getMaxReadMark(Key k);
         
-        int32_t createNewEntry(key k);
-        VersionManagerEntry* getVersionsEntry(Key k);
+        //entry addition and retrieval from the version store
+        VersionManagerEntry* addEntry(Key k, VersionManagerEntry* ve);
+        VersionManagerEntry* createNewEntry(Key k);
+        VersionManagerEntry* getVersionSet(Key k);
 
-        persist(Version& v);
+        //store version in persistent storage;
+        bool persistVersion(Key k, Version& v);
 
     private:
         Log* log;
+        LockSet* storeLocks;
         Lock storeLock;//TODO can do better than a global lock; inserting does not invalidate iterators in STL containers; what I want to avoid is multiple threads trying to add an entry for the same key at the same time; maybe lock striping would work better than a single lock (with #locks of the same order as the number of concurrent threads) 
         std::map<Key, VersionManagerEntry*> versionStore;
 
         void lockStore(); //store should be locked when creating new entries
         void unlockStore();
 
-        add_to_log(LogKey* k, Version* v);
+        //add_to_log(LogKey* k, Version* v);
 
         class VersionManagerEntry {
             friend class VersionManager;
@@ -42,7 +47,7 @@ class VersionManager {
                 VersionManagerEntry();
                 VersionManagerEntry(Key key);
                 VersionManagerEntry(Key key, Version version);
-                VersionManagerEntry(Timestamp readMark);
+                VersionManagerEntry(Key key, Timestamp readMark);
 
                 Key key;
                 std::set<Version, versionCompare> versions;

@@ -110,26 +110,85 @@ VersionManager::~VersionManager() {
     //}
 //}
 
-void tryReadLock(Key k, TimestampInterval interval, LockInfo& lockInfo) {
-    VersionManagerEntry* ve = versionStore.get(key); //TODO replace with the actual function for this
+void VersionManager::markReadNotFound(Key k, Timestamp ts) {
+    VersionManagerEntry* ve = getVersionSet(k);
+    VersionManagerEntry* ret;
+    if (ve == NULL) {
+        ve = new VersionManagerEntry(k, ts);
+        ret = addEntry(k,ve);
+        if (ret == ve) {
+             return;
+        }
+        delete ve; 
+        ve = ret;
+    }
+    if (ve->readMark < ts) {
+        ve->readMark = ts;
+    }
+}
+
+Timestamp VersionManager::getMaxReadMark(Key k) {
+    VersionManagerEntry* ve = getVersionSet(k);
+    if (ve == NULL) {
+        return MIN_TIMESTAMP;
+    }
+    return ve->readMark;
+}
+
+VersionManagerEntry* VersionManger::getVersionSet(Key k) {
+    std::map<Key, VersionManagerEntry*>::it = versionStore.find(k);
+    if (it == versionStore.end()) {
+        return NULL;
+    }
+    return it->second; 
+}
+
+VersionManagerEntry* VersionManager::addEntry(Key k, VersionManagerEntry* ve) {
+     storeLocks->lock(k);
+     std::pair<std::map<Key,VersionManagerEntry*>::iterator,bool> ret = versionStore.insert(std::pair<Key,VersionManagerEntry*>(k,ve));
+     if (ret.second == false) {
+        ve = ret.first->second;
+     }
+     storeLock->unlock(k);
+     return ve;
+}
+
+VersionManagerEntry* VersionManager::createNewEntry(Key k) {
+     storeLocks->lock(k);
+     VersionMangerEntry* ve = new VersionManagerEntry(k);
+     std::pair<std::map<Key,VersionManagerEntry*>::iterator,bool> ret = versionStore.insert(std::pair<Key,VersionManagerEntry*>(k,ve));
+     if (ret.second == false) {
+        delete ve;
+        ve = ret.first->second;
+     }
+     storeLock->unlock(k);
+     return ve;
+}
+
+
+bool VersionManager::persistVersion(Version& v) {
+    //TODO: add version to RocksDB
+}
+
+void VersionManager::tryReadLock(Key k, TimestampInterval interval, LockInfo& lockInfo) {
+    VersionManagerEntry* ve = getVersionSet(key);
     if (ve == NULL) {
         markReadNotFound(key, interval.end); //be conservative
-        //TODO any lock needed here?
         lockInfo.state = FAIL_NO_VERSION;
         return;
     }
-    //TODO lock
+    ve->lockEntry();
     Version* selected_version = NULL;
     Timestamp next_timestamp = 0;
     std::set<Version>::iterator it; 
-    it = versions.lower_bound(interval.start); //Points to the first entry to be considered
+    it = ve->versions.lower_bound(interval.start); //points to the first entry to be considered
     if (it->timestamp != interval.start) {
-        if (it != versions.start()) {
-            --it; //TODO: check I am not doing -- on the first element of the set;
+        if (it != ve->versions.start()) {
+            --it; 
         }
     }
     std::set<Version>::iterator it_next = it;
-    while ((it != versions.end()) && (it->timestamp <= interval.end)) {
+    while ((it != ve->versions.end()) && (it->timestamp <= interval.end)) {
         ++it_next;
         if (it->state == COMMITTED) {
             if (selected_version == NULL) {
@@ -147,7 +206,7 @@ void tryReadLock(Key k, TimestampInterval interval, LockInfo& lockInfo) {
     if (selected_version == NULL) {
         markReadNotFound(key, interval.end);
         lockInfo.state = FAIL_NO_VERSION;
-        //TODO unlock
+        ve->unlockEntry();
         return;
     }
 
@@ -162,23 +221,23 @@ void tryReadLock(Key k, TimestampInterval interval, LockInfo& lockInfo) {
     if (selected_version.maxReadFrom < lockInfo.locked.end) {
         selected_version.maxReadFrom = lockInfo.locked.end;
     }
-
-    //TODO: unlock
+    
+    ve->unlockEntry();
     return;
 
 }
 
-void tryWriteLock(Key k, TimestampInterval interval, LockInfo& lockInfo) {
-    VersionManagerEntry* ve = versionStore.get(key); //TODO replace with the actual function for this
+void VersionManager::tryWriteLock(Key k, TimestampInterval interval, LockInfo& lockInfo) {
+    VersionManagerEntry* ve = getVersionSet(key);
     if (ve == NULL) {
-        //TODO: get lock on versionStore; create entry
+        ve = createNewEntry(k);
     }
-    //TODO lock
+    ve->lockEntry();
     if (ve->isEmpty() || (ve->versions.start()->timestamp > interval.end())) {
         if (getMaxReadMark(key) > interval.end) {
             lockInfo.state = FAIL_READ_MARK_LARGE;    
             lockInfo.potential.start = getMaxReadMark(key);
-            //TODO unlock   
+            ve->unlockEntry();
             return;
         }
         
@@ -195,16 +254,16 @@ void tryWriteLock(Key k, TimestampInterval interval, LockInfo& lockInfo) {
         lockInfo.potential.start = getMaxReadMark(key); 
         lockInfo.version = new_version;
         lockInfo.state = W_LOCK_SUCCESS;
-        //TODO unlock
+        ve->unlockEntry();
         return;
     }
 
     Version* selected_version = NULL;   
     Version* selected_pending = NULL;
     std::set<Version>::iterator it;
-    it = versions.lower_bound(interval.start); //Points to the first entry to be considered
+    it = ve->versions.lower_bound(interval.start); //Points to the first entry to be considered
     if (it->timestamp != interval.start) {
-        if (it != versions.start()) {
+        if (it != ve->versions.start()) {
             --it; //TODO: check I am not doing -- on the first element of the set; if it is the first element of the set, I need to compare with the read mark;
         } 
         //else {
@@ -225,7 +284,7 @@ void tryWriteLock(Key k, TimestampInterval interval, LockInfo& lockInfo) {
     std::set<Version>::iterator it_next = it;
     Timestamp next_timestamp = 0;
     Timestamp next_timestamp_pending = 0;
-    while ((it != versions.end()) && (it->timestamp <= interval.end)) { //TODO + duration
+    while ((it != ve->versions.end()) && (it->timestamp <= interval.end)) { //TODO + duration
         ++it_next;
         if (it->state == COMMITTED) {
             if ((it_next->timestamp - it->maxReadFrom) > (candidate.end - candidate.start)) {
@@ -269,6 +328,7 @@ void tryWriteLock(Key k, TimestampInterval interval, LockInfo& lockInfo) {
         lockInfo.potential.start = selected_version->maxReadFrom;
         lockInfo.potential.end = next_timestamp;
         lockInfo.state = W_LOCK_SUCESS;
+        ve->unlockEntry();
         return; 
     }
     if (selected_pending != NULL) {
@@ -282,6 +342,7 @@ void tryWriteLock(Key k, TimestampInterval interval, LockInfo& lockInfo) {
         lockInfo.potential.start = selected_pending->start + selected_pending->duration;
         lockInfo.potential.end = next_timestamp_pending;
         lockInfo.state = W_LOCK_SUCCESS;
+        ve->unlockEntry();
         return;
     }
     lockInfo.state = FAIL_INTERSECTION_EMPTY;
@@ -295,26 +356,8 @@ void tryWriteLock(Key k, TimestampInterval interval, LockInfo& lockInfo) {
         lockInfo.potential.start = TIMESTAMP_MIN;
         lockInfo.potential.end = TIMESTAMP_MIN;
     }
+    ve->unlockEntry();
     return;
 
 }
 
-void markReadNotFound(Key k, Timestamp ts) {
-    std::map<Key, VersionManagerEntry*>::it = versionStore.find(k);
-    if (it == versionStore.end()) {
-        VersionManagerEntry* ve = new VersionManagerEntry(ts);
-        versionStore.insert(std::pair<Key,VersionManagerEntry*>(k,ve));
-        return;
-    }
-    if (it->second->readMark < ts) {
-        it->second->readMark = ts;
-    }
-}
-
-Timestamp getMaxReadMark(Key k) {
-    std::map<Key, VersionManagerEntry*>::it = versionStore.find(k);
-    if (it == versionStore.end()) {
-        return MIN_TIMESTAMP;
-    }
-    return it->second->readMark;
-}
