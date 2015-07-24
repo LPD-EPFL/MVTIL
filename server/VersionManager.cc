@@ -149,7 +149,7 @@ VersionManagerEntry* VersionManager::addEntry(Key k, VersionManagerEntry* ve) {
      if (ret.second == false) {
         ve = ret.first->second;
      }
-     storeLock->unlock(k);
+     storeLocks->unlock(k);
      return ve;
 }
 
@@ -161,7 +161,7 @@ VersionManagerEntry* VersionManager::createNewEntry(Key k) {
         delete ve;
         ve = ret.first->second;
      }
-     storeLock->unlock(k);
+     storeLocks->unlock(k);
      return ve;
 }
 
@@ -446,3 +446,36 @@ TimestampInterval VersionManager::tryWriteLockHint(Key k, TimestampInterval inte
 
 }
 
+
+void VersionManager::tryReadWriteLock(Key k, TimestampInterval interval, LockInfo& lockInfo) {
+
+}
+
+
+// VersionManagerEntry methods
+VersionManagerEntry::VersionManagerEntry(Key k) : key(k),readMark(MIN_TIMESTAMP) {
+}
+
+VersionManagerEntry::VersionManagerEntry(Key k, Version v) : key(k), readMark(MIN_TIMESTAMP),  {
+    versions.insert(v);
+}
+
+VersionManagerEntry::VersionManagerEntry(Key k, Timestamp readM) : key(k), readMark(readM) {
+}
+
+inline bool VersionManagerEntry::VersionManagerEntry::isEmpty() {
+    if (versions.size() == 0) return true;
+    return false;
+}
+
+void VersionManagerEntry::purgeVersions(Timestamp barrier) {
+    //TODO remove all versions with timestamps smaller than the barrier form the versionManagerEntry; then go and do the same thing in the dataStore
+}
+
+inline void VersionManagerEntry::lockEntry() {
+    lock.lock();
+}
+
+inline void VersionManagerEntry::unlockEntry() {
+    lock.unlock();
+}

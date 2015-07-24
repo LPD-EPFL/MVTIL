@@ -14,7 +14,7 @@ ClientReply* ProtocolScheduler::handleRead(TransactionId tid, TimestampInterval 
     while(1) {
         tryReadLock(k,interval,lockInfo);
         if (lockInfo->state == R_LOCK_SUCCESS) {
-            value = dataStore->read(toDsKey(k,v->timestamp));
+            value = dataStore->read(toDsKey(k,lockInfo->version->timestamp));
             break;
         }
         if (timer->timeout()) {
@@ -26,7 +26,7 @@ ClientReply* ProtocolScheduler::handleRead(TransactionId tid, TimestampInterval 
 }
 
 ClientReply* ProtocolScheduler::handleWrite(TransactionId tid, TimestampInterval interval, Key k, Value v) {
-    Version* prev = getVersion(k,interval,OP_WRITE); 
+    //Version* prev = getVersion(k,interval,OP_WRITE); 
     LockInfo* lockInfo = new LockInfo();
     tryWriteLock(k, interval, lockInfo);
 

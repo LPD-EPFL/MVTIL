@@ -17,6 +17,8 @@ class ProtocolScheduler {
 
         ClientReply* handleHintRequest(TimestampInterval t_interval, Key k);
 
+        ClientReply* handleSingleKeyOperation(std::string opName, TimestampInterval t_interval, Key k, Value v);
+
     private:
         VersionManager* versionManager;
         DataStore* dataStore;

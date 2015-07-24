@@ -3,7 +3,10 @@
 #define _VERSION_MANAGER_H_
 
 #include <set>
+#include <mutex>
+
 #include "Version.h"
+#include "LockSet.h"
 #include "common.h"
 
 class VersionManager {
@@ -16,11 +19,13 @@ class VersionManager {
         //Version getVersion(Key k, TimestampInterval interval, OpType flag);
         
         //try to acquire a read lock
-        LockInfo* tryReadLock(Version& v, TimestampInterval interval);
+        void tryReadLock(Key k, TimestampInterval interval, LockInfo& lockInfo);
         //try to acquire a write lock
-        LockInfo* tryWriteLock(Version& v, TimestampInterval interval);
+        void tryWriteLock(Key k, TimestampInterval interval, LockInfo& lockInfo);
         //get an info on the interval a write lock would be acquired for
-        TimestampInterval getWriteLockHint(TimestampInterval interval);
+        TimestampInterval getWriteLockHint(Kye k, TimestampInterval interval);
+        //get a Rw lock
+        LockInfo* tryReadWriteLock(
 
         //marks for failed reads
         void markReadNotFound(Key k, Timestamp ts);
@@ -36,8 +41,7 @@ class VersionManager {
 
     private:
         Log* log;
-        LockSet* storeLocks;
-        Lock storeLock;//TODO can do better than a global lock; inserting does not invalidate iterators in STL containers; what I want to avoid is multiple threads trying to add an entry for the same key at the same time; maybe lock striping would work better than a single lock (with #locks of the same order as the number of concurrent threads) 
+        LockSet storeLocks; //TODO inserting does not invalidate iterators in STL containers; what I want to avoid is multiple threads trying to add an entry for the same key at the same time; maybe lock striping would work better than a single lock (with #locks of the same order as the number of concurrent threads) 
         std::map<Key, VersionManagerEntry*> versionStore;
 
         //add_to_log(LogKey* k, Version* v);
@@ -61,7 +65,7 @@ class VersionManager {
 
             private:
                 Timestamp readMark;
-                Lock lock;
+                std::mutex lock;
         }
 
     struct versionCompare {
