@@ -10,4 +10,7 @@ typedef struct TI{
     Timestamp end;
 } TimestampInterval;
 
+typedef std::string Key;
+typedef std::string Value;
+
 #endif
