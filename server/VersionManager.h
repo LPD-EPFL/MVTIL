@@ -13,10 +13,14 @@ class VersionManager {
         VersionManager(Log* log); //recover version manager from existing log
         ~VersionManager();
     
-        //trylocks
         //Version getVersion(Key k, TimestampInterval interval, OpType flag);
+        
+        //try to acquire a read lock
         LockInfo* tryReadLock(Version& v, TimestampInterval interval);
+        //try to acquire a write lock
         LockInfo* tryWriteLock(Version& v, TimestampInterval interval);
+        //get an info on the interval a write lock would be acquired for
+        TimestampInterval getWriteLockHint(TimestampInterval interval);
 
         //marks for failed reads
         void markReadNotFound(Key k, Timestamp ts);
@@ -35,9 +39,6 @@ class VersionManager {
         LockSet* storeLocks;
         Lock storeLock;//TODO can do better than a global lock; inserting does not invalidate iterators in STL containers; what I want to avoid is multiple threads trying to add an entry for the same key at the same time; maybe lock striping would work better than a single lock (with #locks of the same order as the number of concurrent threads) 
         std::map<Key, VersionManagerEntry*> versionStore;
-
-        void lockStore(); //store should be locked when creating new entries
-        void unlockStore();
 
         //add_to_log(LogKey* k, Version* v);
 

@@ -361,3 +361,88 @@ void VersionManager::tryWriteLock(Key k, TimestampInterval interval, LockInfo& l
 
 }
 
+TimestampInterval VersionManager::tryWriteLockHint(Key k, TimestampInterval interval) {
+    VersionManagerEntry* ve = getVersionSet(key);
+    TimestampInterval ret;
+    ret.start=MIN_TIMESTAMP;
+    ret.end=MIN_TIMESTAMP;
+    if (ve == NULL) {
+        return interval; 
+    }
+    if (ve->isEmpty() || (ve->versions.start()->timestamp > interval.end())) {
+        if (getMaxReadMark(key) > interval.end) {
+            return ret;
+        }
+        
+        Timestamp start = max(interval.start, getMaxReadMark(key));
+        ret.start=start;
+        ret.end=end;
+        return ret;
+    }
+
+    Version* selected_version = NULL;   
+    Version* selected_pending = NULL;
+    std::set<Version>::iterator it;
+    it = ve->versions.lower_bound(interval.start); //Points to the first entry to be considered
+    if (it->timestamp != interval.start) {
+        if (it != ve->versions.start()) {
+            --it; //TODO: check I am not doing -- on the first element of the set; if it is the first element of the set, I need to compare with the read mark;
+        } 
+        //else {
+            //if (getMaxReadMark(key) > interval.end) {
+                //Version* dummy = new Version(getMaxReadMark(key), NO_SUCH_VERSION);
+                //return dummy;
+                
+            //}
+            //if (dummy->timestamp > interval.start) {
+                //interval.start = dummy->timestamp; //TODO is this necessary? do I have to change anything if this happens?
+            //}
+        //}
+    }
+
+    std::set<Version>::iterator it_next = it;
+    Timestamp next_timestamp = 0;
+    Timestamp next_timestamp_pending = 0;
+    while ((it != ve->versions.end()) && (it->timestamp <= interval.end)) { //TODO + duration
+        ++it_next;
+        if (it->state == COMMITTED) {
+            if ((selected_version == NULL) && (it->maxReadFrom < interval.end)){
+                selected_version =  it;
+                next_timestamp = it_next->timestamp;
+            } else {
+                if (getIntersection(it->maxReadFrom, it_next->timestamp, interval.start, interval.end) > getIntersection(selected_version->maxReadFrom, next_timestamp, interval.start, interval.end)) {
+                    selected_version = it;
+                    next_timestamp = it_next->timestamp;
+                }
+            }
+        } else if (it->state == PENDING) {
+            if ((selected_pending == NULL) && ((it->timestamp + it->duration) < interval.end)){
+                selected_pending = it;
+                next_timestamp_pending = it_next->timestamp;
+            } else {
+                if (getIntersection(it->timestamp + it->duration, it_next->timestamp, interval.start, interval.end) > getIntersection(selected_pending->timestamp + selected_pending->duration, next_timestamp_pending, interval.start, interval.end)) {
+                    selected_pending=it;
+                    next_timestamp_pending = it_next->timestamp;
+                }
+            }
+        }
+        ++it;
+    }
+    if (selected_version != NULL) {
+        Timestamp start = max(interval.start, selected_version->maxReadFrom);
+        Timestamp end = min(interval.end, next_timestamp);
+        ret.start = start;
+        ret.end = end;
+        return ret;
+    }
+    if (selected_pending != NULL) {
+        Timestamp start = max(interval.start, selected_pending->start + selected_pending->duration);
+        Timestamp end = min(interval.end, next_timestamp_pending);
+        ret.start = start;
+        ret.end = end;
+        return ret;
+    }
+    return ret;
+
+}
+
