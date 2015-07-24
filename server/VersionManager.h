@@ -23,9 +23,9 @@ class VersionManager {
         //try to acquire a write lock
         void tryWriteLock(Key k, TimestampInterval interval, LockInfo& lockInfo);
         //get an info on the interval a write lock would be acquired for
-        TimestampInterval getWriteLockHint(Kye k, TimestampInterval interval);
+        TimestampInterval getWriteLockHint(Key k, TimestampInterval interval);
         //get a Rw lock
-        LockInfo* tryReadWriteLock(
+        LockInfo* tryReadWriteLock(Key k, TimestampInterval interval, LockInfo& lockInfo);
 
         //marks for failed reads
         void markReadNotFound(Key k, Timestamp ts);
