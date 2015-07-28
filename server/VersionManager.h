@@ -7,6 +7,7 @@
 #include <map>
 
 #include "Version.h"
+#include "ClientReply.h"
 #include "LockSet.h"
 #include "common.h"
 
@@ -79,6 +80,8 @@ class VersionManager {
 #endif
         LockSet storeLocks; //TODO inserting does not invalidate iterators in STL containers; what I want to avoid is multiple threads trying to add an entry for the same key at the same time; maybe lock striping would work better than a single lock (with #locks of the same order as the number of concurrent threads) 
         std::map<Key, VersionManagerEntry*> versionStore;
+
+        Timespan getIntersection(Timestamp ts1Left, Timestamp ts1Right, Timestamp ts2Left, Timestamp ts2Right);
 
         //add_to_log(LogKey* k, Version* v);
 

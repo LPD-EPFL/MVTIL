@@ -11,6 +11,9 @@ typedef uint64_t Timestamp;
 typedef uint64_t Timespan;
 typedef uint64_t TransactionId;
 
+#define MIN_TIMESTAMP 0
+#define MAX_TIMESTAMP UINT64_MAX
+
 typedef struct TI{
     Timestamp start;
     Timestamp end;

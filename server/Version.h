@@ -1,6 +1,8 @@
 #ifndef _VERSION_H_
 #define _VERSION_H_
 
+#include "common.h"
+
 typedef enum {COMMITTED, PENDING, ABORTED, NO_SUCH_VERSION} OpState;
 
 typedef struct Version {

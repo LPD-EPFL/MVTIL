@@ -137,42 +137,43 @@ Timestamp VersionManager::getMaxReadMark(Key k) {
     return ve->readMark;
 }
 
-VersionManagerEntry* VersionManger::getVersionSet(Key k) {
-    std::map<Key, VersionManagerEntry*>::it = versionStore.find(k);
+VersionManager::VersionManagerEntry* VersionManager::getVersionSet(Key k) {
+    std::map<Key, VersionManagerEntry*>::iterator it = versionStore.find(k);
     if (it == versionStore.end()) {
         return NULL;
     }
     return it->second; 
 }
 
-VersionManagerEntry* VersionManager::addEntry(Key k, VersionManagerEntry* ve) {
-     storeLocks->lock(k);
+VersionManager::VersionManagerEntry* VersionManager::addEntry(Key k, VersionManagerEntry* ve) {
+     storeLocks.lock(k);
      std::pair<std::map<Key,VersionManagerEntry*>::iterator,bool> ret = versionStore.insert(std::pair<Key,VersionManagerEntry*>(k,ve));
      if (ret.second == false) {
         ve = ret.first->second;
      }
-     storeLocks->unlock(k);
+     storeLocks.unlock(k);
      return ve;
 }
 
-VersionManagerEntry* VersionManager::createNewEntry(Key k) {
-     storeLocks->lock(k);
-     VersionMangerEntry* ve = new VersionManagerEntry(k);
+VersionManager::VersionManagerEntry* VersionManager::createNewEntry(Key k) {
+     storeLocks.lock(k);
+     VersionManagerEntry* ve = new VersionManagerEntry(k);
      std::pair<std::map<Key,VersionManagerEntry*>::iterator,bool> ret = versionStore.insert(std::pair<Key,VersionManagerEntry*>(k,ve));
      if (ret.second == false) {
         delete ve;
         ve = ret.first->second;
      }
-     storeLocks->unlock(k);
+     storeLocks.unlock(k);
      return ve;
 }
 
 
-bool VersionManager::persistVersion(Version* v) {
+bool VersionManager::persistVersion(Key k, Version* v) {
     //TODO: add version to RocksDB
+    return true;
 }
 
-void VersionManager::tryReadLock(Key k, TimestampInterval interval, LockInfo* lockInfo) {
+void VersionManager::tryReadLock(Key key, TimestampInterval interval, LockInfo* lockInfo) {
     VersionManagerEntry* ve = getVersionSet(key);
     if (ve == NULL) {
         markReadNotFound(key, interval.end); //be conservative
@@ -183,9 +184,11 @@ void VersionManager::tryReadLock(Key k, TimestampInterval interval, LockInfo* lo
     Version* selected_version = NULL;
     Timestamp next_timestamp = 0;
     std::set<Version>::iterator it; 
-    it = ve->versions.lower_bound(interval.start); //points to the first entry to be considered
+    Version temp;
+    temp.timestamp = interval.start;
+    it = ve->versions.lower_bound(temp); //points to the first entry to be considered TODO check if this works
     if (it->timestamp != interval.start) {
-        if (it != ve->versions.start()) {
+        if (it != ve->versions.begin()) {
             --it; 
         }
     }
@@ -194,11 +197,11 @@ void VersionManager::tryReadLock(Key k, TimestampInterval interval, LockInfo* lo
         ++it_next;
         if (it->state == COMMITTED) {
             if (selected_version == NULL) {
-                selected_version = it;
+                selected_version = (Version*) &*it;
                 next_timestamp = it_next->timestamp;
             } else {
                 if (getIntersection(it->timestamp,it_next->timestamp,interval.start,interval.end) > getIntersection(selected_version->timestamp, next_timestamp, interval.start, interval.end)) {
-                    selected_version = it;
+                    selected_version = (Version*) &*it;
                     next_timestamp = it_next->timestamp;
                 }
             }
@@ -213,15 +216,15 @@ void VersionManager::tryReadLock(Key k, TimestampInterval interval, LockInfo* lo
     }
 
 
-    lockInfo->locked.start = selected_version.timestamp;
-    lockInfo->locked.end = min(next_timestamp, interval.end);
-    lockInfo->potential.start = selected_version.timestamp;
+    lockInfo->locked.start = selected_version->timestamp;
+    lockInfo->locked.end = std::min(next_timestamp, interval.end);
+    lockInfo->potential.start = selected_version->timestamp;
     lockInfo->potential.end = next_timestamp;
     lockInfo->version = selected_version;
-    lockInfo.state = R_LOCK_SUCCESS;
+    lockInfo->state = R_LOCK_SUCCESS;
 
-    if (selected_version.maxReadFrom < lockInfo->locked.end) {
-        selected_version.maxReadFrom = lockInfo->locked.end;
+    if (selected_version->maxReadFrom < lockInfo->locked.end) {
+        selected_version->maxReadFrom = lockInfo->locked.end;
     }
     
     ve->unlockEntry();
@@ -229,7 +232,7 @@ void VersionManager::tryReadLock(Key k, TimestampInterval interval, LockInfo* lo
 
 }
 
-void VersionManager::tryWriteLock(Key k, TimestampInterval interval, LockInfo* lockInfo) {
+void VersionManager::tryWriteLock(Key key, TimestampInterval interval, LockInfo* lockInfo) {
     VersionManagerEntry* ve = getVersionSet(key);
     if (ve == NULL) {
         ve = createNewEntry(k);
@@ -446,6 +449,11 @@ TimestampInterval VersionManager::tryWriteLockHint(Key k, TimestampInterval inte
     }
     return ret;
 
+}
+
+Timespan getIntersection(Timestamp ts1Left, Timestamp ts1Right, Timestamp ts2Left, Timestamp ts2Right) {
+    //TODO implement this
+    return 0;
 }
 
 
