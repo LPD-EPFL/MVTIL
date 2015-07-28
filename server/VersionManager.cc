@@ -168,7 +168,7 @@ VersionManagerEntry* VersionManager::createNewEntry(Key k) {
 }
 
 
-bool VersionManager::persistVersion(Version& v) {
+bool VersionManager::persistVersion(Version* v) {
     //TODO: add version to RocksDB
 }
 
@@ -449,6 +449,10 @@ TimestampInterval VersionManager::tryWriteLockHint(Key k, TimestampInterval inte
 }
 
 
+void VersionManager::removeVersion(Key k, Version* v) {
+   //TODO 
+    
+}
 void VersionManager::tryReadWriteLock(Key k, TimestampInterval interval, LockInfo* lockInfo) {
 
 }
@@ -469,6 +473,7 @@ inline bool VersionManagerEntry::VersionManagerEntry::isEmpty() {
     if (versions.size() == 0) return true;
     return false;
 }
+
 
 void VersionManagerEntry::purgeVersions(Timestamp barrier) {
     //TODO remove all versions with timestamps smaller than the barrier form the versionManagerEntry; then go and do the same thing in the dataStore

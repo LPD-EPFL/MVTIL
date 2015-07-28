@@ -15,9 +15,10 @@ class ProtocolScheduler {
         typedef struct WSEntry{
             Version *version;
             Key key;
-            Value* value;
+            Value value;
 
-            WSEntry(Version* ver = NULL, Key k = NULL, Value* val = NULL) : version(ver), key(k), value(val) {}
+            WSEntry(Version* ver, Key k, Value val) : version(ver), key(k), value(val) {}
+            WSEntry() : version(), key(), value() {}
         } WSEntry;
     public:
         ProtocolScheduler();
@@ -46,7 +47,7 @@ class ProtocolScheduler {
 
         void abortTransaction(TransactionId tid);
 
-        std::map<TransactionId, std::queue<WSEntry*>> pendingWriteSets;
+        std::map<TransactionId, std::queue<WSEntry*>*> pendingWriteSets;
 
 };
 #endif

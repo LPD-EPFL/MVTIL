@@ -59,6 +59,8 @@ class VersionManager {
         //get a Rw lock
         LockInfo* tryReadWriteLock(Key k, TimestampInterval interval, LockInfo* lockInfo);
 
+        void removeVersion(Key k, Version* v);
+
         //marks for failed reads
         void markReadNotFound(Key k, Timestamp ts);
         Timestamp getMaxReadMark(Key k);
@@ -69,7 +71,7 @@ class VersionManager {
         VersionManagerEntry* getVersionSet(Key k);
 
         //store version in persistent storage;
-        bool persistVersion(Key k, Version& v);
+        bool persistVersion(Key k, Version* v);
 
     private:
 #ifndef INITIAL_TESTING

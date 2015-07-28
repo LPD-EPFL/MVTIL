@@ -4,16 +4,16 @@
 #include "common.h"
 #include "version.h"
 
-typedef enum {FAIL_NO_VERSION, FAIL_READ_MARK_LARGE, FAIL_INTERSECTION_EMPTY, W_LOCK_SUCCESS, R_LOCK_SUCCESS} lockState;
+typedef enum {FAIL_NO_VERSION, FAIL_READ_MARK_LARGE, FAIL_INTERSECTION_EMPTY, WRITES_NOT_FOUND, W_LOCK_SUCCESS, R_LOCK_SUCCESS} lockState;
 
 typedef struct LockInfo {
     lockState state;
     TimestampInterval locked;
     TimestampInterval potential;
-    Version version;
+    Version* version;
 } LockInfo;
 
-typedef enum {READ_REPLY, WRITE_REPLY, COMMIT_REPLY, ABORT_REPLY, HINT_REPLY, TIMEOUT} ReplyType;
+typedef enum {READ_REPLY, WRITE_REPLY, COMMIT_ACK, ABORT_ACK, HINT_REPLY, TIMEOUT} ReplyType;
 
 class ClientReply {
     public:

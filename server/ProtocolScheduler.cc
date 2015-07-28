@@ -57,7 +57,8 @@ ClientReply* ProtocolScheduler::handleWrite(TransactionId tid, TimestampInterval
     WSEntry* wse = new WSEntry(lockInfo->version,k,v);
 
 
-    pendingWriteSets[tid].insert(vse); //TODO: do struct for this, containing a version, a value, and a lock
+    std::map<TransactionId, std::queue<WSEntry*>*>::iterator it = pendingWriteSets.find(tid); //TODO: do struct for this, containing a version, a value, and a lock
+    it->second->push(wse);
     return new ClientReply(tid, WRITE_REPLY, lockInfo);
 }
 
@@ -65,44 +66,50 @@ ClientReply* ProtocolScheduler::handleCommit(TransactionId tid, Timestamp ts) {
 #ifdef DEBUG
     std::cout<<"Handling commit: Transaction id "<<tid<<"; Timestamp "<<ts<<" ."<<endl;
 #endif
-    WriteSet* ws = pendingWriteSets(tid); 
+    std::queue<WSEntry*>* ws = pendingWriteSets.find(tid)->second; 
     if (ws == NULL) {
-        return new ClientReply(tid, WRITES_NOT_FOUND);
+        return new ClientReply(tid, (ReplyType)WRITES_NOT_FOUND);
     }
     while (!ws->empty()) {
-        WSEntry * ws_entry = ws->pop();
+        //TODO do I need to protect this with locks?
+        WSEntry * ws_entry = ws->front();
+        ws->pop();
         ws_entry->version->timestamp = ts; 
         if (ws_entry->version->maxReadFrom < ts) {
             ws_entry->version->maxReadFrom = ts;
         }
         ws_entry->version->state = COMMITTED;
-        versionManager->persist(ws_entry->version);
+        versionManager->persistVersion(ws_entry->key, ws_entry->version);
 #ifndef INITIAL_TESTING
         dataStore.write(toDsKey(ws_entry->key,ts), ws_entry->value);
 #endif
         delete(ws_entry);
         //TODO: delete members as well?
     }
-    removePendingWriteSet(tid);
-    return new ClientReply(tid, COMMIT_ACK);
+    pendingWriteSets.erase(tid);
+    //removePendingWriteSet(tid);
+    return new ClientReply(tid, (ReplyType)COMMIT_ACK);
 }
 
 ClientReply* ProtocolScheduler::handleAbort(TransactionId tid) {
 #ifdef DEBUG
     std::cout<<"Handling abort: Transaction id "<<tid<<" ."<<endl;
 #endif
-    WriteSet* ws = pendingWriteSets(tid);
+    std::queue<WSEntry*>* ws = pendingWriteSets.find(tid)->second;
     if (ws == NULL) {
-        return new ClientReply(tid, WRITES_NOT_FOUND);
+        return new ClientReply(tid, (ReplyType)WRITES_NOT_FOUND);
     }
     while (!ws->empty()) {
-        WSEntry * ws_entry = ws->pop();
-        versionManager->removeVersion(we_entry->key, ws_entry->version);
+        //TODO do I need to protect this with locks?
+        WSEntry * ws_entry = ws->front();
+        ws->pop();
+        versionManager->removeVersion(ws_entry->key, ws_entry->version);
         delete(ws_entry);
         //TODO: what else needs to be deleted? is the version deleted by removeVersion()?
     }
-    removePendingWriteSet(tid);
-    return new ClientReply(tid,ABORT_ACK);
+
+    pendingWriteSets.erase(tid);
+    return new ClientReply(tid,(ReplyType)ABORT_ACK);
 }
 
 ClientReply* ProtocolScheduler::handleHintRequest(TimestampInterval interval, Key k) {
@@ -112,7 +119,7 @@ ClientReply* ProtocolScheduler::handleHintRequest(TimestampInterval interval, Ke
     return NULL;
 }
 
-ClientReply* ProtocolScheduler::handleSingleKeyOperation(std::string opName, TimestampInterval interval, Key k, Value v) {
+ClientReply* ProtocolScheduler::handleSingleKeyOperation(TransactionId tid, std::string opName, TimestampInterval interval, Key k, Value v) {
 #ifdef DEBUG
     std::cout<<"Handling single key operation: Transaction id "<<tid<<"; Operation "<<opName<<"; Timestamp interval ["<<interval.start<<","<<interval.end<<"]; Key "<<k<<"; Value "<<v<<" ."<<endl;
 #endif
@@ -120,8 +127,8 @@ ClientReply* ProtocolScheduler::handleSingleKeyOperation(std::string opName, Tim
     return NULL;
 }
 
-std::string ProtocolScheduler::toDsKey(Key k, Timestamp ts) {
-    return "not implemented";
+DsKey* ProtocolScheduler::toDsKey(Key k, Timestamp ts) {
+    return new DsKey("not implemented");
 }
 
 //TODO add code handling transactions aborted by the recovery manager
