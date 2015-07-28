@@ -4,12 +4,42 @@
 
 #include <set>
 #include <mutex>
+#include <map>
 
 #include "Version.h"
 #include "LockSet.h"
 #include "common.h"
 
 class VersionManager {
+    private:
+    struct versionCompare {
+         bool operator() (const Version& v1, const Version& v2) {
+             return v1.timestamp < v2.timestamp;
+         }
+    };
+
+        class VersionManagerEntry {
+            friend class VersionManager;
+            public:
+                VersionManagerEntry();
+                VersionManagerEntry(Key key);
+                VersionManagerEntry(Key key, Version version);
+                VersionManagerEntry(Key key, Timestamp readMark);
+
+                Key key;
+                std::set<Version, versionCompare> versions;
+
+                bool isEmpty();
+                void purgeVersions(Timestamp barrier);
+
+                void lockEntry();
+                void unlockEntry();
+
+            private:
+                Timestamp readMark;
+                std::mutex lock;
+        };
+
     public:
         
         VersionManager();
@@ -21,13 +51,13 @@ class VersionManager {
         //Version getVersion(Key k, TimestampInterval interval, OpType flag);
         
         //try to acquire a read lock
-        void tryReadLock(Key k, TimestampInterval interval, LockInfo& lockInfo);
+        void tryReadLock(Key k, TimestampInterval interval, LockInfo* lockInfo);
         //try to acquire a write lock
-        void tryWriteLock(Key k, TimestampInterval interval, LockInfo& lockInfo);
+        void tryWriteLock(Key k, TimestampInterval interval, LockInfo* lockInfo);
         //get an info on the interval a write lock would be acquired for
         TimestampInterval getWriteLockHint(Key k, TimestampInterval interval);
         //get a Rw lock
-        LockInfo* tryReadWriteLock(Key k, TimestampInterval interval, LockInfo& lockInfo);
+        LockInfo* tryReadWriteLock(Key k, TimestampInterval interval, LockInfo* lockInfo);
 
         //marks for failed reads
         void markReadNotFound(Key k, Timestamp ts);
@@ -50,33 +80,6 @@ class VersionManager {
 
         //add_to_log(LogKey* k, Version* v);
 
-        class VersionManagerEntry {
-            friend class VersionManager;
-            public:
-                VersionManagerEntry();
-                VersionManagerEntry(Key key);
-                VersionManagerEntry(Key key, Version version);
-                VersionManagerEntry(Key key, Timestamp readMark);
-
-                Key key;
-                std::set<Version, versionCompare> versions;
-
-                bool isEmpty();
-                void purgeVersions(Timestamp barrier);
-
-                void lockEntry();
-                void unlockEntry();
-
-            private:
-                Timestamp readMark;
-                std::mutex lock;
-        }
-
-    struct versionCompare {
-         bool operator() (const Version& v1, const Version& v2 const) {
-             return v1.timestamp < v2.timestamp;
-         }
-    }
 
 };
 

@@ -1,7 +1,24 @@
 #ifndef _PROTOCOL_SCHEDULER_H_
 #define _PROTOCOL_SCHEDULER_H_
 
+#include <queue>
+#include "common.h"
+#include "ClientReply.h"
+#include "VersionManager.h"
+
+#ifdef INITIAL_TESTING
+typedef std::string DsKey;
+#endif
+
 class ProtocolScheduler {
+    private:
+        typedef struct WSEntry{
+            Version *version;
+            Key key;
+            Value* value;
+
+            WSEntry(Version* ver = NULL, Key k = NULL, Value* val = NULL) : version(ver), key(k), value(val) {}
+        } WSEntry;
     public:
         ProtocolScheduler();
 
@@ -13,7 +30,7 @@ class ProtocolScheduler {
 
         ClientReply* handleCommit(TransactionId tid, Timestamp ts);
     
-        ClientReply* handleAbort(TransacrionId tid);
+        ClientReply* handleAbort(TransactionId tid);
 
         ClientReply* handleHintRequest(TimestampInterval t_interval, Key k);
 
@@ -31,5 +48,5 @@ class ProtocolScheduler {
 
         std::map<TransactionId, std::queue<WSEntry*>> pendingWriteSets;
 
-}
+};
 #endif

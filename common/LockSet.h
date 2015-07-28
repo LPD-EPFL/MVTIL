@@ -4,6 +4,7 @@
 #include <mutex>
 #include <array>
 #include <functional>
+#include <string>
 
 #include "common.h"
 
@@ -11,11 +12,11 @@
 
 class LockSet {
     public:
-        lock(Key k);
-        unlock(Key k);
+        void lock(Key k);
+        void unlock(Key k);
     private:
         std::array<std::mutex, NUM_LOCKS> theLocks;
-        hash<std::string> hasher;
+        std::hash<std::string> hasher;
         size_t hashKey(Key k);
 };
 

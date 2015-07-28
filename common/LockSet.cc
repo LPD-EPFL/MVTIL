@@ -1,15 +1,15 @@
 #include "lockSet.h"
 
-LockSet::lock(Key k) {
+void LockSet::lock(Key k) {
    size_t index = hashKey(k);
    theLocks.at(index).lock();
 }
 
-LockSet::unlock(Key k) {
+void LockSet::unlock(Key k) {
     size_t index = hashKey(k);
     theLocks.at(index).unlock();
 }
 
-size_t hashKey(Key k) {
+size_t LockSet::hashKey(Key k) {
    return (hasher((std::string)k)%NUM_LOCKS); 
 }

@@ -172,11 +172,11 @@ bool VersionManager::persistVersion(Version& v) {
     //TODO: add version to RocksDB
 }
 
-void VersionManager::tryReadLock(Key k, TimestampInterval interval, LockInfo& lockInfo) {
+void VersionManager::tryReadLock(Key k, TimestampInterval interval, LockInfo* lockInfo) {
     VersionManagerEntry* ve = getVersionSet(key);
     if (ve == NULL) {
         markReadNotFound(key, interval.end); //be conservative
-        lockInfo.state = FAIL_NO_VERSION;
+        lockInfo->state = FAIL_NO_VERSION;
         return;
     }
     ve->lockEntry();
@@ -207,21 +207,21 @@ void VersionManager::tryReadLock(Key k, TimestampInterval interval, LockInfo& lo
     }
     if (selected_version == NULL) {
         markReadNotFound(key, interval.end);
-        lockInfo.state = FAIL_NO_VERSION;
+        lockInfo->state = FAIL_NO_VERSION;
         ve->unlockEntry();
         return;
     }
 
 
-    lockInfo.locked.start = selected_version.timestamp;
-    lockInfo.locked.end = min(next_timestamp, interval.end);
-    lockInfo.potential.start = selected_version.timestamp;
-    lockInfo.potential.end = next_timestamp;
-    lockInfo.version = selected_version;
+    lockInfo->locked.start = selected_version.timestamp;
+    lockInfo->locked.end = min(next_timestamp, interval.end);
+    lockInfo->potential.start = selected_version.timestamp;
+    lockInfo->potential.end = next_timestamp;
+    lockInfo->version = selected_version;
     lockInfo.state = R_LOCK_SUCCESS;
 
-    if (selected_version.maxReadFrom < lockInfo.locked.end) {
-        selected_version.maxReadFrom = lockInfo.locked.end;
+    if (selected_version.maxReadFrom < lockInfo->locked.end) {
+        selected_version.maxReadFrom = lockInfo->locked.end;
     }
     
     ve->unlockEntry();
@@ -229,7 +229,7 @@ void VersionManager::tryReadLock(Key k, TimestampInterval interval, LockInfo& lo
 
 }
 
-void VersionManager::tryWriteLock(Key k, TimestampInterval interval, LockInfo& lockInfo) {
+void VersionManager::tryWriteLock(Key k, TimestampInterval interval, LockInfo* lockInfo) {
     VersionManagerEntry* ve = getVersionSet(key);
     if (ve == NULL) {
         ve = createNewEntry(k);
@@ -237,25 +237,25 @@ void VersionManager::tryWriteLock(Key k, TimestampInterval interval, LockInfo& l
     ve->lockEntry();
     if (ve->isEmpty() || (ve->versions.start()->timestamp > interval.end())) {
         if (getMaxReadMark(key) > interval.end) {
-            lockInfo.state = FAIL_READ_MARK_LARGE;    
-            lockInfo.potential.start = getMaxReadMark(key);
+            lockInfo->state = FAIL_READ_MARK_LARGE;    
+            lockInfo->potential.start = getMaxReadMark(key);
             ve->unlockEntry();
             return;
         }
         
         Timestamp start = max(interval.start, getMaxReadMark(key));
         if (ve->isEmpty()) {
-            lockInfo.potential.end = MAX_TIMESTAMP;
+            lockInfo->potential.end = MAX_TIMESTAMP;
         } else {
-            lockInfo.potential.end = ve->versions.start()->timestamp;
+            lockInfo->potential.end = ve->versions.start()->timestamp;
         }
         Version* new_version = new Version(start, interval.end - start, PENDING, start); //TODO what should I set maxReadFrom to here?
         ve->insert(new_version); 
-        lockInfo.locked.start = start;
-        lockInfo.locked.end = interval.end;
-        lockInfo.potential.start = getMaxReadMark(key); 
-        lockInfo.version = new_version;
-        lockInfo.state = W_LOCK_SUCCESS;
+        lockInfo->locked.start = start;
+        lockInfo->locked.end = interval.end;
+        lockInfo->potential.start = getMaxReadMark(key); 
+        lockInfo->version = new_version;
+        lockInfo->state = W_LOCK_SUCCESS;
         ve->unlockEntry();
         return;
     }
@@ -324,12 +324,12 @@ void VersionManager::tryWriteLock(Key k, TimestampInterval interval, LockInfo& l
         Timestamp end = min(interval.end, next_timestamp);
         Version* new_version = new Version(start, interval.end - start, PENDING, start); //TODO what should I set maxReadFrom to here?
         ve->insert(new_version); 
-        lockInfo.version = new_vesion;
-        lockInfo.locked.start = start;
-        lockInfo.locked.end = end;
-        lockInfo.potential.start = selected_version->maxReadFrom;
-        lockInfo.potential.end = next_timestamp;
-        lockInfo.state = W_LOCK_SUCESS;
+        lockInfo->version = new_vesion;
+        lockInfo->locked.start = start;
+        lockInfo->locked.end = end;
+        lockInfo->potential.start = selected_version->maxReadFrom;
+        lockInfo->potential.end = next_timestamp;
+        lockInfo->state = W_LOCK_SUCESS;
         ve->unlockEntry();
         return; 
     }
@@ -338,25 +338,25 @@ void VersionManager::tryWriteLock(Key k, TimestampInterval interval, LockInfo& l
         Timestamp end = min(interval.end, next_timestamp_pending);
         Version* new_version = new Version(start, interval.end - start, PENDING, start); //TODO what should I set maxReadFrom to here?
         ve->insert(new_version); 
-        lockInfo.vesion = new_version;
-        lockInfo.locked.start = start;
-        lockInfo.locked.end = end;
-        lockInfo.potential.start = selected_pending->start + selected_pending->duration;
-        lockInfo.potential.end = next_timestamp_pending;
-        lockInfo.state = W_LOCK_SUCCESS;
+        lockInfo->vesion = new_version;
+        lockInfo->locked.start = start;
+        lockInfo->locked.end = end;
+        lockInfo->potential.start = selected_pending->start + selected_pending->duration;
+        lockInfo->potential.end = next_timestamp_pending;
+        lockInfo->state = W_LOCK_SUCCESS;
         ve->unlockEntry();
         return;
     }
-    lockInfo.state = FAIL_INTERSECTION_EMPTY;
+    lockInfo->state = FAIL_INTERSECTION_EMPTY;
     if (candidate.start != TIMESTAMP_MIN) {
-        lockInfo.potential.start = candidate.start;
-        lockInfo.potential.end = candidate.end;
+        lockInfo->potential.start = candidate.start;
+        lockInfo->potential.end = candidate.end;
     } else if (candidate_pending.start != TIEMSTAMP_MIN) {
-        lockInfo.potential.start = candidate_pending.start;
-        lockInfo.potential.end = candidate_pending.end;
+        lockInfo->potential.start = candidate_pending.start;
+        lockInfo->potential.end = candidate_pending.end;
     } else {
-        lockInfo.potential.start = TIMESTAMP_MIN;
-        lockInfo.potential.end = TIMESTAMP_MIN;
+        lockInfo->potential.start = TIMESTAMP_MIN;
+        lockInfo->potential.end = TIMESTAMP_MIN;
     }
     ve->unlockEntry();
     return;
@@ -449,7 +449,7 @@ TimestampInterval VersionManager::tryWriteLockHint(Key k, TimestampInterval inte
 }
 
 
-void VersionManager::tryReadWriteLock(Key k, TimestampInterval interval, LockInfo& lockInfo) {
+void VersionManager::tryReadWriteLock(Key k, TimestampInterval interval, LockInfo* lockInfo) {
 
 }
 

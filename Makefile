@@ -1,6 +1,8 @@
 CC        := g++
 LD        := g++
 
+CFLAGS:=-std=c++11 -Wall
+
 MODULES   := common server tests
 SRC_DIR   := $(MODULES)
 BUILD_DIR := $(addprefix build/,$(MODULES))
@@ -14,7 +16,7 @@ vpath %.cc $(SRC_DIR)
 
 define make-goal
 $1/%.o: %.cc
-	$(CC) $(INCLUDES) -c $$< -o $$@
+	$(CC) $(INCLUDES) $(CFLAGS) -c $$< -o $$@
 endef
 
 .PHONY: all checkdirs clean
@@ -22,7 +24,7 @@ endef
 all: checkdirs build/test_server
 
 build/test_server: $(OBJ)
-	$(LD) $^ -o $@
+	$(LD) $(CFLAGS) $^ -o $@
 
 
 checkdirs: $(BUILD_DIR)
