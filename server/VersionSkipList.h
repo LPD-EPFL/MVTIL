@@ -6,25 +6,41 @@
 #include "random.h"
 #include "Version.h"
 
-#define MAXLEVEL 8
+#define MAXLEVEL 4
+class OrderedSetNode {
+    friend class VersionSkiplist;
+    public:
+        inline Timestamp getTimestamp();
+        inline Version* getVersion();
+        inline OrderedSetNode* next();
+        OrderedSetNode(Timestamp ts, Version* v, int level);
+        ~OrderedSetNode();
+    private:
+        Timestamp timestamp;
+        Version* version;
+        uint32_t toplevel;
+        struct OrderedSetNode** next;
+};
+
+//typedef struct Node_t {
+    //Timestamp timestamp;
+    //Version* version;
+    //uint32_t toplevel;
+    //struct Node_t** next;
+
+    //Node(Timestamp ts, Version* v, int level);
+    //~Node();
+
+//} Node;
 
 class VersionSkiplist {
-    private:
-        typedef struct Node_t {
-            Timestamp timestamp;
-            Version* version;
-            uint32_t toplevel;
-            struct Node_t** next;
-
-            Node(Timestamp ts, Version* v, int level);
-            ~Node();
-
-        } Node;
     public:
         VersionSkiplist();
-        Version* find(Timestamp ts, Version* prev);
-        int add(Timestamp ts, Version* v);
+        inline Timestamp getFirstTimestamp();
+        OrderedSetNode* find(Timestamp ts, OrderedSetNode* prev);
+        int insert(Timestamp ts, Version* v);
         int remove(Timestamp ts);
+        int reposistion(Timestamp old_ts);
         size_t size();
 
     private:

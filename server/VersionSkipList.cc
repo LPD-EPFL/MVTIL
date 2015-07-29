@@ -1,18 +1,30 @@
 #include "VersionSkipList.h"
 
-VersionSkiplist::Node::Node(Timestamp ts, Version*v, int level) : timestamp(ts), version(v), toplevel(level) {
-    next = new Node*[MAXLEVEL];
+OrderedSetNode::OrderedSetNode(Timestamp ts, Version*v, int level) : timestamp(ts), version(v), toplevel(level) {
+    next = new OrderedSetNode*[MAXLEVEL];
 }
 
-VersionSkiplist::Node::~Node() {
+OrderedSetNode::~OrderedSetNode() {
     delete next;
     delete version;
 }
 
+inline Timestamp OrderedSetNode::getTimestamp() {
+    return timestamp;
+}
+
+inline Version* OrderedSetNode::getVersion() {
+    return version;
+}
+
+inline OrderedSetNode* OrderedSetNode::next() {
+    return next[0];
+}
+
 VersionSkiplist::VersionSkiplist() {
     levelmax = MAXLEVEL;
-    Node* min = new Node(MIN_TIMESTAMP, NULL, levelmax);
-    Node* max = new Node(MAX_TIMESTAMP + 1, NULL, levelmax);
+    OrderedSetNode* min = new OrderedSetNode(MIN_TIMESTAMP, NULL, levelmax);
+    OrderedSetNode* max = new OrderedSetNode(MAX_TIMESTAMP + 1, NULL, levelmax);
     max->next[0] = NULL;
 
     int i;
@@ -24,8 +36,8 @@ VersionSkiplist::VersionSkiplist() {
 }
 
 VersionSkiplist::~VersionSkiplist() {
-    Node* node = head;
-    Node* next;
+    OrderedSetNode* node = head;
+    OrderedSetNode* next;
     while (node != NULL) {
         next= node->next[0];
         delete node;
@@ -47,13 +59,17 @@ inline int VersionSkiplist::get_rand_level()
     return level;
 }
 
+inline Timestamp VersionSkiplist::getFirstTimestamp() {
+    return head->next[0]->timestamp;
+}
+
 
 //returns the first node with timestamp >= ts; also returns its predecessor
-Version* VersionSkipList::find(Timestamp ts, Version* pred) {
+OrderedSetNode* VersionSkiplist::find(Timestamp ts, OrderedSetNode* pred) {
     int i;
-    Node* node;
-    Node* next;
-    Version* result = NULL;
+    OrderedSetNode* node;
+    OrderedSetNode* next;
+    OrderedSetNode* result = NULL;
 
     node = head;
     for (i = node->toplevel-1; i >=0; i--) {
@@ -63,18 +79,18 @@ Version* VersionSkipList::find(Timestamp ts, Version* pred) {
             next = node->next[i];
         }
     }
-    pred = node->version;
+    pred = node;
     node = node->next[0];
-    result = node->version;
+    result = node;
     return result;
 }
 
-int VersionSkipList::add(Timestamp ts, Version* v) {
+int VersionSkiplist::insert(Timestamp ts, Version* v) {
     int i, l, result;
-    Node* node;
-    Node* next;
-    Node* preds[MAXLEVEL];
-    Node* succs[MAXLEVEL];
+    OrderedSetNode* node;
+    OrderedSetNode* next;
+    OrderedSetNode* preds[MAXLEVEL];
+    OrderedSetNode* succs[MAXLEVEL];
 
     node = head;
     for (i = node->toplevel-1; i>=0; i--) {
@@ -91,7 +107,7 @@ int VersionSkipList::add(Timestamp ts, Version* v) {
     result = (node->timestamp != ts);
     if (result == 1) {
         l = getRandomLevel();
-        node = new Node(ts, v, l); 
+        node = new OrderedSetNode(ts, v, l); 
         for (i = 0; i < l; i++) {
             node->next[i] = succs[i];
             preds[i]->next[i] = node;
@@ -101,13 +117,13 @@ int VersionSkipList::add(Timestamp ts, Version* v) {
     return result;
 }
 
-int VersionSkipList::remove(Timestamp ts) {
+int VersionSkiplist::remove(Timestamp ts) {
     int result = 0;
     int i;
-    Node* node = NULL;
-    Node* next = NULL;
-    Node* preds[MAXLEVEL];
-    Node* succs[MAXLEVEL];
+    OrderedSetNode* node = NULL;
+    OrderedSetNode* next = NULL;
+    OrderedSetNode* preds[MAXLEVEL];
+    OrderedSetNode* succs[MAXLEVEL];
 
     node = head;
     for (i = node->toplevel-1; i >= 0; i--) {
@@ -131,6 +147,65 @@ int VersionSkipList::remove(Timestamp ts) {
         size--;
     }
     return result;
+}
+
+//reposition a node once the timestamp in the version has changed
+int VersionSkiplist::reposition(Timestamp old_ts) {
+    int result = 1;
+    int i;
+    OrderedSetNode* node = NULL;
+    OrderedSetNode* next = NULL;
+    OrderedSetNode* preds[MAXLEVEL];
+    OrderedSetNode* succs[MAXLEVEL];
+
+    node = head;
+    for (i = node->toplevel-1; i >= 0; i--) {
+        next = node->next[i];
+        while (next->timestamp < old_ts) {
+            node = next;
+            next = node->next[i];
+        }
+        preds[i] = node;
+        succs[i] = node->next[i];
+    }
+
+    if (next->timestamp != old_ts) {
+        return 0;
+    }
+
+    for (i = 0; i < head->toplevel; i++) {
+        if (succs[i]->timestamp == old_ts) {
+            preds[i]->next[i] = succs[i]->next[i];
+        }
+    }
+
+    OrderedSetNode* reinsert = next;
+
+    reinsert->timestamp = reinsert->version->timestamp;
+    Timestamp ts = reinsert->timestamp;
+
+    node = head;
+    for (i = node->toplevel-1; i>=0; i--) {
+        next = node->next[i];
+        while (next->timestamp < ts) {
+            node = next;
+            next = node->next[i];
+        }
+        preds[i] = node;
+        succs[i] = node->next[i];
+    }
+    node = node->next[0];
+
+    result = (node->timestamp != ts);
+    if (result != 1) {
+        return 0;
+    }
+    for (i = 0; i < reinsert->toplevel; i++) {
+        reinsert->next[i] = succs[i];
+        preds[i]->next[i] = reinsert;
+    }
+    return result;
+
 }
 
 size_t VersionSkiplist::size() {

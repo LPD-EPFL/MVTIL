@@ -28,7 +28,8 @@ class VersionManager {
                 VersionManagerEntry(Key key, Timestamp readMark);
 
                 Key key;
-                std::set<Version, versionCompare> versions;
+                VersionSkiplist verions;
+                //std::set<Version, versionCompare> versions;
 
                 bool isEmpty();
                 void purgeVersions(Timestamp barrier);

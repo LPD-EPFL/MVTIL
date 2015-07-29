@@ -74,12 +74,13 @@ ClientReply* ProtocolScheduler::handleCommit(TransactionId tid, Timestamp ts) {
         //TODO do I need to protect this with locks?
         WSEntry * ws_entry = ws->front();
         ws->pop();
-        ws_entry->version->timestamp = ts; 
-        if (ws_entry->version->maxReadFrom < ts) {
-            ws_entry->version->maxReadFrom = ts;
-        }
-        ws_entry->version->state = COMMITTED;
-        versionManager->persistVersion(ws_entry->key, ws_entry->version);
+        versionManager->updateAndPersistVersion(ws_entry->key, ws_entry->version, ts, 0, ts, COMMITTED);
+        //ws_entry->version->timestamp = ts; 
+        //if (ws_entry->version->maxReadFrom < ts) {
+            //ws_entry->version->maxReadFrom = ts;
+        //}
+        //ws_entry->version->state = COMMITTED;
+        //versionManager->persistVersion(ws_entry->key, ws_entry->version);
 #ifndef INITIAL_TESTING
         dataStore.write(toDsKey(ws_entry->key,ts), ws_entry->value);
 #endif
