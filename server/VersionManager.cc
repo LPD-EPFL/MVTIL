@@ -235,10 +235,10 @@ void VersionManager::tryReadLock(Key key, TimestampInterval interval, LockInfo* 
 void VersionManager::tryWriteLock(Key key, TimestampInterval interval, LockInfo* lockInfo) {
     VersionManagerEntry* ve = getVersionSet(key);
     if (ve == NULL) {
-        ve = createNewEntry(k);
+        ve = createNewEntry(key);
     }
     ve->lockEntry();
-    if (ve->isEmpty() || (ve->versions.start()->timestamp > interval.end())) {
+    if (ve->isEmpty() || (ve->versions.begin()->timestamp > interval.end)) {
         if (getMaxReadMark(key) > interval.end) {
             lockInfo->state = FAIL_READ_MARK_LARGE;    
             lockInfo->potential.start = getMaxReadMark(key);
@@ -246,14 +246,14 @@ void VersionManager::tryWriteLock(Key key, TimestampInterval interval, LockInfo*
             return;
         }
         
-        Timestamp start = max(interval.start, getMaxReadMark(key));
+        Timestamp start = std::max(interval.start, getMaxReadMark(key));
         if (ve->isEmpty()) {
             lockInfo->potential.end = MAX_TIMESTAMP;
         } else {
-            lockInfo->potential.end = ve->versions.start()->timestamp;
+            lockInfo->potential.end = ve->versions.begin()->timestamp;
         }
         Version* new_version = new Version(start, interval.end - start, PENDING, start); //TODO what should I set maxReadFrom to here?
-        ve->insert(new_version); 
+        ve->versions.insert(new_version); 
         lockInfo->locked.start = start;
         lockInfo->locked.end = interval.end;
         lockInfo->potential.start = getMaxReadMark(key); 
