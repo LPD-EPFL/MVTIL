@@ -10,11 +10,20 @@
 class OrderedSetNode {
     friend class VersionSkiplist;
     public:
-        inline Timestamp getTimestamp();
-        inline Version* getVersion();
-        inline OrderedSetNode* getNext();
         OrderedSetNode(Timestamp ts, Version* v, int level);
         ~OrderedSetNode();
+
+        inline Timestamp getTimestamp() {
+            return timestamp;
+        }
+
+        inline Version* getVersion() {
+            return version;
+        }
+
+        inline OrderedSetNode* getNext() {
+            return next[0];
+        }
     private:
         Timestamp timestamp;
         Version* version;
@@ -36,16 +45,21 @@ class OrderedSetNode {
 class VersionSkiplist {
     public:
         VersionSkiplist();
-        inline Timestamp getFirstTimestamp();
+        ~VersionSkiplist();
+        inline Timestamp getFirstTimestamp() {
+            return head->next[0]->timestamp;
+        }
+
         OrderedSetNode* find(Timestamp ts, OrderedSetNode* prev);
         int insert(Timestamp ts, Version* v);
         int remove(Timestamp ts);
-        int reposistion(Timestamp old_ts);
+        int reposition(Timestamp old_ts);
         size_t size();
+
 
     private:
         OrderedSetNode* head;
-        inline long get_rand_level();
+        inline int getRandomLevel();
         int levelmax;
         size_t sz;
 };

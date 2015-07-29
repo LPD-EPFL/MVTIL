@@ -69,7 +69,7 @@ VersionManager::VersionManagerEntry* VersionManager::createNewEntry(Key k) {
 }
 
 
-bool VersionManager::updateAndPersistVersion(Key k, Version* v, Timestamp new_ts, Timestamp new_duration, Timestamp newPotentialReadMax, state new_state) {
+bool VersionManager::updateAndPersistVersion(Key key, Version* v, Timestamp new_ts, Timestamp new_duration, Timestamp newPotentialReadMax, OpState new_state) {
 
     VersionManagerEntry* ve = getVersionSet(key);
     ve->lockEntry();
@@ -108,11 +108,11 @@ void VersionManager::tryReadLock(Key key, TimestampInterval interval, LockInfo* 
 
     OrderedSetNode* prev = NULL;
     OrderedSetNode* node;
-    node = ve->versions.find(interval.start);
+    node = ve->versions.find(interval.start, prev);
 
     if (node->getTimestamp() != interval.start) {
-        if (pred->getVersion() != NULL) {
-            node = pred;
+        if (prev->getVersion() != NULL) {
+            node = prev;
         }
     }
     
@@ -193,12 +193,8 @@ void VersionManager::tryWriteLock(Key key, TimestampInterval interval, LockInfo*
     Version* selected_version = NULL;   
     Version* selected_pending = NULL;
 
-
-    std::set<Version>::iterator it;
-    it = ve->versions.lower_bound(interval.start); //Points to the first entry to be considered
-
     OrderedSetNode* node;
-    OrderedSetNode* prev;
+    OrderedSetNode* prev = NULL;
     node = ve->versions.find(interval.start, prev);
 
     if (node->getTimestamp() != interval.start) {
@@ -209,7 +205,7 @@ void VersionManager::tryWriteLock(Key key, TimestampInterval interval, LockInfo*
 //    if (it->timestamp != interval.start) {
 //        if (it != ve->versions.start()) {
 //            --it; //TODO: check I am not doing -- on the first element of the set; if it is the first element of the set, I need to compare with the read mark;
-        } 
+        //} 
         //else {
             //if (getMaxReadMark(key) > interval.end) {
                 //Version* dummy = new Version(getMaxReadMark(key), NO_SUCH_VERSION);
@@ -220,10 +216,10 @@ void VersionManager::tryWriteLock(Key key, TimestampInterval interval, LockInfo*
                 //interval.start = dummy->timestamp; //TODO is this necessary? do I have to change anything if this happens?
             //}
         //}
-    }
+    //}
 
-    Interval candidate;
-    Interval candidate_pending;
+    TimestampInterval candidate;
+    TimestampInterval candidate_pending;
 
     OrderedSetNode* next = node;
     Version* ver = node->getVersion();
@@ -248,8 +244,8 @@ void VersionManager::tryWriteLock(Key key, TimestampInterval interval, LockInfo*
                 }
             }
         } else if (ver->state == PENDING) {
-            if ((next->getTimestamp() - (ver->timestamo + ver->duration)) > (candidate_pending.end - candidate_pending.start)) {
-               candidate_pending.start = ver->timestamp + it->duration;  
+            if ((next->getTimestamp() - (ver->timestamp + ver->duration)) > (candidate_pending.end - candidate_pending.start)) {
+               candidate_pending.start = ver->timestamp + ver->duration;  
                candidate_pending.end = next->getTimestamp();
             }
             if ((selected_pending == NULL) && ((ver->timestamp + ver->duration) < interval.end)){
@@ -257,7 +253,7 @@ void VersionManager::tryWriteLock(Key key, TimestampInterval interval, LockInfo*
                 next_timestamp_pending = next->getTimestamp();
             } else {
                 if (getIntersection(ver->timestamp + ver->duration, next->getTimestamp(), interval.start, interval.end) > getIntersection(selected_pending->timestamp + selected_pending->duration, next_timestamp_pending, interval.start, interval.end)) {
-                    selected_pending=it;
+                    selected_pending = ver;
                     next_timestamp_pending = next->getTimestamp();
                 }
             }
@@ -266,50 +262,50 @@ void VersionManager::tryWriteLock(Key key, TimestampInterval interval, LockInfo*
         ver = node->getVersion();
     }
     if (selected_version != NULL) {
-        Timestamp start = max(interval.start, selected_version->maxReadFrom);
-        Timestamp end = min(interval.end, next_timestamp);
+        Timestamp start = std::max(interval.start, selected_version->maxReadFrom);
+        Timestamp end = std::min(interval.end, next_timestamp);
         Version* new_version = new Version(start, interval.end - start, PENDING, start); //TODO what should I set maxReadFrom to here?
-        ve->insert(start, new_version); 
-        lockInfo->version = new_vesion;
+        ve->versions.insert(start, new_version); 
+        lockInfo->version = new_version;
         lockInfo->locked.start = start;
         lockInfo->locked.end = end;
         lockInfo->potential.start = selected_version->maxReadFrom;
         lockInfo->potential.end = next_timestamp;
-        lockInfo->state = W_LOCK_SUCESS;
+        lockInfo->state = W_LOCK_SUCCESS;
         ve->unlockEntry();
         return; 
     }
     if (selected_pending != NULL) {
-        Timestamp start = max(interval.start, selected_pending->start + selected_pending->duration);
-        Timestamp end = min(interval.end, next_timestamp_pending);
+        Timestamp start = std::max(interval.start, selected_pending->timestamp + selected_pending->duration);
+        Timestamp end = std::min(interval.end, next_timestamp_pending);
         Version* new_version = new Version(start, interval.end - start, PENDING, start); //TODO what should I set maxReadFrom to here?
-        ve->insert(start, new_version); 
-        lockInfo->vesion = new_version;
+        ve->versions.insert(start, new_version); 
+        lockInfo->version = new_version;
         lockInfo->locked.start = start;
         lockInfo->locked.end = end;
-        lockInfo->potential.start = selected_pending->start + selected_pending->duration;
+        lockInfo->potential.start = selected_pending->timestamp + selected_pending->duration;
         lockInfo->potential.end = next_timestamp_pending;
         lockInfo->state = W_LOCK_SUCCESS;
         ve->unlockEntry();
         return;
     }
     lockInfo->state = FAIL_INTERSECTION_EMPTY;
-    if (candidate.start != TIMESTAMP_MIN) {
+    if (candidate.start != MIN_TIMESTAMP) {
         lockInfo->potential.start = candidate.start;
         lockInfo->potential.end = candidate.end;
-    } else if (candidate_pending.start != TIEMSTAMP_MIN) {
+    } else if (candidate_pending.start != MIN_TIMESTAMP) {
         lockInfo->potential.start = candidate_pending.start;
         lockInfo->potential.end = candidate_pending.end;
     } else {
-        lockInfo->potential.start = TIMESTAMP_MIN;
-        lockInfo->potential.end = TIMESTAMP_MIN;
+        lockInfo->potential.start = MIN_TIMESTAMP;
+        lockInfo->potential.end = MIN_TIMESTAMP;
     }
     ve->unlockEntry();
     return;
 
 }
 
-TimestampInterval VersionManager::tryWriteLockHint(Key k, TimestampInterval interval) {
+TimestampInterval VersionManager::getWriteLockHint(Key key, TimestampInterval interval) {
     VersionManagerEntry* ve = getVersionSet(key);
     TimestampInterval ret;
     ret.start=MIN_TIMESTAMP;
@@ -317,14 +313,14 @@ TimestampInterval VersionManager::tryWriteLockHint(Key k, TimestampInterval inte
     if (ve == NULL) {
         return interval; 
     }
-    if (ve->isEmpty() || (ve->versions.getFirstTimestamp() > interval.end())) {
+    if (ve->isEmpty() || (ve->versions.getFirstTimestamp() > interval.end)) {
         if (getMaxReadMark(key) > interval.end) {
             return ret;
         }
         
-        Timestamp start = max(interval.start, getMaxReadMark(key));
+        Timestamp start = std::max(interval.start, getMaxReadMark(key));
         ret.start=start;
-        ret.end=end;
+        ret.end=interval.end;
         return ret;
     }
 
@@ -336,7 +332,7 @@ TimestampInterval VersionManager::tryWriteLockHint(Key k, TimestampInterval inte
 
     node = ve->versions.find(interval.start, prev);
 
-    if (node->timestamp != interval.start) {
+    if (node->getTimestamp() != interval.start) {
         if (prev->getVersion() !=  NULL) {
             node = prev;
         }
@@ -353,7 +349,7 @@ TimestampInterval VersionManager::tryWriteLockHint(Key k, TimestampInterval inte
                 //interval.start = dummy->timestamp; //TODO is this necessary? do I have to change anything if this happens?
             //}
         //}
-    }
+    //}
 
     OrderedSetNode* next = node;
     Version * ver = node->getVersion();
@@ -385,18 +381,18 @@ TimestampInterval VersionManager::tryWriteLockHint(Key k, TimestampInterval inte
             }
         }
         node = node->getNext();
-        ver = node->vetVersion();
+        ver = node->getVersion();
     }
     if (selected_version != NULL) {
-        Timestamp start = max(interval.start, selected_version->maxReadFrom);
-        Timestamp end = min(interval.end, next_timestamp);
+        Timestamp start = std::max(interval.start, selected_version->maxReadFrom);
+        Timestamp end = std::min(interval.end, next_timestamp);
         ret.start = start;
         ret.end = end;
         return ret;
     }
     if (selected_pending != NULL) {
-        Timestamp start = max(interval.start, selected_pending->start + selected_pending->duration);
-        Timestamp end = min(interval.end, next_timestamp_pending);
+        Timestamp start = std::max(interval.start, selected_pending->timestamp + selected_pending->duration);
+        Timestamp end = std::min(interval.end, next_timestamp_pending);
         ret.start = start;
         ret.end = end;
         return ret;
@@ -405,7 +401,7 @@ TimestampInterval VersionManager::tryWriteLockHint(Key k, TimestampInterval inte
 
 }
 
-Timespan getIntersection(Timestamp ts1Left, Timestamp ts1Right, Timestamp ts2Left, Timestamp ts2Right) {
+Timespan VersionManager::getIntersection(Timestamp ts1Left, Timestamp ts1Right, Timestamp ts2Left, Timestamp ts2Right) {
     //TODO implement this
     return 0;
 }
@@ -421,33 +417,22 @@ void VersionManager::tryReadWriteLock(Key k, TimestampInterval interval, LockInf
 
 
 // VersionManagerEntry methods
-VersionManagerEntry::VersionManagerEntry(Key k) : key(k),readMark(MIN_TIMESTAMP) {
+VersionManager::VersionManagerEntry::VersionManagerEntry(Key k) : key(k),readMark(MIN_TIMESTAMP) {
 }
 
-VersionManagerEntry::VersionManagerEntry(Key k, Version* v) : key(k), readMark(MIN_TIMESTAMP),  {
+VersionManager::VersionManagerEntry::VersionManagerEntry(Key k, Version* v) : key(k), readMark(MIN_TIMESTAMP)  {
     versions.insert(v->timestamp, v);
 }
 
-VersionManagerEntry::VersionManagerEntry(Key k, Timestamp readM) : key(k), readMark(readM) {
+VersionManager::VersionManagerEntry::VersionManagerEntry(Key k, Timestamp readM) : key(k), readMark(readM) {
 }
 
-VersionManagerEntry::~VersionManagerEntry() {
-}
-
-inline bool VersionManagerEntry::VersionManagerEntry::isEmpty() {
-    if (versions.size() == 0) return true;
-    return false;
-}
+VersionManager::VersionManagerEntry::~VersionManagerEntry() {
+} 
 
 
-void VersionManagerEntry::purgeVersions(Timestamp barrier) {
+void VersionManager::VersionManagerEntry::purgeVersions(Timestamp barrier) {
     //TODO remove all versions with timestamps smaller than the barrier form the versionManagerEntry; then go and do the same thing in the dataStore
 }
 
-inline void VersionManagerEntry::lockEntry() {
-    lock.lock();
-}
 
-inline void VersionManagerEntry::unlockEntry() {
-    lock.unlock();
-}

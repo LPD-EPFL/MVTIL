@@ -25,22 +25,34 @@ class VersionManager {
             public:
                 VersionManagerEntry();
                 VersionManagerEntry(Key key);
-                VersionManagerEntry(Key key, Version version);
+                VersionManagerEntry(Key key, Version* version);
                 VersionManagerEntry(Key key, Timestamp readMark);
+
+                ~VersionManagerEntry();
 
                 Key key;
                 VersionSkiplist versions;
                 //std::set<Version, versionCompare> versions;
 
-                bool isEmpty();
                 void purgeVersions(Timestamp barrier);
-
-                void lockEntry();
-                void unlockEntry();
-
-            private:
+           private:
                 Timestamp readMark;
                 std::mutex lock;
+
+           public:
+                inline bool isEmpty() {
+                    if (versions.size() == 0) return true;
+                    return false;
+                }
+
+                inline void lockEntry() {
+                    lock.lock();
+                }
+
+                inline void unlockEntry() {
+                    lock.unlock();
+                }
+ 
         };
 
     public:
@@ -60,7 +72,7 @@ class VersionManager {
         //get an info on the interval a write lock would be acquired for
         TimestampInterval getWriteLockHint(Key k, TimestampInterval interval);
         //get a Rw lock
-        LockInfo* tryReadWriteLock(Key k, TimestampInterval interval, LockInfo* lockInfo);
+        void tryReadWriteLock(Key k, TimestampInterval interval, LockInfo* lockInfo);
 
         void removeVersion(Key k, Version* v);
 
@@ -75,6 +87,7 @@ class VersionManager {
 
         //store version in persistent storage;
         bool persistVersion(Key k, Version* v);
+        bool updateAndPersistVersion(Key k, Version* v, Timestamp new_ts, Timestamp new_duration, Timestamp newPotentialReadMax, OpState new_state);
 
     private:
 #ifndef INITIAL_TESTING

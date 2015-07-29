@@ -55,7 +55,6 @@ ClientReply* ProtocolScheduler::handleWrite(TransactionId tid, TimestampInterval
         pendingWriteSets.insert(std::pair<TransactionId,std::queue<WSEntry*>*>(tid, q));
     }
     WSEntry* wse = new WSEntry(lockInfo->version,k,v);
-
     std::map<TransactionId, std::queue<WSEntry*>*>::iterator it = pendingWriteSets.find(tid); //TODO: do struct for this, containing a version, a value, and a lock
     it->second->push(wse);
     return new ClientReply(tid, WRITE_REPLY, lockInfo);
@@ -129,6 +128,9 @@ ClientReply* ProtocolScheduler::handleSingleKeyOperation(TransactionId tid, std:
 
 DsKey* ProtocolScheduler::toDsKey(Key k, Timestamp ts) {
     return new DsKey("not implemented");
+}
+
+void ProtocolScheduler::abortTransaction(TransactionId tid) {
 }
 
 //TODO add code handling transactions aborted by the recovery manager

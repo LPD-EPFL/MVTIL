@@ -9,18 +9,6 @@ OrderedSetNode::~OrderedSetNode() {
     delete version;
 }
 
-inline Timestamp OrderedSetNode::getTimestamp() {
-    return timestamp;
-}
-
-inline Version* OrderedSetNode::getVersion() {
-    return version;
-}
-
-inline OrderedSetNode* OrderedSetNode::next() {
-    return next[0];
-}
-
 VersionSkiplist::VersionSkiplist() {
     levelmax = MAXLEVEL;
     OrderedSetNode* min = new OrderedSetNode(MIN_TIMESTAMP, NULL, levelmax);
@@ -46,7 +34,7 @@ VersionSkiplist::~VersionSkiplist() {
 
 }
 
-inline int VersionSkiplist::get_rand_level()
+inline int VersionSkiplist::getRandomLevel()
 {
     int i, level = 1;
     for (i = 0; i < levelmax - 1; i++) {
@@ -59,9 +47,6 @@ inline int VersionSkiplist::get_rand_level()
     return level;
 }
 
-inline Timestamp VersionSkiplist::getFirstTimestamp() {
-    return head->next[0]->timestamp;
-}
 
 
 //returns the first node with timestamp >= ts; also returns its predecessor
