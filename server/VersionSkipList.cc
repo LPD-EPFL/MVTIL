@@ -1,4 +1,17 @@
 #include "VersionSkipList.h"
+inline int VersionSkiplist::get_rand_level()
+{
+  int i, level = 1;
+  for (i = 0; i < levelmax - 1; i++) {
+      if ((rand_range(101)) < 50)
+  	level++;
+      else
+  	break;
+    }
+  /* 1 <= level <= levelmax */
+  return level;
+}
+
 
 //returns the first node with timestamp >= ts; also returns its predecessor
 Version* VersionSkipList::find(Timestamp ts, Version* pred) {
