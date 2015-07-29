@@ -7,17 +7,18 @@
 #include <map>
 
 #include "Version.h"
+#include "VersionSkipList.h"
 #include "ClientReply.h"
 #include "LockSet.h"
 #include "common.h"
 
 class VersionManager {
     private:
-    struct versionCompare {
-         bool operator() (const Version& v1, const Version& v2) {
-             return v1.timestamp < v2.timestamp;
-         }
-    };
+    //struct versionCompare {
+         //bool operator() (const Version& v1, const Version& v2) {
+             //return v1.timestamp < v2.timestamp;
+         //}
+    //};
 
         class VersionManagerEntry {
             friend class VersionManager;
@@ -28,7 +29,7 @@ class VersionManager {
                 VersionManagerEntry(Key key, Timestamp readMark);
 
                 Key key;
-                VersionSkiplist verions;
+                VersionSkiplist versions;
                 //std::set<Version, versionCompare> versions;
 
                 bool isEmpty();

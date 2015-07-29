@@ -32,7 +32,7 @@ VersionSkiplist::VersionSkiplist() {
         min->next[i] = max;
     }
     head = min;
-    size = 0;
+    sz = 0;
 }
 
 VersionSkiplist::~VersionSkiplist() {
@@ -112,7 +112,7 @@ int VersionSkiplist::insert(Timestamp ts, Version* v) {
             node->next[i] = succs[i];
             preds[i]->next[i] = node;
         }
-        size++;
+        sz++;
     }
     return result;
 }
@@ -144,7 +144,7 @@ int VersionSkiplist::remove(Timestamp ts) {
             }
         }
         delete(next);
-        size--;
+        sz--;
     }
     return result;
 }
@@ -209,5 +209,5 @@ int VersionSkiplist::reposition(Timestamp old_ts) {
 }
 
 size_t VersionSkiplist::size() {
-    return size;
+    return sz;
 }

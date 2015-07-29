@@ -24,13 +24,18 @@
 #ifndef _H_RANDOM_
 #define _H_RANDOM_
 
+#ifdef __cplusplus
 extern "C" {
+#endif
 
-#include <malloc.h>
-#include "measurements.h"
-#include "ssalloc.h"
+#ifndef __APPLE__
+#include <malloc.h> 
+#endif
+#include  <stdlib.h>
+#include "getticks.h"
 
-#define LOCAL_RAND
+//#include <malloc.h>
+//#define LOCAL_RAND
 
 #if defined(LOCAL_RAND)
 extern __thread unsigned long* seeds; 
@@ -50,8 +55,11 @@ static inline unsigned long*
 seed_rand() 
 {
   unsigned long* seeds;
-  /* seeds = (unsigned long*) ssalloc_aligned(64, 64); */
+#ifdef __APPLE__
+  seeds = (unsigned long*) malloc(64);
+#else
   seeds = (unsigned long*) memalign(64, 64);
+#endif
   seeds[0] = getticks() % 123456789;
   seeds[1] = getticks() % 362436069;
   seeds[2] = getticks() % 521288629;
@@ -118,5 +126,7 @@ rand_range_re(unsigned int *seed, long r)
   return v;
 }
 
+#ifdef __cplusplus
 }
+#endif
 #endif

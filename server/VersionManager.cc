@@ -10,6 +10,7 @@ VersionManager::VersionManager(Log* l) {
 #endif
 
 VersionManager::~VersionManager() {
+    //TODO iterate through the version store and delete everything there (in particular call delete on the version entries)
 }
 
 void VersionManager::markReadNotFound(Key k, Timestamp ts) {
@@ -119,7 +120,7 @@ void VersionManager::tryReadLock(Key key, TimestampInterval interval, LockInfo* 
     Version *ver = node->getVersion();
 
     while ((ver != NULL) && (ver->timestamp <= interval.end)) {
-        next = node->next();
+        next = node->getNext();
         if (ver->state == COMMITTED) {
             if (selected_version == NULL) {
                 selected_version = ver;
@@ -131,7 +132,7 @@ void VersionManager::tryReadLock(Key key, TimestampInterval interval, LockInfo* 
                 }
             }
         }
-        node=node->next();
+        node=node->getNext();
         ver = node->getVersion();
     }
     if (selected_version == NULL) {
@@ -231,7 +232,7 @@ void VersionManager::tryWriteLock(Key key, TimestampInterval interval, LockInfo*
     Timestamp next_timestamp_pending = 0;
 
     while ((ver != NULL) && (node->getTimestamp() <= interval.end)) { //TODO + duration
-        next = node->next();
+        next = node->getNext();
         if (ver->state == COMMITTED) {
             if ((next->getTimestamp() - ver->maxReadFrom) > (candidate.end - candidate.start)) {
                 candidate.start = ver->maxReadFrom;
@@ -261,7 +262,7 @@ void VersionManager::tryWriteLock(Key key, TimestampInterval interval, LockInfo*
                 }
             }
         }
-        node = node->next();
+        node = node->getNext();
         ver = node->getVersion();
     }
     if (selected_version != NULL) {
@@ -361,7 +362,7 @@ TimestampInterval VersionManager::tryWriteLockHint(Key k, TimestampInterval inte
     Timestamp next_timestamp_pending = 0;
 
     while ((ver != NULL) && (ver->timestamp <= interval.end)) { //TODO + duration
-        next = node->next();
+        next = node->getNext();
         if (ver->state == COMMITTED) {
             if ((selected_version == NULL) && (ver->maxReadFrom < interval.end)){
                 selected_version =  ver;
@@ -383,7 +384,7 @@ TimestampInterval VersionManager::tryWriteLockHint(Key k, TimestampInterval inte
                 }
             }
         }
-        node = node->next();
+        node = node->getNext();
         ver = node->vetVersion();
     }
     if (selected_version != NULL) {
@@ -423,11 +424,14 @@ void VersionManager::tryReadWriteLock(Key k, TimestampInterval interval, LockInf
 VersionManagerEntry::VersionManagerEntry(Key k) : key(k),readMark(MIN_TIMESTAMP) {
 }
 
-VersionManagerEntry::VersionManagerEntry(Key k, Version v) : key(k), readMark(MIN_TIMESTAMP),  {
-    versions.insert(v);
+VersionManagerEntry::VersionManagerEntry(Key k, Version* v) : key(k), readMark(MIN_TIMESTAMP),  {
+    versions.insert(v->timestamp, v);
 }
 
 VersionManagerEntry::VersionManagerEntry(Key k, Timestamp readM) : key(k), readMark(readM) {
+}
+
+VersionManagerEntry::~VersionManagerEntry() {
 }
 
 inline bool VersionManagerEntry::VersionManagerEntry::isEmpty() {

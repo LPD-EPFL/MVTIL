@@ -12,14 +12,14 @@ class OrderedSetNode {
     public:
         inline Timestamp getTimestamp();
         inline Version* getVersion();
-        inline OrderedSetNode* next();
+        inline OrderedSetNode* getNext();
         OrderedSetNode(Timestamp ts, Version* v, int level);
         ~OrderedSetNode();
     private:
         Timestamp timestamp;
         Version* version;
         uint32_t toplevel;
-        struct OrderedSetNode** next;
+        OrderedSetNode** next;
 };
 
 //typedef struct Node_t {
@@ -44,10 +44,10 @@ class VersionSkiplist {
         size_t size();
 
     private:
-        Node* head;
+        OrderedSetNode* head;
         inline long get_rand_level();
         int levelmax;
-        size_t size;
+        size_t sz;
 };
 
 

@@ -10,7 +10,7 @@ typedef struct LockInfo {
     lockState state;
     TimestampInterval locked;
     TimestampInterval potential;
-    const Version* version;
+    Version* version;
 } LockInfo;
 
 typedef enum {READ_REPLY, WRITE_REPLY, COMMIT_ACK, ABORT_ACK, HINT_REPLY, TIMEOUT} ReplyType;

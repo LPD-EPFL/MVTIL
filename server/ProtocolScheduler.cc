@@ -56,7 +56,6 @@ ClientReply* ProtocolScheduler::handleWrite(TransactionId tid, TimestampInterval
     }
     WSEntry* wse = new WSEntry(lockInfo->version,k,v);
 
-
     std::map<TransactionId, std::queue<WSEntry*>*>::iterator it = pendingWriteSets.find(tid); //TODO: do struct for this, containing a version, a value, and a lock
     it->second->push(wse);
     return new ClientReply(tid, WRITE_REPLY, lockInfo);
