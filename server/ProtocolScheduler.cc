@@ -1,5 +1,7 @@
 #include "ProtocolScheduler.h"
 
+using namespace std;
+
 ProtocolScheduler::ProtocolScheduler() {
 
 }

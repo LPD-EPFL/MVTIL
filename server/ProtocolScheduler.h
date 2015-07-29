@@ -2,6 +2,7 @@
 #define _PROTOCOL_SCHEDULER_H_
 
 #include <queue>
+#include <iostream>
 #include "common.h"
 #include "ClientReply.h"
 #include "VersionManager.h"

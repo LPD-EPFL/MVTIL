@@ -1,7 +1,15 @@
+CFLAGS:=-std=c++11
+
+ifeq ($(DEBUG),1)
+  DEBUG_FLAGS=-Wall -ggdb -g -DDEBUG
+  CFLAGS += -O0 -fno-inline
+else
+  DEBUG_FLAGS=-Wall
+  CFLAGS += -O3
+endif
+
 CC        := g++
 LD        := g++
-
-CFLAGS:=-std=c++11 -Wall
 
 MODULES   := common server tests
 SRC_DIR   := $(MODULES)
@@ -16,7 +24,7 @@ vpath %.cc $(SRC_DIR)
 
 define make-goal
 $1/%.o: %.cc
-	$(CC) $(INCLUDES) $(CFLAGS) -c $$< -o $$@
+	$(CC) $(INCLUDES) $(CFLAGS) $(DEBUG_FLAGS) -c $$< -o $$@
 endef
 
 .PHONY: all checkdirs clean
@@ -24,8 +32,7 @@ endef
 all: checkdirs build/test_server
 
 build/test_server: $(OBJ)
-	$(LD) $(CFLAGS) $^ -o $@
-
+	$(LD) $(CFLAGS) $(DEBUG_FLAGS) $^ -o $@
 
 checkdirs: $(BUILD_DIR)
 
