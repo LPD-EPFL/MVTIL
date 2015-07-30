@@ -19,7 +19,7 @@ ClientReply* ProtocolScheduler::handleRead(TransactionId tid, TimestampInterval 
 #endif
     Value* value = NULL;
     while(1) {
-        versionManager->tryReadLock(k,interval,lockInfo);
+        versionManager.tryReadLock(k,interval,lockInfo);
         if (lockInfo->state == R_LOCK_SUCCESS) {
 #ifndef INITIAL_TESTING
             value = dataStore->read(toDsKey(k,lockInfo->version->timestamp));
@@ -33,6 +33,10 @@ ClientReply* ProtocolScheduler::handleRead(TransactionId tid, TimestampInterval 
         if (timer->timeout()) {
             return new ClientReply(tid, TIMEOUT);
         }
+
+        if (lockInfo->state == FAIL_NO_VERSION) {
+            return new ClientReply(tid, READ_REPLY, lockInfo, NULL);
+        }
         pause(PAUSE_LENGTH);
 #endif
     }
@@ -45,7 +49,7 @@ ClientReply* ProtocolScheduler::handleWrite(TransactionId tid, TimestampInterval
 #endif
     //Version* prev = getVersion(k,interval,OP_WRITE); 
     LockInfo* lockInfo = new LockInfo();
-    versionManager->tryWriteLock(k, interval, lockInfo);
+    versionManager.tryWriteLock(k, interval, lockInfo);
 
     if (lockInfo->state != W_LOCK_SUCCESS) {
         abortTransaction(tid);
@@ -74,7 +78,7 @@ ClientReply* ProtocolScheduler::handleCommit(TransactionId tid, Timestamp ts) {
         //TODO do I need to protect this with locks?
         WSEntry * ws_entry = ws->front();
         ws->pop();
-        versionManager->updateAndPersistVersion(ws_entry->key, ws_entry->version, ts, 0, ts, COMMITTED);
+        versionManager.updateAndPersistVersion(ws_entry->key, ws_entry->version, ts, 0, ts, COMMITTED);
         //ws_entry->version->timestamp = ts; 
         //if (ws_entry->version->maxReadFrom < ts) {
             //ws_entry->version->maxReadFrom = ts;
@@ -104,7 +108,7 @@ ClientReply* ProtocolScheduler::handleAbort(TransactionId tid) {
         //TODO do I need to protect this with locks?
         WSEntry * ws_entry = ws->front();
         ws->pop();
-        versionManager->removeVersion(ws_entry->key, ws_entry->version);
+        versionManager.removeVersion(ws_entry->key, ws_entry->version);
         delete(ws_entry);
         //TODO: what else needs to be deleted? is the version deleted by removeVersion()?
     }

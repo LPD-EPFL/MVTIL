@@ -2,7 +2,7 @@
 #define _CLIENT_REPLY_H_
 
 #include "common.h"
-#include "version.h"
+#include "Version.h"
 
 typedef enum {FAIL_NO_VERSION, FAIL_READ_MARK_LARGE, FAIL_INTERSECTION_EMPTY, WRITES_NOT_FOUND, W_LOCK_SUCCESS, R_LOCK_SUCCESS} lockState;
 

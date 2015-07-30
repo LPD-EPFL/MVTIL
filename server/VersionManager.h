@@ -5,6 +5,7 @@
 #include <set>
 #include <mutex>
 #include <map>
+#include <iostream>
 
 #include "Version.h"
 #include "VersionSkipList.h"

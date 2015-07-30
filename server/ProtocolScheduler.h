@@ -39,7 +39,7 @@ class ProtocolScheduler {
         ClientReply* handleSingleKeyOperation(TransactionId tid, std::string opName, TimestampInterval t_interval, Key k, Value v);
 
     private:
-        VersionManager* versionManager;
+        VersionManager versionManager;
 #ifndef INITIAL_TESTING
         DataStore* dataStore;
 #endif

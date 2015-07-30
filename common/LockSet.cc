@@ -1,4 +1,4 @@
-#include "lockSet.h"
+#include "LockSet.h"
 
 void LockSet::lock(Key k) {
    size_t index = hashKey(k);

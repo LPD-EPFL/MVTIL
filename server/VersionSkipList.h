@@ -50,7 +50,7 @@ class VersionSkiplist {
             return head->next[0]->timestamp;
         }
 
-        OrderedSetNode* find(Timestamp ts, OrderedSetNode* prev);
+        OrderedSetNode* find(Timestamp ts, OrderedSetNode** prev);
         int insert(Timestamp ts, Version* v);
         int remove(Timestamp ts);
         int reposition(Timestamp old_ts);

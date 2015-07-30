@@ -50,7 +50,7 @@ inline int VersionSkiplist::getRandomLevel()
 
 
 //returns the first node with timestamp >= ts; also returns its predecessor
-OrderedSetNode* VersionSkiplist::find(Timestamp ts, OrderedSetNode* pred) {
+OrderedSetNode* VersionSkiplist::find(Timestamp ts, OrderedSetNode** pred) {
     int i;
     OrderedSetNode* node;
     OrderedSetNode* next;
@@ -64,7 +64,7 @@ OrderedSetNode* VersionSkiplist::find(Timestamp ts, OrderedSetNode* pred) {
             next = node->next[i];
         }
     }
-    pred = node;
+    *pred = node;
     node = node->next[0];
     result = node;
     return result;

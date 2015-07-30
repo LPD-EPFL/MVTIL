@@ -108,14 +108,17 @@ void VersionManager::tryReadLock(Key key, TimestampInterval interval, LockInfo* 
 
     OrderedSetNode* prev = NULL;
     OrderedSetNode* node;
-    node = ve->versions.find(interval.start, prev);
+    node = ve->versions.find(interval.start, &prev);
 
     if (node->getTimestamp() != interval.start) {
         if (prev->getVersion() != NULL) {
             node = prev;
         }
     }
-    
+//#ifdef DEBUG
+    //std::cout<<"Results of skiplist find operation: "<<node->getTimestamp()<<" "<<prev->getTimestamp()<<std::endl;
+//#endif
+   
     OrderedSetNode* next= node;
     Version *ver = node->getVersion();
 
@@ -195,7 +198,7 @@ void VersionManager::tryWriteLock(Key key, TimestampInterval interval, LockInfo*
 
     OrderedSetNode* node;
     OrderedSetNode* prev = NULL;
-    node = ve->versions.find(interval.start, prev);
+    node = ve->versions.find(interval.start, &prev);
 
     if (node->getTimestamp() != interval.start) {
         if (prev->getVersion() != NULL) {
@@ -218,8 +221,8 @@ void VersionManager::tryWriteLock(Key key, TimestampInterval interval, LockInfo*
         //}
     //}
 
-    TimestampInterval candidate;
-    TimestampInterval candidate_pending;
+    TimestampInterval candidate = {MIN_TIMESTAMP, MIN_TIMESTAMP};
+    TimestampInterval candidate_pending = {MIN_TIMESTAMP, MIN_TIMESTAMP};
 
     OrderedSetNode* next = node;
     Version* ver = node->getVersion();
@@ -330,7 +333,7 @@ TimestampInterval VersionManager::getWriteLockHint(Key key, TimestampInterval in
     OrderedSetNode* prev = NULL;
     OrderedSetNode* node;
 
-    node = ve->versions.find(interval.start, prev);
+    node = ve->versions.find(interval.start, &prev);
 
     if (node->getTimestamp() != interval.start) {
         if (prev->getVersion() !=  NULL) {
@@ -402,8 +405,13 @@ TimestampInterval VersionManager::getWriteLockHint(Key key, TimestampInterval in
 }
 
 Timespan VersionManager::getIntersection(Timestamp ts1Left, Timestamp ts1Right, Timestamp ts2Left, Timestamp ts2Right) {
-    //TODO implement this
-    return 0;
+    if (ts1Right < ts1Left) return 0;
+    if (ts2Right < ts2Left) return 0;
+    Timestamp l = std::max(ts1Left, ts2Left);
+    Timestamp r = std::min(ts1Right, ts2Right);
+    if (r < l) return 0;
+    Timespan d = r - l;
+    return d;
 }
 
 
