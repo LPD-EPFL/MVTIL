@@ -27,7 +27,7 @@ class OrderedSetNode {
     private:
         Timestamp timestamp;
         Version* version;
-        uint32_t toplevel;
+        int toplevel;
         OrderedSetNode** next;
 };
 
