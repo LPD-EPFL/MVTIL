@@ -199,6 +199,8 @@ Timestamp VersionSkiplist::removeTo(Timestamp ts, std::queue<Timestamp> * q) {
         return ts;
     }
 
+    int i;
+
     OrderedSetNode* node;
     OrderedSetNode* prev;
     OrderedSetNode* next;
@@ -209,8 +211,8 @@ Timestamp VersionSkiplist::removeTo(Timestamp ts, std::queue<Timestamp> * q) {
     node = head->next[0];
 
     while ((node->timestamp < ts) && (node->version->state != PENDING)) {
-        if (node->next->version != NULL) { //last node shouldn't be deleted
-            q->push(node); 
+        if (node->next[0]->version != NULL) { //last node shouldn't be deleted
+            q->push(node->timestamp); 
         }
         prev = node;
         node = node->next[0]; 
@@ -233,7 +235,7 @@ Timestamp VersionSkiplist::removeTo(Timestamp ts, std::queue<Timestamp> * q) {
         while (next->timestamp < myBarrier) {
             next = next->next[i];
         }
-        head->next = next;
+        head->next[i] = next;
     }
     next = head->next[0];
     while (next->timestamp < myBarrier) {
@@ -241,7 +243,7 @@ Timestamp VersionSkiplist::removeTo(Timestamp ts, std::queue<Timestamp> * q) {
         next = next->next[0];
         delete node; //TODO make sure that everything is deleted; also, could anyone have pointers to the version?
     }
-    head->next = next;
+    head->next[0] = next;
     return mRF;
 }
 

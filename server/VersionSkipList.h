@@ -2,6 +2,8 @@
 #ifndef _VERSION_SKIPLIST_H_
 #define _VERSION_SKIPLIST_H_
 
+#include <queue>
+
 #include "common.h"
 #include "random.h"
 #include "Version.h"
@@ -44,7 +46,7 @@ class VersionSkiplist {
         int remove(Timestamp ts);
         int reposition(Timestamp old_ts);
         //returns the max read from ts seen in the removed versions
-        Timestamp removeTo(Timestamp ts);
+        Timestamp removeTo(Timestamp ts, std::queue<Timestamp>* q);
         size_t size();
 
 
