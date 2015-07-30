@@ -10,13 +10,12 @@ ProtocolScheduler::~ProtocolScheduler() {
 }
 
 ClientReply* ProtocolScheduler::handleRead(TransactionId tid, TimestampInterval interval, Key k) {
+    Timer timer;
 #ifdef DEBUG
     std::cout<<"Handling read: Transaction id "<<tid<<"; Timestamp interval ["<<interval.start<<","<<interval.end<<"]; Key "<<k<<" ."<<endl;
 #endif
     LockInfo* lockInfo = new LockInfo(); //TODO need a better solution; shouldn't have to allocate a new object for every request
-#ifndef INITIAL_TESTING
-    timer->start();
-#endif
+    timer.start();
     Value* value = NULL;
     while(1) {
         versionManager.tryReadLock(k,interval,lockInfo);
@@ -33,10 +32,10 @@ ClientReply* ProtocolScheduler::handleRead(TransactionId tid, TimestampInterval 
             return new ClientReply(tid, READ_REPLY, lockInfo, NULL);
         }
  
-#ifndef INITIAL_TESTING
-        if (timer->timeout()) {
+        if (timer.timeout()) {
             return new ClientReply(tid, TIMEOUT);
         }
+#ifndef INITIAL_TESTING
        pause(PAUSE_LENGTH);
 #endif
     }

@@ -3,10 +3,15 @@
 
 #include "getticks.h"
 
+#define DEFAULT_DURATION 10000000
+
 class Timer {
     public:
+        Timer() : duration(DEFAULT_DURATION) {}
+
         Timer(ticks d) : duration(d) {
         }
+
         inline void start() {
             begin = getticks();
         }

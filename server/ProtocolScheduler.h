@@ -6,6 +6,7 @@
 #include "common.h"
 #include "ClientReply.h"
 #include "VersionManager.h"
+#include "Timer.h"
 
 #ifdef INITIAL_TESTING
 typedef std::string DsKey;
