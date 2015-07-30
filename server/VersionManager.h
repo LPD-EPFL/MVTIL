@@ -15,13 +15,7 @@
 
 class VersionManager {
     private:
-    //struct versionCompare {
-         //bool operator() (const Version& v1, const Version& v2) {
-             //return v1.timestamp < v2.timestamp;
-         //}
-    //};
-
-        class VersionManagerEntry {
+       class VersionManagerEntry {
             friend class VersionManager;
             public:
                 VersionManagerEntry();
@@ -75,6 +69,7 @@ class VersionManager {
         //get a Rw lock
         void tryReadWriteLock(Key k, TimestampInterval interval, LockInfo* lockInfo);
 
+        //remove a version from the versionStore
         void removeVersion(Key k, Version* v);
 
         //marks for failed reads
@@ -88,6 +83,7 @@ class VersionManager {
 
         //store version in persistent storage;
         bool persistVersion(Key k, Version* v);
+        //updates and repositions a version in the ordered set of per-key versions (only happens when transitioning from PENDING to COMMITTED); also persists the new verion
         bool updateAndPersistVersion(Key k, Version* v, Timestamp new_ts, Timestamp new_duration, Timestamp newPotentialReadMax, OpState new_state);
 
     private:
@@ -98,8 +94,6 @@ class VersionManager {
         std::map<Key, VersionManagerEntry*> versionStore;
 
         Timespan getIntersection(Timestamp ts1Left, Timestamp ts1Right, Timestamp ts2Left, Timestamp ts2Right);
-
-        //add_to_log(LogKey* k, Version* v);
 
 
 };

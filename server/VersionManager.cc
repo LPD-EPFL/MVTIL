@@ -413,24 +413,26 @@ Timespan VersionManager::getIntersection(Timestamp ts1Left, Timestamp ts1Right, 
 
 
 void VersionManager::removeVersion(Key k, Version* v) {
-   //TODO 
-    
+    VersionManagerEntry* ve = getVersionSet(key);
+    if (ve == NULL) {
+        return;
+    }
+    ve->versions.remove(v->timestamp);
 }
+
 void VersionManager::tryReadWriteLock(Key k, TimestampInterval interval, LockInfo* lockInfo) {
 
 }
 
 
 // VersionManagerEntry methods
-VersionManager::VersionManagerEntry::VersionManagerEntry(Key k) : key(k),readMark(MIN_TIMESTAMP) {
-}
+VersionManager::VersionManagerEntry::VersionManagerEntry(Key k) : key(k),readMark(MIN_TIMESTAMP) {}
 
 VersionManager::VersionManagerEntry::VersionManagerEntry(Key k, Version* v) : key(k), readMark(MIN_TIMESTAMP)  {
     versions.insert(v->timestamp, v);
 }
 
-VersionManager::VersionManagerEntry::VersionManagerEntry(Key k, Timestamp readM) : key(k), readMark(readM) {
-}
+VersionManager::VersionManagerEntry::VersionManagerEntry(Key k, Timestamp readM) : key(k), readMark(readM) {}
 
 VersionManager::VersionManagerEntry::~VersionManagerEntry() {
 } 
