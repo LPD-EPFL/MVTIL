@@ -35,7 +35,7 @@ class ProtocolScheduler {
     
         ClientReply* handleAbort(TransactionId tid);
 
-        ClientReply* handleHintRequest(TimestampInterval t_interval, Key k);
+        ClientReply* handleHintRequest(TransactionId tid, TimestampInterval t_interval, Key k);
 
         ClientReply* handleSingleKeyOperation(TransactionId tid, std::string opName, TimestampInterval t_interval, Key k, Value v);
 

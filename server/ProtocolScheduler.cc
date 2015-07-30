@@ -46,7 +46,6 @@ ClientReply* ProtocolScheduler::handleWrite(TransactionId tid, TimestampInterval
 #ifdef DEBUG
     std::cout<<"Handling write: Transaction id "<<tid<<"; Timestamp interval ["<<interval.start<<","<<interval.end<<"]; Key "<<k<<"; Value "<<v<<" ."<<endl;
 #endif
-    //Version* prev = getVersion(k,interval,OP_WRITE); 
     LockInfo* lockInfo = new LockInfo();
     versionManager.tryWriteLock(k, interval, lockInfo);
 
@@ -60,9 +59,19 @@ ClientReply* ProtocolScheduler::handleWrite(TransactionId tid, TimestampInterval
         pendingWriteSets.insert(std::pair<TransactionId,std::queue<WSEntry*>*>(tid, q));
     }
     WSEntry* wse = new WSEntry(lockInfo->version,k,v);
-    std::map<TransactionId, std::queue<WSEntry*>*>::iterator it = pendingWriteSets.find(tid); //TODO: do struct for this, containing a version, a value, and a lock
+    std::map<TransactionId, std::queue<WSEntry*>*>::iterator it = pendingWriteSets.find(tid); 
     it->second->push(wse);
     return new ClientReply(tid, WRITE_REPLY, lockInfo);
+}
+
+ClientReply* ProtocolScheduler::handleHintRequest(TransactionId tid, TimestampInterval interval, Key k) {
+#ifdef DEBUG
+    std::cout<<"Handling hint request: Timestamp interval ["<<interval.start<<","<<interval.end<<"]; Key "<<k<<" ."<<endl;
+#endif
+    TimestampInterval res = versionManager.getWriteLockHint(k, interval);
+    LockInfo* lockInfo = new LockInfo();
+    lockInfo->potential = res;
+    return new ClientReply(tid, HINT_REPLY, lockInfo);
 }
 
 ClientReply* ProtocolScheduler::handleCommit(TransactionId tid, Timestamp ts) {
@@ -78,12 +87,6 @@ ClientReply* ProtocolScheduler::handleCommit(TransactionId tid, Timestamp ts) {
         WSEntry * ws_entry = ws->front();
         ws->pop();
         versionManager.updateAndPersistVersion(ws_entry->key, ws_entry->version, ts, 0, ts, COMMITTED);
-        //ws_entry->version->timestamp = ts; 
-        //if (ws_entry->version->maxReadFrom < ts) {
-            //ws_entry->version->maxReadFrom = ts;
-        //}
-        //ws_entry->version->state = COMMITTED;
-        //versionManager->persistVersion(ws_entry->key, ws_entry->version);
 #ifndef INITIAL_TESTING
         dataStore.write(toDsKey(ws_entry->key,ts), ws_entry->value);
 #endif
@@ -91,7 +94,6 @@ ClientReply* ProtocolScheduler::handleCommit(TransactionId tid, Timestamp ts) {
         //TODO: delete members as well?
     }
     pendingWriteSets.erase(tid);
-    //removePendingWriteSet(tid);
     return new ClientReply(tid, (ReplyType)COMMIT_ACK);
 }
 
@@ -116,12 +118,6 @@ ClientReply* ProtocolScheduler::handleAbort(TransactionId tid) {
     return new ClientReply(tid,(ReplyType)ABORT_ACK);
 }
 
-ClientReply* ProtocolScheduler::handleHintRequest(TimestampInterval interval, Key k) {
-#ifdef DEBUG
-    std::cout<<"Handling hint request: Timestamp interval ["<<interval.start<<","<<interval.end<<"]; Key "<<k<<" ."<<endl;
-#endif
-    return NULL;
-}
 
 ClientReply* ProtocolScheduler::handleSingleKeyOperation(TransactionId tid, std::string opName, TimestampInterval interval, Key k, Value v) {
 #ifdef DEBUG
