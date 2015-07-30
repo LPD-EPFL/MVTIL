@@ -70,7 +70,7 @@ class VersionManager {
         void tryReadWriteLock(Key k, TimestampInterval interval, LockInfo* lockInfo);
 
         //remove a version from the versionStore
-        void removeVersion(Key k, Version* v);
+        int removeVersion(Key k, Version* v);
 
         //marks for failed reads
         void markReadNotFound(Key k, Timestamp ts);

@@ -412,12 +412,13 @@ Timespan VersionManager::getIntersection(Timestamp ts1Left, Timestamp ts1Right, 
 }
 
 
-void VersionManager::removeVersion(Key k, Version* v) {
-    VersionManagerEntry* ve = getVersionSet(key);
+int VersionManager::removeVersion(Key k, Version* v) {
+    VersionManagerEntry* ve = getVersionSet(k);
     if (ve == NULL) {
-        return;
+        return 0;
     }
-    ve->versions.remove(v->timestamp);
+    int res = ve->versions.remove(v->timestamp);
+    return res;
 }
 
 void VersionManager::tryReadWriteLock(Key k, TimestampInterval interval, LockInfo* lockInfo) {
