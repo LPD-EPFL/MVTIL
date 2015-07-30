@@ -115,9 +115,6 @@ void VersionManager::tryReadLock(Key key, TimestampInterval interval, LockInfo* 
             node = prev;
         }
     }
-//#ifdef DEBUG
-    //std::cout<<"Results of skiplist find operation: "<<node->getTimestamp()<<" "<<prev->getTimestamp()<<std::endl;
-//#endif
    
     OrderedSetNode* next= node;
     Version *ver = node->getVersion();

@@ -29,15 +29,15 @@ ClientReply* ProtocolScheduler::handleRead(TransactionId tid, TimestampInterval 
 #endif
             break;
         }
+        if (lockInfo->state == FAIL_NO_VERSION) {
+            return new ClientReply(tid, READ_REPLY, lockInfo, NULL);
+        }
+ 
 #ifndef INITIAL_TESTING
         if (timer->timeout()) {
             return new ClientReply(tid, TIMEOUT);
         }
-
-        if (lockInfo->state == FAIL_NO_VERSION) {
-            return new ClientReply(tid, READ_REPLY, lockInfo, NULL);
-        }
-        pause(PAUSE_LENGTH);
+       pause(PAUSE_LENGTH);
 #endif
     }
     return new ClientReply(tid, READ_REPLY, lockInfo, value);
