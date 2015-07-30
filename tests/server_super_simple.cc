@@ -22,7 +22,7 @@ int main() {
     reply = ps->handleRead(1, t3, k2);
     reply->dump();
     reply = ps->handleHintRequest(t4, k2);
-    reply->dump();
+    //reply->dump();
     reply = ps->handleCommit(1, 4);
     reply->dump();
 

@@ -179,7 +179,7 @@ void VersionManager::tryWriteLock(Key key, TimestampInterval interval, LockInfo*
         } else {
             lockInfo->potential.end = ve->versions.getFirstTimestamp();
         }
-        Version* new_version = new Version(start, interval.end - start, PENDING, start); //TODO what should I set maxReadFrom to here?
+        Version* new_version = new Version(start, interval.end - start, PENDING, start); 
         ve->versions.insert(start, new_version); 
         lockInfo->locked.start = start;
         lockInfo->locked.end = interval.end;
@@ -200,23 +200,10 @@ void VersionManager::tryWriteLock(Key key, TimestampInterval interval, LockInfo*
     if (node->getTimestamp() != interval.start) {
         if (prev->getVersion() != NULL) {
             node = prev;
+        } else {
+            //TODO: this should never happen according to what I saw earlier in this method
         }
     }
-//    if (it->timestamp != interval.start) {
-//        if (it != ve->versions.start()) {
-//            --it; //TODO: check I am not doing -- on the first element of the set; if it is the first element of the set, I need to compare with the read mark;
-        //} 
-        //else {
-            //if (getMaxReadMark(key) > interval.end) {
-                //Version* dummy = new Version(getMaxReadMark(key), NO_SUCH_VERSION);
-                //return dummy;
-                
-            //}
-            //if (dummy->timestamp > interval.start) {
-                //interval.start = dummy->timestamp; //TODO is this necessary? do I have to change anything if this happens?
-            //}
-        //}
-    //}
 
     TimestampInterval candidate = {MIN_TIMESTAMP, MIN_TIMESTAMP};
     TimestampInterval candidate_pending = {MIN_TIMESTAMP, MIN_TIMESTAMP};
@@ -227,7 +214,7 @@ void VersionManager::tryWriteLock(Key key, TimestampInterval interval, LockInfo*
     Timestamp next_timestamp = 0;
     Timestamp next_timestamp_pending = 0;
 
-    while ((ver != NULL) && (node->getTimestamp() <= interval.end)) { //TODO + duration
+    while ((ver != NULL) && (node->getTimestamp() <= interval.end)) {
         next = node->getNext();
         if (ver->state == COMMITTED) {
             if ((next->getTimestamp() - ver->maxReadFrom) > (candidate.end - candidate.start)) {
@@ -264,7 +251,7 @@ void VersionManager::tryWriteLock(Key key, TimestampInterval interval, LockInfo*
     if (selected_version != NULL) {
         Timestamp start = std::max(interval.start, selected_version->maxReadFrom);
         Timestamp end = std::min(interval.end, next_timestamp);
-        Version* new_version = new Version(start, interval.end - start, PENDING, start); //TODO what should I set maxReadFrom to here?
+        Version* new_version = new Version(start, end - start, PENDING, start);
         ve->versions.insert(start, new_version); 
         lockInfo->version = new_version;
         lockInfo->locked.start = start;
@@ -278,7 +265,7 @@ void VersionManager::tryWriteLock(Key key, TimestampInterval interval, LockInfo*
     if (selected_pending != NULL) {
         Timestamp start = std::max(interval.start, selected_pending->timestamp + selected_pending->duration);
         Timestamp end = std::min(interval.end, next_timestamp_pending);
-        Version* new_version = new Version(start, interval.end - start, PENDING, start); //TODO what should I set maxReadFrom to here?
+        Version* new_version = new Version(start, end - start, PENDING, start);
         ve->versions.insert(start, new_version); 
         lockInfo->version = new_version;
         lockInfo->locked.start = start;
@@ -335,21 +322,10 @@ TimestampInterval VersionManager::getWriteLockHint(Key key, TimestampInterval in
     if (node->getTimestamp() != interval.start) {
         if (prev->getVersion() !=  NULL) {
             node = prev;
+        } else {
+            //TODO this should never happen; handle the case when it does
         }
     }
-   //         --it; //TODO: check I am not doing -- on the first element of the set; if it is the first element of the set, I need to compare with the read mark;
-   //     } 
-        //else {
-            //if (getMaxReadMark(key) > interval.end) {
-                //Version* dummy = new Version(getMaxReadMark(key), NO_SUCH_VERSION);
-                //return dummy;
-                
-            //}
-            //if (dummy->timestamp > interval.start) {
-                //interval.start = dummy->timestamp; //TODO is this necessary? do I have to change anything if this happens?
-            //}
-        //}
-    //}
 
     OrderedSetNode* next = node;
     Version * ver = node->getVersion();
@@ -357,7 +333,7 @@ TimestampInterval VersionManager::getWriteLockHint(Key key, TimestampInterval in
     Timestamp next_timestamp = 0;
     Timestamp next_timestamp_pending = 0;
 
-    while ((ver != NULL) && (ver->timestamp <= interval.end)) { //TODO + duration
+    while ((ver != NULL) && (ver->timestamp <= interval.end)) {
         next = node->getNext();
         if (ver->state == COMMITTED) {
             if ((selected_version == NULL) && (ver->maxReadFrom < interval.end)){
@@ -422,7 +398,7 @@ int VersionManager::removeVersion(Key k, Version* v) {
 }
 
 void VersionManager::tryReadWriteLock(Key k, TimestampInterval interval, LockInfo* lockInfo) {
-
+    //TODO
 }
 
 
