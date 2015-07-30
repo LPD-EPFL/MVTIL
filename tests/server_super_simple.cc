@@ -16,11 +16,15 @@ int main() {
     ClientReply* reply;
 
     reply = ps->handleRead(1, t1, k1);
+    reply->dump();
     reply = ps->handleWrite(1, t2, k1, "v1");
+    reply->dump();
     reply = ps->handleRead(1, t3, k2);
+    reply->dump();
     reply = ps->handleHintRequest(t4, k2);
-
+    reply->dump();
     reply = ps->handleCommit(1, 4);
+    reply->dump();
 
     return 0;
 }

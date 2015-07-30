@@ -1,6 +1,7 @@
 #ifndef _CLIENT_REPLY_H_
 #define _CLIENT_REPLY_H_
 
+#include <iostream>
 #include "common.h"
 #include "Version.h"
 
@@ -22,6 +23,8 @@ class ClientReply {
         ClientReply(TransactionId tid, ReplyType rtype, LockInfo* lockInfo, Value* value) : tid(tid), rtype(rtype), lockInfo(lockInfo), value(value) {}
 
         ~ClientReply();
+
+        void dump();
    
     private:
         TransactionId tid;
