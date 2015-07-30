@@ -193,6 +193,58 @@ int VersionSkiplist::reposition(Timestamp old_ts) {
 
 }
 
+Timestamp VersionSkiplist::removeTo(Timestamp ts, std::queue<Timestamp> * q) {
+    //not ideal to do this in the skip list class, but more efficient than doing it outside using the interface
+    if (sz <= 1) {
+        return ts;
+    }
+
+    OrderedSetNode* node;
+    OrderedSetNode* prev;
+    OrderedSetNode* next;
+
+    Timestamp mRF = MIN_TIMESTAMP; 
+
+    prev = head;
+    node = head->next[0];
+
+    while ((node->timestamp < ts) && (node->version->state != PENDING)) {
+        if (node->next->version != NULL) { //last node shouldn't be deleted
+            q->push(node); 
+        }
+        prev = node;
+        node = node->next[0]; 
+    }
+
+    if (prev->version!=NULL) {
+        mRF = std::max(prev->version->maxReadFrom, ts);
+    }
+
+    if (node->version == NULL) {
+        node = prev;
+        //no versions with timestamp greater than or equal to ts in 
+        //keep prev and remove the others
+    }
+
+    Timestamp myBarrier = node->timestamp; //delete everything smaller than myBarrier
+
+    for (i = head->toplevel-1; i>0; i--) {
+        next = head->next[i];
+        while (next->timestamp < myBarrier) {
+            next = next->next[i];
+        }
+        head->next = next;
+    }
+    next = head->next[0];
+    while (next->timestamp < myBarrier) {
+        node = next;
+        next = next->next[0];
+        delete node; //TODO make sure that everything is deleted; also, could anyone have pointers to the version?
+    }
+    head->next = next;
+    return mRF;
+}
+
 size_t VersionSkiplist::size() {
     return sz;
 }

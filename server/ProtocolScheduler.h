@@ -39,6 +39,10 @@ class ProtocolScheduler {
 
         ClientReply* handleSingleKeyOperation(TransactionId tid, std::string opName, TimestampInterval t_interval, Key k, Value v);
 
+#ifndef INITIAL_TESTING
+        void handleNewEpoch(Timestamp barrier);
+#endif
+
     private:
         VersionManager versionManager;
 #ifndef INITIAL_TESTING
@@ -48,6 +52,8 @@ class ProtocolScheduler {
         DsKey* toDsKey(Key k, Timestamp ts);
 
         void abortTransaction(TransactionId tid);
+
+        void garbageCollect(Timestamp barrier);
 
         std::map<TransactionId, std::queue<WSEntry*>*> pendingWriteSets;
 

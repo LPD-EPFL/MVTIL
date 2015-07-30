@@ -165,6 +165,12 @@ void VersionManager::tryWriteLock(Key key, TimestampInterval interval, LockInfo*
         ve = createNewEntry(key);
     }
     ve->lockEntry();
+    if (getMaxReadMark(key) > interval.end) {
+        lockInfo->state = FAIL_READ_MARK_LARGE;    
+        lockInfo->potential.start = getMaxReadMark(key);
+        ve->unlockEntry();
+        return;
+    }
     if (ve->isEmpty() || (ve->versions.getFirstTimestamp() > interval.end)) {
         if (getMaxReadMark(key) > interval.end) {
             lockInfo->state = FAIL_READ_MARK_LARGE;    
@@ -300,6 +306,9 @@ TimestampInterval VersionManager::getWriteLockHint(Key key, TimestampInterval in
     if (ve == NULL) {
         return interval; 
     }
+    if (getMaxReadMark(key) > interval.end) {
+        return ret;
+    }
     if (ve->isEmpty() || (ve->versions.getFirstTimestamp() > interval.end)) {
         if (getMaxReadMark(key) > interval.end) {
             return ret;
@@ -415,8 +424,16 @@ VersionManager::VersionManagerEntry::~VersionManagerEntry() {
 } 
 
 
-void VersionManager::VersionManagerEntry::purgeVersions(Timestamp barrier) {
-    //TODO remove all versions with timestamps smaller than the barrier form the versionManagerEntry; then go and do the same thing in the dataStore
+void VersionManager::VersionManagerEntry::collectTo(Timestamp barrier, std::queue<Timestamp>* q) {
+    lock.lock();
+    Timestamp ts = versions.removeTo(barrier, q);
+    if (ts < barrier) { //this should never happen
+        ts = barrier;
+    }
+    if (ts > readMark) {
+        readMark = ts;
+    }
+    lock.unlock();
 }
 
 

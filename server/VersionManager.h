@@ -27,9 +27,9 @@ class VersionManager {
 
                 Key key;
                 VersionSkiplist versions;
-                //std::set<Version, versionCompare> versions;
 
-                void purgeVersions(Timestamp barrier);
+                void collectTo(Timestamp barrier, std::queue<Timestamp> * q);
+
            private:
                 Timestamp readMark;
                 std::mutex lock;

@@ -31,17 +31,6 @@ class OrderedSetNode {
         OrderedSetNode** next;
 };
 
-//typedef struct Node_t {
-    //Timestamp timestamp;
-    //Version* version;
-    //uint32_t toplevel;
-    //struct Node_t** next;
-
-    //Node(Timestamp ts, Version* v, int level);
-    //~Node();
-
-//} Node;
-
 class VersionSkiplist {
     public:
         VersionSkiplist();
@@ -54,6 +43,8 @@ class VersionSkiplist {
         int insert(Timestamp ts, Version* v);
         int remove(Timestamp ts);
         int reposition(Timestamp old_ts);
+        //returns the max read from ts seen in the removed versions
+        Timestamp removeTo(Timestamp ts);
         size_t size();
 
 

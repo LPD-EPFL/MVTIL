@@ -134,4 +134,24 @@ DsKey* ProtocolScheduler::toDsKey(Key k, Timestamp ts) {
 void ProtocolScheduler::abortTransaction(TransactionId tid) {
 }
 
+#ifndef INITIAL_TESTING
+//sent by the timestamp oracle
+void ProtocolScheduler::handleNewEpoch(Timestamp barrier) {
+    //garbage collection
+    std::queue<Timestamp> q;
+    //iterate over the keys in the version manager
+    for ( std::map<Key, VersionManagerEntry*>::iterator it = versionManager.versions.begin(); it != versionManager.versions.end; ++it) {
+        VersionManagerEntry* ve = it->second;
+        //for each key obtain a list of timestamps that are deleted (in the process delete them form the version manager)
+        ve->collectTo(barrier, &q);
+        while (!q.empty()){
+            //for each timestamp in the list remove key:timestamp 
+            dataStore.remove(toDsKey(ve->key,q.front()));
+            q.pop();
+        }
+    }
+    //TODO don't accept messages from clients older than barrier anymore
+}
+#endif
+
 //TODO add code handling transactions aborted by the recovery manager
