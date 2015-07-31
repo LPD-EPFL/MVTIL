@@ -33,9 +33,9 @@ endef
 
 .PHONY: all checkdirs clean
 
-all: checkdirs build/test_server
+all: checkdirs build/server
 
-build/test_server: $(OBJ) build/server.o
+build/server: $(OBJ) build/server.o
 	$(LD) $(CFLAGS) $(DEBUG_FLAGS) $^ -o $@ -L/usr/local/lib $(LIBS)
 
 build/server.o: tests/server.cpp
@@ -53,5 +53,4 @@ $(foreach bdir,$(BUILD_DIR),$(eval $(call make-goal,$(bdir))))
 
 thrift/gen-cpp/DataServer_types.cpp: thrift/DataServer.thrift
 	thrift -r --gen cpp $<
-
 
