@@ -24,7 +24,8 @@ enum OperationState {
     R_LOCK_SUCCESS = 7,
     COMMIT_OK = 8,
     ABORT_OK = 9,
-    ERROR = 10
+    ERROR = 10 ,
+    NOT_IMPLEMENTED = 11
 }
 
 typedef string Key

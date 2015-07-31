@@ -41,6 +41,11 @@ class ProtocolScheduler : virtual public DataServerIf {
         void handleCommit(CommitReply& _return, const TransactionId tid, const Timestamp ts);
 
 
+        void handleAbort(AbortReply& _return, const TransactionId tid);
+
+
+        void handleOperation(ServerGenericReply& _return, const ClientGenericRequest& cr);
+
 #ifndef INITIAL_TESTING
         void handleNewEpoch(Timestamp barrier);
 #endif

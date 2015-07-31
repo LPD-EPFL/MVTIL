@@ -108,13 +108,13 @@ void ProtocolScheduler::handleHintRequest(TimestampInterval& _return, const Tran
 }
 
 
-void handleCommit(CommitReply& _return, const TransactionId tid, const Timestamp ts) {
+void ProtocolScheduler::handleCommit(CommitReply& _return, const TransactionId tid, const Timestamp ts) {
 #ifdef DEBUG
     std::cout<<"Handling commit: Transaction id "<<tid<<"; Timestamp "<<ts<<" ."<<endl;
 #endif
     std::queue<WSEntry*>* ws = pendingWriteSets.find(tid)->second; 
     if (ws == NULL) {
-        _return.state = WRITES_NOT_FOUND;
+        _return.state = OperationState::WRITES_NOT_FOUND;
         _return.tid = tid;
         return;
     }
@@ -130,12 +130,12 @@ void handleCommit(CommitReply& _return, const TransactionId tid, const Timestamp
         //TODO: delete members as well?
     }
     pendingWriteSets.erase(tid);
-    _return.state = COMMIT_OK;
+    _return.state = OperationState::COMMIT_OK;
     _return.tid = tid;
     return;
 }
 
-void handleAbort(AbortReply& _return, const TransactionId tid) {
+void ProtocolScheduler::handleAbort(AbortReply& _return, const TransactionId tid) {
 #ifdef DEBUG
     std::cout<<"Handling abort: Transaction id "<<tid<<" ."<<endl;
 #endif
@@ -155,7 +155,7 @@ void handleAbort(AbortReply& _return, const TransactionId tid) {
     }
 
     pendingWriteSets.erase(tid);
-    _return.state = ABORT_OK;
+    _return.state = OperationState::ABORT_OK;
     _return.tid = tid;
     return;
 }
@@ -166,8 +166,8 @@ void ProtocolScheduler::handleOperation(ServerGenericReply& _return, const Clien
 #ifdef DEBUG
     std::cout<<"Handling single key operation: Transaction id "<<tid<<"; Operation "<<opName<<"; Timestamp interval ["<<interval.start<<","<<interval.end<<"]; Key "<<k<<"; Value "<<v<<" ."<<endl;
 #endif
-
-    return NULL;
+    _return.state = OperationState::NOT_IMPLEMENTED;
+    return;
 }
 
 DsKey* ProtocolScheduler::toDsKey(Key k, Timestamp ts) {

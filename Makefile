@@ -35,11 +35,11 @@ endef
 
 all: checkdirs build/test_server
 
-build/test_server: $(OBJ) tests/server.o
+build/test_server: $(OBJ) build/server.o
 	$(LD) $(CFLAGS) $(DEBUG_FLAGS) $^ -o $@ -L/usr/local/lib $(LIBS)
 
-tests/server.o: server.cpp
-	$(CC) $(INCLUDES) $(CFLAGS) $(DEBUG_FLAGS) -c $$< -o $$@
+build/server.o: tests/server.cpp
+	$(CC) $(INCLUDES) $(CFLAGS) $(DEBUG_FLAGS) -c $< -o $@
 
 checkdirs: $(BUILD_DIR)
 
