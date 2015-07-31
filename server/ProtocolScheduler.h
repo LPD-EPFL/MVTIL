@@ -1,18 +1,34 @@
 #ifndef _PROTOCOL_SCHEDULER_H_
 #define _PROTOCOL_SCHEDULER_H_
 
+#include "DataServer.h"
+#include <thrift/protocol/TBinaryProtocol.h>
+#include <thrift/server/TSimpleServer.h>
+#include <thrift/transport/TServerSocket.h>
+#include <thrift/transport/TBufferTransports.h>
+
+
 #include <queue>
 #include <iostream>
 #include "common.h"
-#include "ClientReply.h"
 #include "VersionManager.h"
 #include "Timer.h"
+
+using namespace ::apache::thrift;
+using namespace ::apache::thrift::protocol;
+using namespace ::apache::thrift::transport;
+using namespace ::apache::thrift::server;
+
+using boost::shared_ptr;
+
+using namespace  ::TxProtocol;
+
 
 #ifdef INITIAL_TESTING
 typedef std::string DsKey;
 #endif
 
-class ProtocolScheduler {
+class ProtocolScheduler : virtual public DataServerIf {
     private:
         typedef struct WSEntry{
             Version *version;
@@ -26,18 +42,6 @@ class ProtocolScheduler {
         ProtocolScheduler();
 
         ~ProtocolScheduler();
-
-        ClientReply* handleRead(TransactionId tid, TimestampInterval t_interval, Key k);
-
-        ClientReply* handleWrite(TransactionId tid, TimestampInterval t_interval, Key k, Value v);
-
-        ClientReply* handleCommit(TransactionId tid, Timestamp ts);
-    
-        ClientReply* handleAbort(TransactionId tid);
-
-        ClientReply* handleHintRequest(TransactionId tid, TimestampInterval t_interval, Key k);
-
-        ClientReply* handleSingleKeyOperation(TransactionId tid, std::string opName, TimestampInterval t_interval, Key k, Value v);
 
 #ifndef INITIAL_TESTING
         void handleNewEpoch(Timestamp barrier);

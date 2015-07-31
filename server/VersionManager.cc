@@ -99,11 +99,11 @@ bool VersionManager::persistRemoveVersion(Key k, Timestamp t) {
     return true;
 }
 
-void VersionManager::tryReadLock(Key key, TimestampInterval interval, LockInfo* lockInfo) {
+void VersionManager::tryReadLock(Key key, TimestampInterval interval, LockInfo& lockInfo) {
     VersionManagerEntry* ve = getVersionSet(key);
     if (ve == NULL) {
         markReadNotFound(key, interval.end); //be conservative
-        lockInfo->state = FAIL_NO_VERSION;
+        lockInfo.state = FAIL_NO_VERSION;
         return;
     }
     ve->lockEntry();
@@ -141,21 +141,21 @@ void VersionManager::tryReadLock(Key key, TimestampInterval interval, LockInfo* 
     }
     if (selected_version == NULL) {
         markReadNotFound(key, interval.end);
-        lockInfo->state = FAIL_NO_VERSION;
+        lockInfo.state = FAIL_NO_VERSION;
         ve->unlockEntry();
         return;
     }
 
 
-    lockInfo->locked.start = selected_version->timestamp;
-    lockInfo->locked.end = std::min(next_timestamp, interval.end);
-    lockInfo->potential.start = selected_version->timestamp;
-    lockInfo->potential.end = next_timestamp;
-    lockInfo->version = selected_version;
-    lockInfo->state = R_LOCK_SUCCESS;
+    lockInfo.locked.start = selected_version->timestamp;
+    lockInfo.locked.end = std::min(next_timestamp, interval.end);
+    lockInfo.potential.start = selected_version->timestamp;
+    lockInfo.potential.end = next_timestamp;
+    lockInfo.version = selected_version;
+    lockInfo.state = R_LOCK_SUCCESS;
 
-    if (selected_version->maxReadFrom < lockInfo->locked.end) {
-        selected_version->maxReadFrom = lockInfo->locked.end;
+    if (selected_version->maxReadFrom < lockInfo.locked.end) {
+        selected_version->maxReadFrom = lockInfo.locked.end;
     }
     
     ve->unlockEntry();
@@ -170,32 +170,32 @@ void VersionManager::tryWriteLock(Key key, TimestampInterval interval, LockInfo*
     }
     ve->lockEntry();
     if (getMaxReadMark(key) > interval.end) {
-        lockInfo->state = FAIL_READ_MARK_LARGE;    
-        lockInfo->potential.start = getMaxReadMark(key);
+        lockInfo.state = FAIL_READ_MARK_LARGE;    
+        lockInfo.potential.start = getMaxReadMark(key);
         ve->unlockEntry();
         return;
     }
     if (ve->isEmpty() || (ve->versions.getFirstTimestamp() > interval.end)) {
         if (getMaxReadMark(key) > interval.end) {
-            lockInfo->state = FAIL_READ_MARK_LARGE;    
-            lockInfo->potential.start = getMaxReadMark(key);
+            lockInfo.state = FAIL_READ_MARK_LARGE;    
+            lockInfo.potential.start = getMaxReadMark(key);
             ve->unlockEntry();
             return;
         }
         
         Timestamp start = std::max(interval.start, getMaxReadMark(key));
         if (ve->isEmpty()) {
-            lockInfo->potential.end = MAX_TIMESTAMP;
+            lockInfo.potential.end = MAX_TIMESTAMP;
         } else {
-            lockInfo->potential.end = ve->versions.getFirstTimestamp();
+            lockInfo.potential.end = ve->versions.getFirstTimestamp();
         }
         Version* new_version = new Version(start, interval.end - start, PENDING, start); 
         ve->versions.insert(start, new_version); 
-        lockInfo->locked.start = start;
-        lockInfo->locked.end = interval.end;
-        lockInfo->potential.start = getMaxReadMark(key); 
-        lockInfo->version = new_version;
-        lockInfo->state = W_LOCK_SUCCESS;
+        lockInfo.locked.start = start;
+        lockInfo.locked.end = interval.end;
+        lockInfo.potential.start = getMaxReadMark(key); 
+        lockInfo.version = new_version;
+        lockInfo.state = W_LOCK_SUCCESS;
         ve->unlockEntry();
         return;
     }
@@ -263,12 +263,12 @@ void VersionManager::tryWriteLock(Key key, TimestampInterval interval, LockInfo*
         Timestamp end = std::min(interval.end, next_timestamp);
         Version* new_version = new Version(start, end - start, PENDING, start);
         ve->versions.insert(start, new_version); 
-        lockInfo->version = new_version;
-        lockInfo->locked.start = start;
-        lockInfo->locked.end = end;
-        lockInfo->potential.start = selected_version->maxReadFrom;
-        lockInfo->potential.end = next_timestamp;
-        lockInfo->state = W_LOCK_SUCCESS;
+        lockInfo.version = new_version;
+        lockInfo.locked.start = start;
+        lockInfo.locked.end = end;
+        lockInfo.potential.start = selected_version->maxReadFrom;
+        lockInfo.potential.end = next_timestamp;
+        lockInfo.state = W_LOCK_SUCCESS;
         ve->unlockEntry();
         return; 
     }
@@ -277,25 +277,25 @@ void VersionManager::tryWriteLock(Key key, TimestampInterval interval, LockInfo*
         Timestamp end = std::min(interval.end, next_timestamp_pending);
         Version* new_version = new Version(start, end - start, PENDING, start);
         ve->versions.insert(start, new_version); 
-        lockInfo->version = new_version;
-        lockInfo->locked.start = start;
-        lockInfo->locked.end = end;
-        lockInfo->potential.start = selected_pending->timestamp + selected_pending->duration;
-        lockInfo->potential.end = next_timestamp_pending;
-        lockInfo->state = W_LOCK_SUCCESS;
+        lockInfo.version = new_version;
+        lockInfo.locked.start = start;
+        lockInfo.locked.end = end;
+        lockInfo.potential.start = selected_pending->timestamp + selected_pending->duration;
+        lockInfo.potential.end = next_timestamp_pending;
+        lockInfo.state = W_LOCK_SUCCESS;
         ve->unlockEntry();
         return;
     }
-    lockInfo->state = FAIL_INTERSECTION_EMPTY;
+    lockInfo.state = FAIL_INTERSECTION_EMPTY;
     if (candidate.start != MIN_TIMESTAMP) {
-        lockInfo->potential.start = candidate.start;
-        lockInfo->potential.end = candidate.end;
+        lockInfo.potential.start = candidate.start;
+        lockInfo.potential.end = candidate.end;
     } else if (candidate_pending.start != MIN_TIMESTAMP) {
-        lockInfo->potential.start = candidate_pending.start;
-        lockInfo->potential.end = candidate_pending.end;
+        lockInfo.potential.start = candidate_pending.start;
+        lockInfo.potential.end = candidate_pending.end;
     } else {
-        lockInfo->potential.start = MIN_TIMESTAMP;
-        lockInfo->potential.end = MIN_TIMESTAMP;
+        lockInfo.potential.start = MIN_TIMESTAMP;
+        lockInfo.potential.end = MIN_TIMESTAMP;
     }
     ve->unlockEntry();
     return;
@@ -410,7 +410,7 @@ int VersionManager::removeVersion(Key k, Version* v) {
     return res;
 }
 
-void VersionManager::tryReadWriteLock(Key k, TimestampInterval interval, LockInfo* lockInfo) {
+void VersionManager::tryReadWriteLock(Key k, TimestampInterval interval, LockInfo& lockInfo) {
     //TODO
 }
 

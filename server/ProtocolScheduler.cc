@@ -9,78 +9,110 @@ ProtocolScheduler::ProtocolScheduler() {
 ProtocolScheduler::~ProtocolScheduler() {
 }
 
-ClientReply* ProtocolScheduler::handleRead(TransactionId tid, TimestampInterval interval, Key k) {
+void ProtocolScheduler::handleReadRequest(ReadReply& _return, const TransactionId tid, const TimestampInterval& ts, const Key& k) {
     Timer timer;
 #ifdef DEBUG
     std::cout<<"Handling read: Transaction id "<<tid<<"; Timestamp interval ["<<interval.start<<","<<interval.end<<"]; Key "<<k<<" ."<<endl;
 #endif
-    LockInfo* lockInfo = new LockInfo(); //TODO need a better solution; shouldn't have to allocate a new object for every request
+    LockInfo lockInfo; 
     timer.start();
     Value* value = NULL;
     while(1) {
         versionManager.tryReadLock(k,interval,lockInfo);
-        if (lockInfo->state == R_LOCK_SUCCESS) {
+        if (lockInfo.state == R_LOCK_SUCCESS) {
 #ifndef INITIAL_TESTING
-            value = dataStore->read(toDsKey(k,lockInfo->version->timestamp));
+            value = dataStore->read(toDsKey(k,lockInfo.version->timestamp));
 #else
             std::string *str = new std::string("not implemented");
             value = str;
 #endif
             break;
         }
-        if (lockInfo->state == FAIL_NO_VERSION) {
-            return new ClientReply(tid, READ_REPLY, lockInfo, NULL);
+        if (lockInfo.state == FAIL_NO_VERSION) {
+            _return.tid = tid;
+            _return.state = lockInfo.state;
+            _return.key = k;
+            _return.value = NULL;
+            _return.interval = {0,0};
+            _return.potential = {0,0};
+            return;
         }
  
         if (timer.timeout()) {
-            return new ClientReply(tid, TIMEOUT);
+            _return.tid = tid;
+            _return.state = lockInfo.state;
+            _return.key = k;
+            _return.value = NULL;
+            _return.interval = {0,0};
+            _return.potential = {0,0};
+            return;
         }
 #ifndef INITIAL_TESTING
        pause(PAUSE_LENGTH);
 #endif
     }
-    return new ClientReply(tid, READ_REPLY, lockInfo, value);
+    _return.tid = tid;
+    _return.state = lockInfo.state;
+    _return.key = k;
+    _return.value = value;
+    _return.interval = lockInfo.value;
+    _return.potential = lockInfo.potential;
+    return;
 }
 
-ClientReply* ProtocolScheduler::handleWrite(TransactionId tid, TimestampInterval interval, Key k, Value v) {
+
+void ProtocolScheduler::handleWriteRequest(WriteReply& _return, const TransactionId tid, const TimestampInterval& ts, const Key& k, const Value& v) {
 #ifdef DEBUG
     std::cout<<"Handling write: Transaction id "<<tid<<"; Timestamp interval ["<<interval.start<<","<<interval.end<<"]; Key "<<k<<"; Value "<<v<<" ."<<endl;
 #endif
-    LockInfo* lockInfo = new LockInfo();
+    LockInfo lockInfo;
     versionManager.tryWriteLock(k, interval, lockInfo);
 
-    if (lockInfo->state != W_LOCK_SUCCESS) {
+    if (lockInfo.state != W_LOCK_SUCCESS) {
         abortTransaction(tid);
-        return new ClientReply(tid, WRITE_REPLY, lockInfo);
+        _return.tid = tid;
+        _return.state = lockInfo.state;
+        _return.interval = lockInfo.interval;
+        _return.potential = lockInfo.potential;
+        _return.key = k;
+        return;
     }
     
     if (pendingWriteSets.find(tid) == pendingWriteSets.end()){
         std::queue<WSEntry*>* q = new std::queue<WSEntry*>;
         pendingWriteSets.insert(std::pair<TransactionId,std::queue<WSEntry*>*>(tid, q)); //TODO also stamp the write set with a timestamp; if too much time has passed and no commit received, may have to act
     }
-    WSEntry* wse = new WSEntry(lockInfo->version,k,v);
+    WSEntry* wse = new WSEntry(lockInfo.version,k,v);
     std::map<TransactionId, std::queue<WSEntry*>*>::iterator it = pendingWriteSets.find(tid); 
     it->second->push(wse);
-    return new ClientReply(tid, WRITE_REPLY, lockInfo);
+    _return.tid = tid;
+    _return.state = lockInfo.state;
+    _return.interval = lockInfo.interval;
+    _return.potential = lockInfo.potential;
+    _return.key = k;
+    return;
 }
 
-ClientReply* ProtocolScheduler::handleHintRequest(TransactionId tid, TimestampInterval interval, Key k) {
+
+void ProtocolScheduler::handleHintRequest(TimestampInterval& _return, const TransactionId tid, const TimestampInterval& ts, const Key& k) {
 #ifdef DEBUG
     std::cout<<"Handling hint request: Timestamp interval ["<<interval.start<<","<<interval.end<<"]; Key "<<k<<" ."<<endl;
 #endif
     TimestampInterval res = versionManager.getWriteLockHint(k, interval);
-    LockInfo* lockInfo = new LockInfo();
-    lockInfo->potential = res;
-    return new ClientReply(tid, HINT_REPLY, lockInfo);
+    _return = res;
+    return;
 }
 
-ClientReply* ProtocolScheduler::handleCommit(TransactionId tid, Timestamp ts) {
+
+void handleCommit(CommitReply& _return, const TransactionId tid, const Timestamp ts) {
 #ifdef DEBUG
     std::cout<<"Handling commit: Transaction id "<<tid<<"; Timestamp "<<ts<<" ."<<endl;
 #endif
     std::queue<WSEntry*>* ws = pendingWriteSets.find(tid)->second; 
     if (ws == NULL) {
-        return new ClientReply(tid, (ReplyType)WRITES_NOT_FOUND);
+        _return.state = WRITES_NOT_FOUND;
+        _return.tid = tid;
+        return;
     }
     while (!ws->empty()) {
         //TODO do I need to protect this with locks?
@@ -94,16 +126,20 @@ ClientReply* ProtocolScheduler::handleCommit(TransactionId tid, Timestamp ts) {
         //TODO: delete members as well?
     }
     pendingWriteSets.erase(tid);
-    return new ClientReply(tid, (ReplyType)COMMIT_ACK);
+    _return.state = COMMIT_OK;
+    _return.tid = tid;
+    return;
 }
 
-ClientReply* ProtocolScheduler::handleAbort(TransactionId tid) {
+void handleAbort(AbortReply& _return, const TransactionId tid) {
 #ifdef DEBUG
     std::cout<<"Handling abort: Transaction id "<<tid<<" ."<<endl;
 #endif
     std::queue<WSEntry*>* ws = pendingWriteSets.find(tid)->second;
     if (ws == NULL) {
-        return new ClientReply(tid, (ReplyType)WRITES_NOT_FOUND);
+        _return.state = WRITES_NOT_FOUND;
+        _return.tid = tid;
+        return;
     }
     while (!ws->empty()) {
         //TODO do I need to protect this with locks?
@@ -115,11 +151,14 @@ ClientReply* ProtocolScheduler::handleAbort(TransactionId tid) {
     }
 
     pendingWriteSets.erase(tid);
-    return new ClientReply(tid,(ReplyType)ABORT_ACK);
+    _return.state = ABORT_OK;
+    _return.tid = tid;
+    return;
 }
 
 
-ClientReply* ProtocolScheduler::handleSingleKeyOperation(TransactionId tid, std::string opName, TimestampInterval interval, Key k, Value v) {
+void ProtocolScheduler::handleOperation(ServerGenericReply& _return, const ClientGenericRequest& cr) {
+//ClientReply* ProtocolScheduler::handleSingleKeyOperation(TransactionId tid, std::string opName, TimestampInterval interval, Key k, Value v) {
 #ifdef DEBUG
     std::cout<<"Handling single key operation: Transaction id "<<tid<<"; Operation "<<opName<<"; Timestamp interval ["<<interval.start<<","<<interval.end<<"]; Key "<<k<<"; Value "<<v<<" ."<<endl;
 #endif

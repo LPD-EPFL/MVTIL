@@ -1,4 +1,4 @@
-namespace cpp dataServer
+namespace cpp TxProtocol
 
 typedef i64 TransactionId
 typedef i64 Timestamp //make it a string?
@@ -22,6 +22,9 @@ enum OperationState {
     WRITES_NOT_FOUND = 5,
     W_LOCK_SUCESS = 6,
     R_LOCK_SUCESS = 7,
+    COMMIT_OK = 8,
+    ABORT_OK = 9,
+    ERROR = 10
 }
 
 typedef string Key
@@ -62,10 +65,20 @@ struct WriteReply {
     5: Key k,
 }
 
-service DataServer {
-    i32 handleAbort(TransactionId tid),
+struct CommitReply {
+    1: TransactionId tid,
+    2: OperationState state,
+}
 
-    i32 handleCommit(TransactionId tid, Timestamp ts),
+struct AbortReply {
+    1: TransactionId tid,
+    2: OperationState state,
+}
+
+service DataServer {
+    AbortReply handleAbort(TransactionId tid),
+
+    CommitReply handleCommit(TransactionId tid, Timestamp ts),
 
     ReadReply handleReadRequest(TransactionId tid, TimestampInterval ts, Key k),
 

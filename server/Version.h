@@ -2,6 +2,7 @@
 #define _VERSION_H_
 
 #include "common.h"
+#include "DataServer_types.h"
 
 typedef enum {COMMITTED, PENDING, ABORTED, NO_SUCH_VERSION} OpState;
 

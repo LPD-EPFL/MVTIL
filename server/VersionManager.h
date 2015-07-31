@@ -10,9 +10,19 @@
 
 #include "Version.h"
 #include "VersionSkipList.h"
-#include "ClientReply.h"
+#include "DataServer_types.h"
 #include "LockSet.h"
 #include "common.h"
+
+typedef OperationState::type lockState;
+
+typedef struct LockInfo {
+    lockState state;
+    TimestampInterval locked;
+    TimestampInterval potential;
+    Version* version;
+} LockInfo;
+
 
 class VersionManager {
     private:
@@ -62,13 +72,13 @@ class VersionManager {
         //Version getVersion(Key k, TimestampInterval interval, OpType flag);
         
         //try to acquire a read lock
-        void tryReadLock(Key k, TimestampInterval interval, LockInfo* lockInfo);
+        void tryReadLock(Key k, TimestampInterval interval, LockInfo& lockInfo);
         //try to acquire a write lock
-        void tryWriteLock(Key k, TimestampInterval interval, LockInfo* lockInfo);
+        void tryWriteLock(Key k, TimestampInterval interval, LockInfo& lockInfo);
         //get an info on the interval a write lock would be acquired for
         TimestampInterval getWriteLockHint(Key k, TimestampInterval interval);
         //get a Rw lock
-        void tryReadWriteLock(Key k, TimestampInterval interval, LockInfo* lockInfo);
+        void tryReadWriteLock(Key k, TimestampInterval interval, LockInfo& lockInfo);
 
         //remove a version from the versionStore
         int removeVersion(Key k, Version* v);

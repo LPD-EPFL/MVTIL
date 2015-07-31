@@ -7,6 +7,7 @@
 #include "common.h"
 #include "random.h"
 #include "Version.h"
+#include "DataServer_types.h"
 
 #define MAXLEVEL 4
 class OrderedSetNode {
