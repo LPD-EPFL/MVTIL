@@ -20,8 +20,8 @@ enum OperationState {
     FAIL_INTERSECTION_EMPTY = 3,
     FAIL_TIMEOUT = 4,
     WRITES_NOT_FOUND = 5,
-    W_LOCK_SUCESS = 6,
-    R_LOCK_SUCESS = 7,
+    W_LOCK_SUCCESS = 6,
+    R_LOCK_SUCCESS = 7,
     COMMIT_OK = 8,
     ABORT_OK = 9,
     ERROR = 10
@@ -34,8 +34,8 @@ struct ClientGenericRequest {
     1: TransactionId tid,
     2: Operation op,
     3: Timestamp interval,
-    4: Key k,
-    5: Value v,
+    4: Key key,
+    5: Value value,
 }
 
 struct ServerGenericReply {
@@ -53,8 +53,8 @@ struct ReadReply {
     2: TimestampInterval interval,
     3: TimestampInterval potential,
     4: OperationState state,
-    5: Key k,
-    6: Value v,   
+    5: Key key,
+    6: Value value,   
 }
 
 struct WriteReply {
@@ -62,7 +62,7 @@ struct WriteReply {
     2: TimestampInterval interval,
     3: TimestampInterval potential,
     4: OperationState state,
-    5: Key k,
+    5: Key key,
 }
 
 struct CommitReply {
@@ -80,11 +80,11 @@ service DataServer {
 
     CommitReply handleCommit(TransactionId tid, Timestamp ts),
 
-    ReadReply handleReadRequest(TransactionId tid, TimestampInterval ts, Key k),
+    ReadReply handleReadRequest(TransactionId tid, TimestampInterval interval, Key k),
 
-    WriteReply handleWriteRequest(TransactionId tid, TimestampInterval ts, Key k, Value v)
+    WriteReply handleWriteRequest(TransactionId tid, TimestampInterval interval, Key k, Value v)
 
-    TimestampInterval handleHintRequest(TransactionId tid, TimestampInterval ts, Key k)
+    TimestampInterval handleHintRequest(TransactionId tid, TimestampInterval interval, Key k)
  
     ServerGenericReply handleOperation(ClientGenericRequest cr)
    

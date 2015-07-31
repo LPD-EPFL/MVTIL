@@ -8,6 +8,8 @@
 #include <string>
 #include "DataServer_types.h"
 
+using namespace TxProtocol;
+
 //typedef uint64_t Timestamp;
 typedef int64_t Timespan;
 //typedef uint64_t TransactionId;

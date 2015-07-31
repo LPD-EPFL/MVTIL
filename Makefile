@@ -2,28 +2,32 @@ CFLAGS:=-std=c++11
 
 ifeq ($(DEBUG),1)
   DEBUG_FLAGS=-Wall -ggdb -g -DDEBUG
-  CFLAGS += -O0 -fno-inline
+  CFLAGS += -O0 -fno-inline -DHAVE_INTTYPES_H -DHAVE_NETINET_IN_H
 else
-  DEBUG_FLAGS=-Wall
-  CFLAGS += -O3
+  DEBUG_FLAGS=-Wall 
+  CFLAGS += -O3 -DHAVE_INTTYPES_H -DHAVE_NETINET_IN_H
 endif
 
 CC        := g++
 LD        := g++
 
-MODULES   := common server tests
+LIBS := -lthrift
+
+MODULES   := common server thrift/gen-cpp
 SRC_DIR   := $(MODULES)
 BUILD_DIR := $(addprefix build/,$(MODULES))
 
 
-SRC       := $(foreach sdir,$(SRC_DIR),$(wildcard $(sdir)/*.cc))
-OBJ       :=  $(patsubst %.cc,build/%.o,$(SRC))
+SRC       := $(foreach sdir,$(SRC_DIR),$(wildcard $(sdir)/*.cpp))
+OBJ       :=  $(patsubst %.cpp,build/%.o,$(SRC))
 INCLUDES  := $(addprefix -I,$(SRC_DIR))
 
-vpath %.cc $(SRC_DIR)
+INCLUDES += -I/usr/local/include/thrift -I/usr/local/include
+
+vpath %.cpp $(SRC_DIR)
 
 define make-goal
-$1/%.o: %.cc
+$1/%.o: %.cpp
 	$(CC) $(INCLUDES) $(CFLAGS) $(DEBUG_FLAGS) -c $$< -o $$@
 endef
 
@@ -31,8 +35,11 @@ endef
 
 all: checkdirs build/test_server
 
-build/test_server: $(OBJ)
-	$(LD) $(CFLAGS) $(DEBUG_FLAGS) $^ -o $@
+build/test_server: $(OBJ) tests/server.o
+	$(LD) $(CFLAGS) $(DEBUG_FLAGS) $^ -o $@ -L/usr/local/lib $(LIBS)
+
+tests/server.o: server.cpp
+	$(CC) $(INCLUDES) $(CFLAGS) $(DEBUG_FLAGS) -c $$< -o $$@
 
 checkdirs: $(BUILD_DIR)
 
@@ -43,3 +50,8 @@ clean:
 	@rm -rf $(BUILD_DIR)
 
 $(foreach bdir,$(BUILD_DIR),$(eval $(call make-goal,$(bdir))))
+
+thrift/gen-cpp/DataServer_types.cpp: thrift/DataServer.thrift
+	thrift -r --gen cpp $<
+
+
