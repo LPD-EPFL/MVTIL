@@ -56,7 +56,7 @@ ClientReply* ProtocolScheduler::handleWrite(TransactionId tid, TimestampInterval
     
     if (pendingWriteSets.find(tid) == pendingWriteSets.end()){
         std::queue<WSEntry*>* q = new std::queue<WSEntry*>;
-        pendingWriteSets.insert(std::pair<TransactionId,std::queue<WSEntry*>*>(tid, q));
+        pendingWriteSets.insert(std::pair<TransactionId,std::queue<WSEntry*>*>(tid, q)); //TODO also stamp the write set with a timestamp; if too much time has passed and no commit received, may have to act
     }
     WSEntry* wse = new WSEntry(lockInfo->version,k,v);
     std::map<TransactionId, std::queue<WSEntry*>*>::iterator it = pendingWriteSets.find(tid); 
