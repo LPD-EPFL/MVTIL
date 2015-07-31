@@ -18,7 +18,7 @@ SRC_DIR   := $(MODULES)
 BUILD_DIR := $(addprefix build/,$(MODULES))
 
 
-SRC       := $(foreach sdir,$(SRC_DIR),$(wildcard $(sdir)/*.cpp))
+SRC       := $(foreach sdir,$(SRC_DIR),$(filter-out thrift/gen-cpp/DataServer_server.skeleton.cpp, $(wildcard $(sdir)/*.cpp)))
 OBJ       :=  $(patsubst %.cpp,build/%.o,$(SRC))
 INCLUDES  := $(addprefix -I,$(SRC_DIR))
 

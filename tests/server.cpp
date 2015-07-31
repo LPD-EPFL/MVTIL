@@ -17,7 +17,7 @@ using namespace  ::TxProtocol;
 
 int main(int argc, char **argv) {
   int port = 9090;
-  shared_ptr<DataServerHandler> handler(new DataServerHandler());
+  shared_ptr<ProtocolScheduler> handler(new ProtocolScheduler());
   shared_ptr<TProcessor> processor(new DataServerProcessor(handler));
   shared_ptr<TServerTransport> serverTransport(new TServerSocket(port));
   shared_ptr<TTransportFactory> transportFactory(new TBufferedTransportFactory());
