@@ -94,6 +94,10 @@ bool VersionManager::persistVersion(Key k, Version* v) {
     return true;
 }
 
+bool VersionManager::persistRemoveVersion(Key k, Timestamp t) {
+    //TODO: remove version from RocksDB
+    return true;
+}
 
 void VersionManager::tryReadLock(Key key, TimestampInterval interval, LockInfo* lockInfo) {
     VersionManagerEntry* ve = getVersionSet(key);

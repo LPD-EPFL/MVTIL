@@ -84,6 +84,7 @@ class VersionManager {
 
         //store version in persistent storage;
         bool persistVersion(Key k, Version* v);
+        bool persistRemoveVersion(Key k, Timestamp t);
         //updates and repositions a version in the ordered set of per-key versions (only happens when transitioning from PENDING to COMMITTED); also persists the new verion
         bool updateAndPersistVersion(Key k, Version* v, Timestamp new_ts, Timestamp new_duration, Timestamp newPotentialReadMax, OpState new_state);
 

@@ -146,7 +146,9 @@ void ProtocolScheduler::handleNewEpoch(Timestamp barrier) {
         ve->collectTo(barrier, &q);
         while (!q.empty()){
             //for each timestamp in the list remove key:timestamp 
-            dataStore.remove(toDsKey(ve->key,q.front()));
+            Timestamp t = q.front();
+            versionManager.persistRemoveVersion(ve->key,t);
+            dataStore.remove(toDsKey(ve->key,t));
             q.pop();
         }
     }
