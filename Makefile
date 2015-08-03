@@ -36,6 +36,10 @@ INCLUDES_CLIENT  := $(addprefix -I,$(SRC_DIR_CLIENT))
 INCLUDES_CLIENT += -I/usr/local/include/thrift -I/usr/local/include
 
 
+ALL_MODULES :=  $(sort $(MODULES_SERVER) $(MODULES_CLIENT))
+BUILD_DIR_ALL := $(addprefix build/,$(ALL_MODULES))
+
+
 vpath %.cpp $(SRC_DIR_SERVER) $(SRC_DIR_CLIENT)
 
 define make-goal-server
@@ -66,13 +70,9 @@ build/client_exec: $(OBJ_CLIENT) build/client_exec.o
 build/client_exec.o: tests/client_exec.cpp
 	$(CC) $(INCLUDES_CLIENT) $(CFLAGS) $(DEBUG_FLAGS) -c $< -o $@
 
+checkdirs: $(BUILD_DIR_ALL)
 
-checkdirs: $(BUILD_DIR_SERVER) $(BUILD_DIR_CLIENT)
-
-$(BUILD_DIR_SERVER):
-	@mkdir -p $@
-
-$(BUILD_DIR_CLIENT):
+$(BUILD_DIR_ALL):
 	@mkdir -p $@
 
 clean:

@@ -4,10 +4,10 @@
 #include <thrift/transport/TSocket.h>
 #include <thrift/transport/TBufferTransports.h>
 
-using namespace ::apache::thrift;
-using namespace ::apache::thrift::protocol;
-using namespace ::apache::thrift::transport;
-using namespace ::apache::thrift::server;
+using namespace apache::thrift;
+using namespace apache::thrift::protocol;
+using namespace apache::thrift::transport;
+//using namespace ::apache::thrift::server;
 
 using boost::shared_ptr;
 
@@ -20,9 +20,9 @@ int main(int argc, char **argv) {
 
   DataServerClient client(protocol);
   transport->open();
-
+  //client.doOperation();
   transport->close();
-  
+
   return 0;
 }
 
