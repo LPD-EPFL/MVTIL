@@ -9,7 +9,7 @@
 class Transaction {
     friend class TransactionManager;
     public:
-        Transaction();
+        Transaction(TransactionId tid, bool RO) : transactionId(tid), isReadOnly(RO) {}
         ~Transaction();
     
         Value alreadyContains(Key k);
@@ -21,26 +21,33 @@ class Transaction {
         std::vector<HintSetEntry> hintSet;
 
         TimestampInterval currentInterval;
+        bool isReadOnly;
 
         typedef struct ReadSetEntry {
-            Key k;
-            Value v;
+            Key key;
+            Value value;
             TimestampInterval interval;
             TimestampInterval potential;
+
+            ReadSetEntry(ReadReply r) : key(r.key), value(r.value), interval(r.interval), potential(r.potential) {}
         } ReadSetEntry;
 
         typedef struct WriteSetEntry {
-            Key k;
-            Value v;
+            Key key;
+            Value value;
             TimestampInterval interval;
             TimestampInterval potential;
             ServerAddress address;
+
+            WriteSetEntry(Key k, Value v, ServerAddress s) : key(k), value(v), address(s) {}
         } WriteSetEntry;
 
         typedef struct HintSetEntry {
-            Key k;
+            Key key;
             TimestampInterval interval;
             ServerAddress address;
+
+            HintSetEntry(Key k, TimestampInterval i, ServerAddress a): key(k), interval(i), address(s) {}
         } HintSetEntry;
 };
 

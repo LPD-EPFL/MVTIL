@@ -10,6 +10,7 @@ TransactionManager::~TransactionManager() {
 }
 
 void TransactionManager::transactionStart() {
+    
 
 }
 
@@ -19,6 +20,10 @@ void TransactionManager::transactionEnd() {
 
 Value TransactionManager::readData(Key key) {
     return "";
+}
+
+void TransactionManager::declareWrite(Key key) {
+
 }
 
 void writeData(Key k, Value v) {

@@ -9,13 +9,17 @@
 
 class TransactionManager {
     public:
-        void transactionStart();
+        void transactionStart(bool isReadOnly);
         void transactionEnd();
+        void declareWrite(Key k);
         Value readData(Key k);
         void writeData(Key k, Value v);
+
     private:
         RoutingService routingService;
         TimestampOracle timestampOracle;
+
+        std::vector<Transaction> ongoingTransactions();
 
         int64_t id;
 
