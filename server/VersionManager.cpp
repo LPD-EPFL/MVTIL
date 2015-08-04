@@ -18,7 +18,7 @@ VersionManager::VersionManager() {
 }
 
 #ifndef INITIAL_TESTING
-VersionManager::VersionManager(Log* l) {
+VersionManager::VersionManager(Log& l) {
     //TODO: create the versions data structure from the log
 }
 #endif

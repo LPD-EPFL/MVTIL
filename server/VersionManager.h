@@ -79,7 +79,7 @@ class VersionManager {
         
         VersionManager();
 #ifndef INITIAL_TESTING
-        VersionManager(Log* log); //recover version manager from existing log
+        VersionManager(Log& log); //recover version manager from existing log
 #endif
         ~VersionManager();
     
