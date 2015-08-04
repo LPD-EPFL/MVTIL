@@ -19,8 +19,29 @@ int TransactionManager::transactionEnd() {
 
 }
 
-Value* TransactionManager::readData(Key key) {
-    return "";
+Value* TransactionManager::readData(Key key) { //NULL in case of error, pointer to string otherwise
+    Transaction* t = getTransaction(tid);
+    Value* contains = t->alreadyInReadSet(key);
+    if (contains == NULL) {
+       contains = t->alreadyInWriteSet(key);
+    }
+
+    if (contains != NULL) {
+        return contains;
+    }
+
+    Interval i = t->currentInterval;
+    DataServerClient c = routingService.getConnection(key);
+    
+    ReadReply rR;
+
+    //TODO lock
+    c.handleReadRequest(rR, tid, i, key);
+    //TODO unlock
+
+    // TODO finish this method
+
+    return NULL;
 }
 
 int TransactionManager::declareWrite(TransactionId tid, Key key) {
