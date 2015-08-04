@@ -23,6 +23,7 @@ class Transaction {
         TimestampInterval currentInterval;
         bool isReadOnly;
 
+        //FIXME do I gain any performance by keeping the connections in these structures? the key to server mapping should be pretty fast
         typedef struct ReadSetEntry {
             Key key;
             Value value;
@@ -42,7 +43,7 @@ class Transaction {
             WriteSetEntry(Key k, Value v, ServerAddress s) : key(k), value(v), address(s) {}
         } WriteSetEntry;
 
-        typedef struct HintSetEntry {
+        typedef struct HintSetEntry { //FIXME: is it useful for anything to keep this around?
             Key key;
             TimestampInterval interval;
             ServerAddress address;
