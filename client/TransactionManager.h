@@ -39,11 +39,7 @@
     } \
     delete t;
 
-#define TX_READ(key, val_ptr) \
-    val_ptr = read_data(t, key); \
-    if (val_ptr == NULL) { \
-        continue; \
-    }
+#define TX_READ(key) read_data(t, key); \ //reads never cause a transaction to abort
 
 #define TX_WRITE(key, val) \
     if (writeData(t, key, val) == 0) { \
@@ -67,9 +63,9 @@ class TransactionManager {
         RoutingService routingService;
         TimestampOracle timestampOracle;
 
-        std::map<TransactionId, Transaction> ongoingTransactions();
+        //std::map<TransactionId, Transaction> ongoingTransactions();
 
-        int64_t id;
+        int64_t id; //use this to obtain unique transaction ids
 
         TransactionId getNewTransactionId();
 };

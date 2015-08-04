@@ -23,9 +23,9 @@ TransactionManager::~TransactionManager() {
 
 }
 
-void TransactionManager::transactionStart(bool isReadOnly) {
+Transaction* TransactionManager::transactionStart(bool isReadOnly) {
     TransactionId tid = getNewTransactionId();
-    ongoingTransactions.insert(Transaction(tid, isReadOnly), oracle.getInterval(isReadOnly));
+    Transaction* t = new Transaction(tid, isReadOnly, oracle.getInterval(isReadOnly));
     return;
 }
 
@@ -33,8 +33,7 @@ int TransactionManager::transactionEnd() {
 
 }
 
-Value* TransactionManager::readData(Key key) { //NULL in case of error, pointer to string otherwise
-    Transaction* t = getTransaction(tid);
+Value* TransactionManager::readData(Transaction* t, Key key) { //NULL in case of no key found, pointer to string otherwise
     Value* contains = t->alreadyInReadSet(key);
     if (contains == NULL) {
        contains = t->alreadyInWriteSet(key);
@@ -53,13 +52,23 @@ Value* TransactionManager::readData(Key key) { //NULL in case of error, pointer 
     c.handleReadRequest(rR, tid, i, key);
     //TODO unlock
 
-    // TODO finish this method
+    if (rR.OperationState == FAIL_NO_VERSION) {
+        t->addToReadSet(ReadSetEntry(key, NULL, t->currentInterval, t->currentInterval, c));
+        return NULL;
+    }
+   
+    if (rR.OperationState == R_LOCK_SUCCESS) {
+        t->currentInterval = rR.interval;
+        t->addToReadSet(ReadSetEntry(key, rR.value, rR.interval, rR.potential));
+        return rR.value; 
+    }
 
+    //TODO: what should I do if I receive an error status?
+    abortTransaction(t);
     return NULL;
 }
 
-int TransactionManager::declareWrite(TransactionId tid, Key key) {
-    Transaction* t = getTransaction(tid);
+int TransactionManager::declareWrite(Transaction* t, Key key) {
     Value contains = t->alreadyInWriteSet(key);
     if (contains != NULL) {
         return 1; //nothing to be done, I already have a write lock for this key
@@ -73,16 +82,15 @@ int TransactionManager::declareWrite(TransactionId tid, Key key) {
     c.handleHintRequest(ti, tid, i, key);
     //TODO unlock
     if ((ti.start == MIN_TIMESTAMP) && (ti.end == MIN_TIMESTAMP)) { //no interval found
-        restartTransaction(tid);
+        restartTransaction(t);
         return 0;
     }
     t->currentInterval = ti;
-    t->addToHinSet(key, ti, c);
+    t->addToHinSet(key, ti);
     return 1;
 }
 
-void writeData(TransactionId tid, Key key, Value value) {
-    Transaction* t = getTransaction(tid);
+int TransactionManager::writeData(Transaction* t, Key key, Value value) {
     Value contains = t->alreadyInWriteSet(key); //not good enough if it's in the read set; need to take write lock for it
     if (contains != NULL) {
         updateValueLocally(tid, key, value);
@@ -97,21 +105,40 @@ void writeData(TransactionId tid, Key key, Value value) {
 
     if (wr.operationState == OperationState::W_LOCK_SUCCESS) {
         t->currentInterval = wr.interval; 
-        t->addToWriteSet(WriteSetEntry(key, value, wR.interval, wR.potential, c));
+        t->addToWriteSet(WriteSetEntry(key, value, wR.interval, wR.potential));
+        t->writeSetServers.insert(c);
         return 1;
     }
     if (wr.operationState == OperationState::FAIL_READ_MARK_LARGE) {
-        restartTransaction(tid, wr.potential.start);
+        restartTransaction(t, wr.potential.start);
         return 0;
     }
 
     if (wr.operationState == OperationState::FAIL_INTERSECTION_EMPTY) {
-        restartTransaction(tid);
+        restartTransaction(t);
         return 0;
     }
 
-    abortTransaction(tid); //other reason, should abort
+    abortTransaction(t); //other reason, should abort
     return 0;
 }
+
+int abortTransaction(Transaction* t) {
+    // release all write locks 
+    for (auto& value: t->writeSetServers) {
+        c.send_handleAbort(t->transactionId);
+    }
+    AbortReply aR;
+    for (auto& value: t->writeSetServers) {
+        c.recv_handleAbort(&aR); //not really necessary to check the state
+    }
+
+    //TODO empty read, write, hint and server sets; get a new transaction interval; get a new ID
+
+    return 0;
+}
+
+
+
 
 

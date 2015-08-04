@@ -23,7 +23,7 @@
 class Transaction {
     friend class TransactionManager;
     public:
-        Transaction(TransactionId tid, bool RO) : transactionId(tid), isReadOnly(RO) {}
+        Transaction(TransactionId tid, bool RO, TimestampInterval interval) : transactionId(tid), isReadOnly(RO), currentInterval(interval) {}
         ~Transaction();
     
         Value alreadyContains(Key k);
@@ -33,6 +33,7 @@ class Transaction {
         std::vector<ReadSetEntry> readSet;
         std::vector<WriteSetEntry> writeSet;
         std::vector<HintSetEntry> hintSet;
+        std::set<ClientConnection> writeSetServers;
 
         TimestampInterval currentInterval;
         bool isReadOnly;
