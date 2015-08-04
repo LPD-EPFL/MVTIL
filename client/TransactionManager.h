@@ -24,6 +24,37 @@
 #define INITIAL_INTERVAL 100
 #define INTERVAL_MULTIPLICATION_FACTOR 2
 
+#define TX_START_RO \
+    Transaction* t; \
+    while (1) { \
+        t = transactionStart(true);
+
+#define TX_START \
+    Transaction* t; \
+    while (1) { \
+        t = transactionStart(false);
+
+#define TX_END \
+    break ; \
+    } \
+    delete t;
+
+#define TX_READ(key, val_ptr) \
+    val_ptr = read_data(t, key); \
+    if (val_ptr == NULL) { \
+        continue; \
+    }
+
+#define TX_WRITE(key, val) \
+    if (writeData(t, key, val) == 0) { \
+        continue; \
+    }
+
+#define TX_DECLARE_WRITE(key) \
+    if (declareWrite(t, key) == 0) { \
+        continue; \
+    }
+
 class TransactionManager {
     public:
         TransactionId transactionStart(bool isReadOnly);
