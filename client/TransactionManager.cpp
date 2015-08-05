@@ -33,14 +33,15 @@ int TransactionManager::transactionEnd() {
 
 }
 
-Value* TransactionManager::readData(Transaction* t, Key key) { //NULL in case of no key found, pointer to string otherwise
+int TransactionManager::readData(Transaction* t, Key key, Value ** val) { //NULL in case of no key found, pointer to string otherwise
     Value* contains = t->alreadyInReadSet(key);
     if (contains == NULL) {
        contains = t->alreadyInWriteSet(key);
     }
 
     if (contains != NULL) {
-        return contains;
+        *val = contains;
+        return 1;
     }
 
     Interval i = t->currentInterval;
@@ -54,18 +55,22 @@ Value* TransactionManager::readData(Transaction* t, Key key) { //NULL in case of
 
     if (rR.OperationState == FAIL_NO_VERSION) {
         t->addToReadSet(ReadSetEntry(key, NULL, t->currentInterval, t->currentInterval, c));
-        return NULL;
+        *val = NULL;
+        return 1;
     }
    
     if (rR.OperationState == R_LOCK_SUCCESS) {
         t->currentInterval = rR.interval;
         t->addToReadSet(ReadSetEntry(key, rR.value, rR.interval, rR.potential));
-        return rR.value; 
+        auto ptr = new Value(rR.value);
+        *val = ptr; 
+        return 1;
     }
-
-    //TODO: what should I do if I receive an error status?
+    
+    //some error or timeout has occurred; should abort transaction to prevent deadlocks
     abortTransaction(t);
-    return NULL;
+    *val = NULL;
+    return 0;
 }
 
 int TransactionManager::declareWrite(Transaction* t, Key key) {
@@ -74,17 +79,25 @@ int TransactionManager::declareWrite(Transaction* t, Key key) {
         return 1; //nothing to be done, I already have a write lock for this key
     }
 
-    Interval  i = t->currentInterval;
-    auto s = connectionService.getServer(key);
+    bool done = false;
+    while (!done) {
 
-    TimestampInterval ti; 
-    s->lock();
-    s->client.handleHintRequest(ti, tid, i, key);
-    s->unlock();
+        Interval  i = t->currentInterval;
+        auto s = connectionService.getServer(key);
 
-    if ((ti.start == MIN_TIMESTAMP) && (ti.end == MIN_TIMESTAMP)) { //no interval found
-        restartTransaction(t, MIN_TIMESTAMP, hint.potential.end); //TODO: hint should return a potential end timestamp as well; it's good to know if it's worth increasing the interval, or if I should just abort
-        return 0;
+        TimestampInterval ti; 
+        s->lock();
+        s->client.handleHintRequest(ti, tid, i, key);
+        s->unlock();
+
+        if ((ti.start == MIN_TIMESTAMP) && (ti.end == MIN_TIMESTAMP)) { //no interval found
+            if (restartTransaction(t, hint.potential.start, hint.potential.end) == 1) {
+                continue;
+            } else {
+                return 0;
+            }
+        }
+        done = true;
     }
     t->currentInterval = ti;
     t->addToHintSet(key, ti);
@@ -97,32 +110,41 @@ int TransactionManager::writeData(Transaction* t, Key key, Value value) {
         updateValueLocally(tid, key, value);
         return;
     }
-    Interval i = t->currentInterval;
-    auto s = connectionService.getServer(key);
-    WriteReply wR;
 
-    s->lock();
-    s->client.handleWriteRequest(wR, tid, i, key, value);
-    s->unlock();
+    while (1) {
+        Interval i = t->currentInterval;
+        auto s = connectionService.getServer(key);
+        WriteReply wR;
 
-    if (wr.operationState == OperationState::W_LOCK_SUCCESS) {
-        t->currentInterval = wr.interval; 
-        t->addToWriteSet(WriteSetEntry(key, value, wR.interval, wR.potential));
-        t->writeSetServers.insert(c);
-        return 1;
-    }
-    if (wr.operationState == OperationState::FAIL_READ_MARK_LARGE) {
-        restartTransaction(t, wr.potential.start, MIN_TIMESTAMP);
+        s->lock();
+        s->client.handleWriteRequest(wR, tid, i, key, value);
+        s->unlock();
+
+        if (wr.operationState == OperationState::W_LOCK_SUCCESS) {
+            t->currentInterval = wr.interval; 
+            t->addToWriteSet(WriteSetEntry(key, value, wR.interval, wR.potential));
+            t->writeSetServers.insert(c);
+            return 1;
+        }
+        if (wr.operationState == OperationState::FAIL_READ_MARK_LARGE) {
+            if (restartTransaction(t, wr.potential.start, MIN_TIMESTAMP) == 1) {
+                continue;
+            } else {
+                return 0;
+            }
+        }
+
+        if (wr.operationState == OperationState::FAIL_INTERSECTION_EMPTY) {
+            if (restartTransaction(t, wr.potential.start, wr.potential.end) == 1) {
+                continue;
+            } else {
+                return 0;
+            }
+        }
+
+        abortTransaction(t); //other reason, should abort
         return 0;
     }
-
-    if (wr.operationState == OperationState::FAIL_INTERSECTION_EMPTY) {
-        restartTransaction(t, wr.potential.start, wr.potential.end);
-        return 0;
-    }
-
-    abortTransaction(t); //other reason, should abort
-    return 0;
 }
 
 int TransactionManager::restartTransaction(Transaction* t, Timestamp startBound, Timestamp endBound) {
@@ -164,6 +186,7 @@ int TransactionManager::restartTransaction(Transaction* t, Timestamp startBound,
      * if at least one fails, message read and write sets again, and essentially "abort" the transaction (remove all data re transaction from the servers).
      */
     bool can_restart = true;
+
     for (auto& entry: t->readSet) {
         if (!intersects(t->initialInterval, entry->potential)) {
             can_restart = false;
