@@ -217,4 +217,28 @@ void ProtocolScheduler::handleNewEpoch(Timestamp barrier) {
 }
 #endif
 
+
+void ProtocolScheduler::handleExpandRead(ExpandReadReply& _return, const TransactionId tid, const Timestamp versionTimestamp, const TimestampInterval& newInterval, const Key& k) {
+    LockInfo lockInfo;
+    versionManager.expandRead(k, versionTimestamp, newInterval, lockInfo); 
+    _return.state = lockInfo.state;
+    _return.interval = lockInfo.locked;
+    _return.potential = lockInfo.potential;
+    _return.key = k;
+    _return.tid = tid;
+    return; 
+}
+
+void ProtocolScheduler::handleExpandWrite(ExpandWriteReply& _return, const TransactionId tid, const TimestampInterval& newInterval, const Key& k) {
+    LockInfo lockInfo;
+    versionManager.expandWrite(k, versionTimestamp, newInterval, lockInfo); 
+    _return.state = lockInfo.state;
+    _return.interval = lockInfo.locked;
+    _return.potential = lockInfo.potential;
+    _return.key = k;
+    _return.tid = tid;
+    //TODO update in write set as well
+    return; 
+}
+
 //TODO add code handling transactions aborted by the recovery manager

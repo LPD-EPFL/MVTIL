@@ -226,6 +226,7 @@ int TransactionManager::restartTransaction(Transaction* t, Timestamp startBound,
                 }
 
                 t->currentInterval = eR.interval;
+                //TODO update in read set
             }
         }
         if (can_restart) {
@@ -245,6 +246,7 @@ int TransactionManager::restartTransaction(Transaction* t, Timestamp startBound,
                     }
 
                     t->currentInterval = eW.interval;
+                    //TODO update in write set
                 }
             }
         }

@@ -61,7 +61,7 @@ class ProtocolScheduler : virtual public DataServerIf {
 
         void handleOperation(ServerGenericReply& _return, const ClientGenericRequest& cr);
 
-        void handleExpandRead(ExpandReadReply& _return, const TransactionId tid, const TimestampInterval& newInterval, const Key& k);
+        void handleExpandRead(ExpandReadReply& _return, const TransactionId tid, const Timestamp versionTimestamp, const TimestampInterval& newInterval, const Key& k);
 
         void handleExpandWrite(ExpandWriteReply& _return, const TransactionId tid, const TimestampInterval& newInterval, const Key& k);
 #ifndef INITIAL_TESTING

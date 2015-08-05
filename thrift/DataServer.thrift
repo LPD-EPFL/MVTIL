@@ -88,12 +88,16 @@ struct ExpandReadReply {
     1: TransactionId tid,
     2: OperationState state,
     3: TimestampInterval interval,
+    4: TimestampInterval potential,
+    5: Key key, 
 }
 
 struct ExpandWriteReply {
     1: TransactionId tid,
     2: OperationState state,
     3: TimestampInterval interval,
+    4: TimestampInterval potential,
+    5: Key key,
 }
 
 service DataServer {
@@ -109,7 +113,7 @@ service DataServer {
  
     ServerGenericReply handleOperation(ClientGenericRequest cr)
 
-    ExpandReadReply handleExpandRead(TransactionId tid, TimestampInterval newInterval, Key k)
+    ExpandReadReply handleExpandRead(TransactionId tid, Timestamp versionTimestamp, TimestampInterval newInterval, Key k)
 
     ExpandWriteReply handleExpandWrite(TransactionId tid, TimestampInterval newInterval, Key k)
    
