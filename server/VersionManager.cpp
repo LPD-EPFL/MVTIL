@@ -114,6 +114,7 @@ bool VersionManager::persistRemoveVersion(Key k, Timestamp t) {
 }
 
 void VersionManager::tryReadLock(Key key, TimestampInterval interval, LockInfo& lockInfo) {
+    bool pending_exists=false;
     VersionManagerEntry* ve = getVersionSet(key);
     if (ve == NULL) {
         markReadNotFound(key, interval.finish); //be conservative
@@ -149,13 +150,19 @@ void VersionManager::tryReadLock(Key key, TimestampInterval interval, LockInfo& 
                     next_timestamp = next->getTimestamp();
                 }
             }
+        } else if (ver->state == PENDING) {
+            pending_exists = true;
         }
         node=node->getNext();
         ver = node->getVersion();
     }
     if (selected_version == NULL) {
         markReadNotFound(key, interval.finish);
-        lockInfo.state = OperationState::FAIL_NO_VERSION;
+        if (pending_exists == true) {
+            lockInfo.state = OperationStats::FAIL_PENDING_VERSION;
+        } else {
+            lockInfo.state = OperationState::FAIL_NO_VERSION;
+        }
         ve->unlockEntry();
         return;
     }

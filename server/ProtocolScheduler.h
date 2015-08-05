@@ -26,6 +26,7 @@
 
 using namespace  ::TxProtocol;
 
+#define MIN_NUM_RETRIES 3 //the minimum number of times a read operation must retry before giving up
 
 #ifdef INITIAL_TESTING
 typedef std::string DsKey;
@@ -46,7 +47,7 @@ class ProtocolScheduler : virtual public DataServerIf {
 
         ~ProtocolScheduler();
 
-        void handleReadRequest(ReadReply& _return, const TransactionId tid, const TimestampInterval& interval, const Key& k);
+        void handleReadRequest(ReadReply& _return, const TransactionId tid, const TimestampInterval& interval, const Key& k, const bool isReadOnly);
 
         void handleWriteRequest(WriteReply& _return, const TransactionId tid, const TimestampInterval& interval, const Key& k, const Value& v);
 

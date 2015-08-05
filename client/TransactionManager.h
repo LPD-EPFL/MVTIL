@@ -44,7 +44,7 @@
     } \
     delete t;
 
-#define TX_READ(key) transactionManager.read_data(t, key); \ //reads never cause a transaction to abort
+#define TX_READ(key) transactionManager.read_data(t, key); //reads never cause a transaction to abort
 
 #define TX_WRITE(key, val) \
     if (transactionManager.writeData(t, key, val) == 0) { \

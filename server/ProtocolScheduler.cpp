@@ -24,8 +24,9 @@ ProtocolScheduler::ProtocolScheduler() {
 ProtocolScheduler::~ProtocolScheduler() {
 }
 
-void ProtocolScheduler::handleReadRequest(ReadReply& _return, const TransactionId tid, const TimestampInterval& interval, const Key& k) {
+void ProtocolScheduler::handleReadRequest(ReadReply& _return, const TransactionId tid, const TimestampInterval& interval, const Key& k, const book isReadOnly) {
     Timer timer;
+    int numRetries = 0;
 #ifdef DEBUG
     std::cout<<"Handling read: Transaction id "<<tid<<"; Timestamp interval ["<<interval.start<<","<<interval.end<<"]; Key "<<k<<" ."<<endl;
 #endif
@@ -54,9 +55,9 @@ void ProtocolScheduler::handleReadRequest(ReadReply& _return, const TransactionI
             return;
         }
  
-        if (timer.timeout()) {
+        if (!isReadOnly && (numRetries > MIN_NUM_RETRIES) && (timer.timeout())) {
             _return.tid = tid;
-            _return.state = lockInfo.state;
+            _return.state = lockInfo.state; //should be FAIL_PENDING_VERSION
             _return.key = k;
             _return.value = "";
             _return.interval.start = 0;
@@ -68,6 +69,7 @@ void ProtocolScheduler::handleReadRequest(ReadReply& _return, const TransactionI
 #ifndef INITIAL_TESTING
        pause(PAUSE_LENGTH);
 #endif
+        numRetries++;
     }
     _return.tid = tid;
     _return.state = lockInfo.state;

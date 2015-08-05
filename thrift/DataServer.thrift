@@ -25,7 +25,8 @@ enum OperationState {
     COMMIT_OK = 8,
     ABORT_OK = 9,
     ERROR = 10 ,
-    NOT_IMPLEMENTED = 11
+    NOT_IMPLEMENTED = 11,
+    FAIL_PENDING_VERSION = 12
 }
 
 typedef string Key
@@ -88,7 +89,7 @@ service DataServer {
 
     CommitReply handleCommit(TransactionId tid, Timestamp ts),
 
-    ReadReply handleReadRequest(TransactionId tid, TimestampInterval interval, Key k),
+    ReadReply handleReadRequest(TransactionId tid, TimestampInterval interval, Key k, bool isReadOnly),
 
     WriteReply handleWriteRequest(TransactionId tid, TimestampInterval interval, Key k, Value v)
 

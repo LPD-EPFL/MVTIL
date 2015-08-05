@@ -117,7 +117,7 @@ int TransactionManager::writeData(Transaction* t, Key key, Value value) {
     }
 
     if (wr.operationState == OperationState::FAIL_INTERSECTION_EMPTY) {
-        restartTransaction(t, MIN_TIMESTAMP, wr.potential.end);
+        restartTransaction(t, wr.potential.start, wr.potential.end);
         return 0;
     }
 
@@ -125,7 +125,7 @@ int TransactionManager::writeData(Transaction* t, Key key, Value value) {
     return 0;
 }
 
-int TransactionManager::restartTransaction(Transaction* t, Timestamp startBound, Timestamp endBound) { //TODO what other information should I pass as parameters to help with a propper restart?
+int TransactionManager::restartTransaction(Transaction* t, Timestamp startBound, Timestamp endBound) {
     Timespan duration = t->initialInterval.end - t->initialInterval.start;
     if (t->numRestarts > RESTART_THRESHOLD) {
         abortTransaction(t, duration);
