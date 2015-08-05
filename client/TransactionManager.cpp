@@ -49,7 +49,7 @@ Value* TransactionManager::readData(Transaction* t, Key key) { //NULL in case of
     ReadReply rR;
 
     s->lock();
-    s->client.handleReadRequest(rR, tid, i, key);
+    s->client.handleReadRequest(rR, tid, i, key, t->isReadOnly);
     s->unlock();
 
     if (rR.OperationState == FAIL_NO_VERSION) {
@@ -150,8 +150,89 @@ int TransactionManager::restartTransaction(Transaction* t, Timestamp startBound,
         abortTransaction(t, duration);
         return 0;
     }
+
+    //Initial interval should allow operation that caused the failure to complete successfully if things remain the same
+
     t->currentInterval = t->intialInterval;
     t->numRestarts++;
+
+    /*
+     * for all in read, write and hint set:
+     * check in the "potential" fields if I can expand the intervals for all such that they will intersect with the new interval;
+     * if no, basically trigger an abort
+     * if yes, actually message the read and write sets and actually try to expand them (only entries that do not intersect t->initial interval already)
+     * if at least one fails, message read and write sets again, and essentially "abort" the transaction (remove all data re transaction from the servers).
+     */
+    bool can_restart = true;
+    for (auto& entry: t->readSet) {
+        if (!intersects(t->initialInterval, entry->potential)) {
+            can_restart = false;
+        }
+    }
+
+    if (can_restart) {
+        for (auto& entry: t->writeSet) {
+             if (!intersects(t->initialInterval, entry->potential)) {
+                 can_restart = false;
+            }
+        }
+    }
+    
+    if (can_restart) {
+        for (auto& entry: t->hintSet) {
+             if (!intersects(t->initialInterval, entry->potential)) {
+                 can_restart = false;
+            }
+        }
+    }
+
+    if (can_restart) {
+        for (auto& entry: t->readSet) {
+            if(!intersects(t->currentInterval, entry->interval)) {
+                Interval nI = computeIntersection(entry->potential, t->currentInterval);
+                auto s = connectionService.getServer(key);
+                ExpandReadRequest eR;
+
+                s->lock();
+                s->client.handleExpandReadRequest(eR, tid, nI, key);
+                s->unlock();
+
+                if (eR.state != R_LOCK_SUCCESS) {
+                    can_restart = false;
+                    break;
+                }
+
+                t->currentInterval = eR.interval;
+            }
+        }
+        if (can_restart) {
+            for (auto& entry: t->writeSet) {
+                if(!intersects(t->currentInterval, entry->interval)) {
+                    Interval nI = computeIntersection(entry->potential, t->currentInterval);
+                    auto s = connectionService.getServer(key);
+                    ExpandWwriteRequest eW;
+
+                    s->lock();
+                    s->client.handleExpandWriteRequest(eW, tid, nI, key);
+                    s->unlock();
+
+                    if (eW.state != W_LOCK_SUCCESS) {
+                        can_restart = false;
+                        break;
+                    }
+
+                    t->currentInterval = eW.interval;
+                }
+            }
+        }
+    }
+
+    if (!can_restart) {
+        abortTransaction(t, duration);
+        return 0;
+    }
+
+    return 1;
 }
 
 int abortTransaction(Transaction* t, Timespan duration) {
