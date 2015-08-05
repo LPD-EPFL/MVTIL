@@ -220,7 +220,7 @@ void ProtocolScheduler::handleNewEpoch(Timestamp barrier) {
 
 void ProtocolScheduler::handleExpandRead(ExpandReadReply& _return, const TransactionId tid, const Timestamp versionTimestamp, const TimestampInterval& newInterval, const Key& k) {
     LockInfo lockInfo;
-    versionManager.expandRead(k, versionTimestamp, newInterval, lockInfo); 
+    versionManager.tryExpandRead(k, versionTimestamp, newInterval, lockInfo); 
     _return.state = lockInfo.state;
     _return.interval = lockInfo.locked;
     _return.potential = lockInfo.potential;
@@ -231,7 +231,8 @@ void ProtocolScheduler::handleExpandRead(ExpandReadReply& _return, const Transac
 
 void ProtocolScheduler::handleExpandWrite(ExpandWriteReply& _return, const TransactionId tid, const TimestampInterval& newInterval, const Key& k) {
     LockInfo lockInfo;
-    versionManager.expandWrite(k, versionTimestamp, newInterval, lockInfo); 
+    //TODO get versionTimestamp from write set
+    versionManager.tryExpandWrite(k, versionTimestamp, newInterval, lockInfo); 
     _return.state = lockInfo.state;
     _return.interval = lockInfo.locked;
     _return.potential = lockInfo.potential;

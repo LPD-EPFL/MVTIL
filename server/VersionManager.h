@@ -93,6 +93,10 @@ class VersionManager {
         void  getWriteLockHint(Key k, TimestampInterval interval, LockInfo& lockInfo);
         //get a Rw lock
         void tryReadWriteLock(Key k, TimestampInterval interval, LockInfo& lockInfo);
+        //try to expand the length of a read lock
+        void tryExpandRead(Key k, Timestamp versionTimestamp, TimestampInterval newInterval, LockInfo& lockInfo);
+        //try to change the interval of a write lock 
+        void tryExpandWrite(Key k, Timestamp versionTimestamp, TimestampInterval newInterval, LockInfo& lockInfo);
 
         //remove a version from the versionStore
         int removeVersion(Key k, Version* v);

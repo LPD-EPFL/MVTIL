@@ -416,6 +416,14 @@ void VersionManager::getWriteLockHint(Key key, TimestampInterval interval, LockI
 
 }
 
+void VersionManager::tryExpandRead(Key k, Timestamp versionTimestamp, TimestampInterval newInterval, LockInfo& lockInfo) {
+
+}
+
+void VersionManager::tryExpandWrite(Key k, Timestamp versionTimestamp, TimestampInterval newInterval, LockInfo& lockInfo) {
+
+}
+
 Timespan VersionManager::getIntersection(Timestamp ts1Left, Timestamp ts1Right, Timestamp ts2Left, Timestamp ts2Right) {
     if (ts1Right < ts1Left) return 0;
     if (ts2Right < ts2Left) return 0;
