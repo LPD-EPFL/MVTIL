@@ -20,6 +20,7 @@
 
 using namespace apache::thrift;
 
+
 class RoutingService {
     public:
         RoutingService(FILE* configFile); //configFile contains the list of servers

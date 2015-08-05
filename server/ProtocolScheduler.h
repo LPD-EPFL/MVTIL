@@ -50,7 +50,7 @@ class ProtocolScheduler : virtual public DataServerIf {
 
         void handleWriteRequest(WriteReply& _return, const TransactionId tid, const TimestampInterval& interval, const Key& k, const Value& v);
 
-        void handleHintRequest(TimestampInterval& _return, const TransactionId tid, const TimestampInterval& interval, const Key& k);
+        void handleHintRequest(HintReply& _return, const TransactionId tid, const TimestampInterval& interval, const Key& k);
 
         void handleCommit(CommitReply& _return, const TransactionId tid, const Timestamp ts);
 

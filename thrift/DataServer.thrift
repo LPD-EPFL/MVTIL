@@ -66,6 +66,13 @@ struct WriteReply {
     5: Key key,
 }
 
+struct HintReply {
+    1: TransactionId tid,
+    2: TimestampInterval interval,
+    3: TimestampInterval potential,
+    4: Key key,
+}
+
 struct CommitReply {
     1: TransactionId tid,
     2: OperationState state,
@@ -85,7 +92,7 @@ service DataServer {
 
     WriteReply handleWriteRequest(TransactionId tid, TimestampInterval interval, Key k, Value v)
 
-    TimestampInterval handleHintRequest(TransactionId tid, TimestampInterval interval, Key k)
+    HintReply handleHintRequest(TransactionId tid, TimestampInterval interval, Key k)
  
     ServerGenericReply handleOperation(ClientGenericRequest cr)
    

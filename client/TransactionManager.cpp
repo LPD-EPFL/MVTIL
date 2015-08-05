@@ -99,6 +99,7 @@ int TransactionManager::writeData(Transaction* t, Key key, Value value) {
     Interval i = t->currentInterval;
     DataServerClient c = routingService.getConnection(key);
     WriteReply wR;
+
     //TODO lock
     c.handleWriteRequest(wR, tid, i, key, value);
     //TODO unlock

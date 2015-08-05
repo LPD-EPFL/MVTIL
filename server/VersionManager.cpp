@@ -321,7 +321,7 @@ void VersionManager::tryWriteLock(Key key, TimestampInterval interval, LockInfo&
 
 }
 
-TimestampInterval VersionManager::getWriteLockHint(Key key, TimestampInterval interval) {
+void VersionManager::getWriteLockHint(Key key, TimestampInterval interval, LockInfo& lockInfo) {
     VersionManagerEntry* ve = getVersionSet(key);
     TimestampInterval ret;
     ret.start=MIN_TIMESTAMP;

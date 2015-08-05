@@ -112,12 +112,15 @@ void ProtocolScheduler::handleWriteRequest(WriteReply& _return, const Transactio
 }
 
 
-void ProtocolScheduler::handleHintRequest(TimestampInterval& _return, const TransactionId tid, const TimestampInterval& interval, const Key& k) {
+void ProtocolScheduler::handleHintRequest(HintReplyl& _return, const TransactionId tid, const TimestampInterval& interval, const Key& k) {
+    LockInfo lockInfo;
 #ifdef DEBUG
     std::cout<<"Handling hint request: Timestamp interval ["<<interval.start<<","<<interval.end<<"]; Key "<<k<<" ."<<endl;
 #endif
-    TimestampInterval res = versionManager.getWriteLockHint(k, interval);
-    _return = res;
+    versionManager.getWriteLockHint(k, interval, lockInfo);
+    _return.interval = lockInfo.interval;
+    _retrun.potential = lockInfo.potential;
+    _return.key = k;
     return;
 }
 
