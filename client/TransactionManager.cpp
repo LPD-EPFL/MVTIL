@@ -123,7 +123,32 @@ int TransactionManager::writeData(Transaction* t, Key key, Value value) {
     return 0;
 }
 
-int abortTransaction(Transaction* t) {
+int restartTransaction(Transaction* t, Timestamp startBound, Timestamp endBound) { //TODO what other information should I pass as parameters to help with a propper restart?
+    Timespan duration = t->initialInterval.end - t->initialInterval.start;
+    bool redo = false;
+    duration *= INTERVAL_MULTIPLICATION_FACTOR;
+    if (duration > INTERVAL_MAX_DURATION) {
+        duration = INTERVAL_MAX_DURATION;
+    }
+    if (startBound > t->initialInterval.start) {
+        t->initialInterval.start = startBound;
+    } 
+    t->initialInterval.end = t->initialInterval.start + duration;
+    if (t->initialInterval.end < endBound) {
+        if ((endBound - t->initialInterval.start) < INTERVAL_MAX_DURATION) {
+         t->initialInterval.end = endBound;
+        } else {
+            redo = true;
+        }
+    }
+    if (redo) {
+        abortTransaction(t, duration);
+        return 0;
+    }
+    t->currentInterval = t->intialInterval;
+}
+
+int abortTransaction(Transaction* t, Timespan duration) {
     // release all write locks 
     for (auto& value: t->writeSetServers) {
         c.send_handleAbort(t->transactionId);
@@ -133,7 +158,14 @@ int abortTransaction(Transaction* t) {
         c.recv_handleAbort(&aR); //not really necessary to check the state
     }
 
-    //TODO empty read, write, hint and server sets; get a new transaction interval; get a new ID
+    t->readSet.clear(); //TODO: should I keep the read set in the hope that at some point it might be useful?
+    t->writeSet.clear();
+    t->hintSet.clear();
+    t->writeSetServers.clear();
+
+    t->transactionId = getNewTransactionId();
+    t->initialInterval = oracle.getInterval(t->isReadOnly, duration);
+    t->currentInterval = t->initialInterval; 
 
     return 0;
 }

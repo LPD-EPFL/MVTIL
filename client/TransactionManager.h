@@ -23,6 +23,7 @@
 
 #define INITIAL_INTERVAL 100
 #define INTERVAL_MULTIPLICATION_FACTOR 2
+#define INTERVAL_MAX_DURATION 1600
 
 #define TX_START_RO \
     Transaction* t; \

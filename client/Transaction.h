@@ -23,7 +23,7 @@
 class Transaction {
     friend class TransactionManager;
     public:
-        Transaction(TransactionId tid, bool RO, TimestampInterval interval) : transactionId(tid), isReadOnly(RO), currentInterval(interval) {}
+        Transaction(TransactionId tid, bool RO, TimestampInterval interval) : transactionId(tid), isReadOnly(RO), currentInterval(interval), initialInterval(interval) {}
         ~Transaction();
     
         Value alreadyContains(Key k);
@@ -36,6 +36,7 @@ class Transaction {
         std::set<ClientConnection> writeSetServers;
 
         TimestampInterval currentInterval;
+        TimestampInterval initialInterval;
         bool isReadOnly;
 
         //FIXME do I gain any performance by keeping the connections in these structures? the key to server mapping should be pretty fast
