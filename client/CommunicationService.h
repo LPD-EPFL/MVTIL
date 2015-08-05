@@ -26,10 +26,10 @@ class RoutingService {
         RoutingService(FILE* configFile); //configFile contains the list of servers
         ~RoutingService();
 
-        shared_ptr<TSocket> getServer(Key k);
+        shared_ptr<ServerConnection> getServer(Key k);
 
     private:
-        std::vector<shared_ptr<TSocket>> servers;
+        std::vector<shared_ptr<ServerConnection>> servers;
 };
 
 #endif

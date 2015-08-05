@@ -33,7 +33,7 @@ class ServerConnection{
     public:
         ServerConnection(std::string host, int port);
         ~ServerConnection();
-        std::shared_ptr<DataServerClient> client;
+        DataServerClient client;
         inline void lock() {
             lock.lock();
         }

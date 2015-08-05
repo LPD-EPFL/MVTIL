@@ -44,13 +44,13 @@ Value* TransactionManager::readData(Transaction* t, Key key) { //NULL in case of
     }
 
     Interval i = t->currentInterval;
-    DataServerClient c = routingService.getConnection(key);
+    auto s = connectionService.getServer(key);
     
     ReadReply rR;
 
-    //TODO lock
-    c.handleReadRequest(rR, tid, i, key);
-    //TODO unlock
+    s->lock();
+    s->client.handleReadRequest(rR, tid, i, key);
+    s->unlock();
 
     if (rR.OperationState == FAIL_NO_VERSION) {
         t->addToReadSet(ReadSetEntry(key, NULL, t->currentInterval, t->currentInterval, c));
@@ -75,12 +75,13 @@ int TransactionManager::declareWrite(Transaction* t, Key key) {
     }
 
     Interval  i = t->currentInterval;
-    DataServerClient c = routingService.getConnection(key);
+    auto s = connectionService.getServer(key);
 
     TimestampInterval ti; 
-    //TODO lock
-    c.handleHintRequest(ti, tid, i, key);
-    //TODO unlock
+    s->lock();
+    s->client.handleHintRequest(ti, tid, i, key);
+    s->unlock();
+
     if ((ti.start == MIN_TIMESTAMP) && (ti.end == MIN_TIMESTAMP)) { //no interval found
         restartTransaction(t, MIN_TIMESTAMP, hint.potential.end); //TODO: hint should return a potential end timestamp as well; it's good to know if it's worth increasing the interval, or if I should just abort
         return 0;
@@ -97,12 +98,12 @@ int TransactionManager::writeData(Transaction* t, Key key, Value value) {
         return;
     }
     Interval i = t->currentInterval;
-    DataServerClient c = routingService.getConnection(key);
+    auto s = connectionService.getServer(key);
     WriteReply wR;
 
-    //TODO lock
-    c.handleWriteRequest(wR, tid, i, key, value);
-    //TODO unlock
+    s->lock();
+    s->client.handleWriteRequest(wR, tid, i, key, value);
+    s->unlock();
 
     if (wr.operationState == OperationState::W_LOCK_SUCCESS) {
         t->currentInterval = wr.interval; 
