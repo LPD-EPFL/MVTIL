@@ -29,6 +29,18 @@ class Transaction {
     
         Value alreadyContains(Key k);
 
+        inline void addToReadSet(ReadSetEntry e) { 
+            readSet.insert(e); 
+        }
+                
+        inline void addToWriteSet(WriteSetEntry e) {
+            writeSet.insert(e);
+        }
+
+        inline void addToHintSet(HintSetEntry e) {
+            hintSet.insert(e);
+        }
+
     private:
         TransactionId transactionId;
         std::vector<ReadSetEntry> readSet;
