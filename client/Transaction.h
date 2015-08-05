@@ -23,7 +23,7 @@
 class Transaction {
     friend class TransactionManager;
     public:
-        Transaction(TransactionId tid, bool RO, TimestampInterval interval) : transactionId(tid), isReadOnly(RO), currentInterval(interval), initialInterval(interval) {}
+        Transaction(TransactionId tid, bool RO, TimestampInterval interval) : transactionId(tid), isReadOnly(RO), currentInterval(interval), initialInterval(interval), numRestarts(0) {}
         ~Transaction();
     
         Value alreadyContains(Key k);
@@ -38,6 +38,7 @@ class Transaction {
         TimestampInterval currentInterval;
         TimestampInterval initialInterval;
         bool isReadOnly;
+        uint32_t numRestarts;
 
         //FIXME do I gain any performance by keeping the connections in these structures? the key to server mapping should be pretty fast
         typedef struct ReadSetEntry {

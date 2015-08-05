@@ -82,11 +82,11 @@ int TransactionManager::declareWrite(Transaction* t, Key key) {
     c.handleHintRequest(ti, tid, i, key);
     //TODO unlock
     if ((ti.start == MIN_TIMESTAMP) && (ti.end == MIN_TIMESTAMP)) { //no interval found
-        restartTransaction(t);
+        restartTransaction(t, MIN_TIMESTAMP, hint.potential.end); //TODO: hint should return a potential end timestamp as well; it's good to know if it's worth increasing the interval, or if I should just abort
         return 0;
     }
     t->currentInterval = ti;
-    t->addToHinSet(key, ti);
+    t->addToHintSet(key, ti);
     return 1;
 }
 
@@ -110,12 +110,12 @@ int TransactionManager::writeData(Transaction* t, Key key, Value value) {
         return 1;
     }
     if (wr.operationState == OperationState::FAIL_READ_MARK_LARGE) {
-        restartTransaction(t, wr.potential.start);
+        restartTransaction(t, wr.potential.start, MIN_TIMESTAMP);
         return 0;
     }
 
     if (wr.operationState == OperationState::FAIL_INTERSECTION_EMPTY) {
-        restartTransaction(t);
+        restartTransaction(t, MIN_TIMESTAMP, wr.potential.end);
         return 0;
     }
 
@@ -123,8 +123,11 @@ int TransactionManager::writeData(Transaction* t, Key key, Value value) {
     return 0;
 }
 
-int restartTransaction(Transaction* t, Timestamp startBound, Timestamp endBound) { //TODO what other information should I pass as parameters to help with a propper restart?
+int TransactionManager::restartTransaction(Transaction* t, Timestamp startBound, Timestamp endBound) { //TODO what other information should I pass as parameters to help with a propper restart?
     Timespan duration = t->initialInterval.end - t->initialInterval.start;
+    if (t->numRestarts > RESTART_THRESHOLD) {
+        abortTransaction(t, duration);
+    }
     bool redo = false;
     duration *= INTERVAL_MULTIPLICATION_FACTOR;
     if (duration > INTERVAL_MAX_DURATION) {
@@ -146,6 +149,7 @@ int restartTransaction(Transaction* t, Timestamp startBound, Timestamp endBound)
         return 0;
     }
     t->currentInterval = t->intialInterval;
+    t->numRestarts++;
 }
 
 int abortTransaction(Transaction* t, Timespan duration) {
@@ -166,6 +170,7 @@ int abortTransaction(Transaction* t, Timespan duration) {
     t->transactionId = getNewTransactionId();
     t->initialInterval = oracle.getInterval(t->isReadOnly, duration);
     t->currentInterval = t->initialInterval; 
+    t->numRestarts = 0;
 
     return 0;
 }

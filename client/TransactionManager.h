@@ -24,41 +24,43 @@
 #define INITIAL_INTERVAL 100
 #define INTERVAL_MULTIPLICATION_FACTOR 2
 #define INTERVAL_MAX_DURATION 1600
+#define RESTART_THRESHOLD 4
 
 #define TX_START_RO \
     Transaction* t; \
     while (1) { \
-        t = transactionStart(true);
+        t = transactionManager.transactionStart(true);
 
 #define TX_START \
     Transaction* t; \
     while (1) { \
-        t = transactionStart(false);
+        t = transactionManager.transactionStart(false);
 
 #define TX_END \
+    transactionManager.transactionEnd(t); \
     break ; \
     } \
     delete t;
 
-#define TX_READ(key) read_data(t, key); \ //reads never cause a transaction to abort
+#define TX_READ(key) transactionManager.read_data(t, key); \ //reads never cause a transaction to abort
 
 #define TX_WRITE(key, val) \
-    if (writeData(t, key, val) == 0) { \
+    if (transactionManager.writeData(t, key, val) == 0) { \
         continue; \
     }
 
 #define TX_DECLARE_WRITE(key) \
-    if (declareWrite(t, key) == 0) { \
+    if (transactionManager.declareWrite(t, key) == 0) { \
         continue; \
     }
 
 class TransactionManager {
     public:
         TransactionId transactionStart(bool isReadOnly);
-        int transactionEnd(TransactionId tid);
-        int declareWrite(TransactionId tid, Key k);
-        Value* readData(TransactionId tid, Key k);
-        int writeData(TransactionId tid, Key k, Value v);
+        int transactionEnd(Transaction* t);
+        int declareWrite(Transaction* t, Key k);
+        Value* readData(Transaction* t, Key k);
+        int writeData(Transaction* t, Key k, Value v);
 
     private:
         RoutingService routingService;
