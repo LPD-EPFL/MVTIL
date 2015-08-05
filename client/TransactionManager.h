@@ -39,8 +39,8 @@
         t = transactionManager.transactionStart(false);
 
 #define TX_END \
-    transactionManager.transactionEnd(t); \
-    break ; \
+        transactionManager.transactionEnd(t); \
+        break ; \
     } \
     delete t;
 

@@ -84,6 +84,18 @@ struct AbortReply {
     2: OperationState state,
 }
 
+struct ExpandReadReply {
+    1: TransactionId tid,
+    2: OperationState state,
+    3: TimestampInterval interval,
+}
+
+struct ExpandWriteReply {
+    1: TransactionId tid,
+    2: OperationState state,
+    3: TimestampInterval interval,
+}
+
 service DataServer {
     AbortReply handleAbort(TransactionId tid),
 
@@ -96,5 +108,9 @@ service DataServer {
     HintReply handleHintRequest(TransactionId tid, TimestampInterval interval, Key k)
  
     ServerGenericReply handleOperation(ClientGenericRequest cr)
+
+    ExpandReadReply handleExpandRead(TransactionId tid, TimestampInterval newInterval, Key k)
+
+    ExpandWriteReply handleExpandWrite(TransactionId tid, TimestampInterval newInterval, Key k)
    
 }

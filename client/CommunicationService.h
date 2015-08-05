@@ -12,19 +12,20 @@
  * limitations under the License.
  */
 
-#ifndef _ROUTING_SERVICE_H_
-#define _ROUTING_SERVICE_H_
+#ifndef _COMMUNICATION_SERVICE_H_
+#define _COMMUNICATION_SERVICE_H_
 
 #include <vector>
-#include <thrift/transport/TSocket>
+#include <memory>
+#include "ServerConnection.h"
 
 using namespace apache::thrift;
 
 
-class RoutingService {
+class CommunicationService {
     public:
-        RoutingService(FILE* configFile); //configFile contains the list of servers
-        ~RoutingService();
+        CommunicationService(FILE* configFile); //configFile contains the list of servers
+        ~CommunicationService();
 
         shared_ptr<ServerConnection> getServer(Key k);
 

@@ -212,12 +212,12 @@ int TransactionManager::restartTransaction(Transaction* t, Timestamp startBound,
     if (can_restart) {
         for (auto& entry: t->readSet) {
             if(!intersects(t->currentInterval, entry->interval)) {
-                Interval nI = computeIntersection(entry->potential, t->currentInterval);
+                Interval newInterval = computeIntersection(entry->potential, t->currentInterval);
                 auto s = connectionService.getServer(key);
-                ExpandReadRequest eR;
+                ExpandReadReply eR;
 
                 s->lock();
-                s->client.handleExpandReadRequest(eR, tid, nI, key);
+                s->client.handleExpandReadRequest(eR, tid, newInterval, key);
                 s->unlock();
 
                 if (eR.state != R_LOCK_SUCCESS) {
@@ -231,12 +231,12 @@ int TransactionManager::restartTransaction(Transaction* t, Timestamp startBound,
         if (can_restart) {
             for (auto& entry: t->writeSet) {
                 if(!intersects(t->currentInterval, entry->interval)) {
-                    Interval nI = computeIntersection(entry->potential, t->currentInterval);
+                    Interval newInterval = computeIntersection(entry->potential, t->currentInterval);
                     auto s = connectionService.getServer(key);
-                    ExpandWwriteRequest eW;
+                    ExpandWwriteReply eW;
 
                     s->lock();
-                    s->client.handleExpandWriteRequest(eW, tid, nI, key);
+                    s->client.handleExpandWriteRequest(eW, tid, newInterval, key);
                     s->unlock();
 
                     if (eW.state != W_LOCK_SUCCESS) {
