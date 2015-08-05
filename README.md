@@ -1,1 +1,1 @@
-test
+Distributed Transactions Using Adjustable Serialization Timestamp Intervals

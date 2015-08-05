@@ -26,6 +26,8 @@
 #define INTERVAL_MAX_DURATION 1600
 #define RESTART_THRESHOLD 4
 
+#define TX_INIT TransactionManager transactionManager;
+
 #define TX_START_RO \
     Transaction* t; \
     while (1) { \

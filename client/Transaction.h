@@ -16,6 +16,7 @@
 #define _TRANSACTION_H_
 
 #include <vector>
+#include <set>
 #include "DataServer_types.h"
 #include "common.h"
 #include "TransactionManager.h"
@@ -33,7 +34,7 @@ class Transaction {
         std::vector<ReadSetEntry> readSet;
         std::vector<WriteSetEntry> writeSet;
         std::vector<HintSetEntry> hintSet;
-        std::set<ClientConnection> writeSetServers;
+        std::set<ClientConnection> writeSetServers; //TODO use the appropriate type here
 
         TimestampInterval currentInterval;
         TimestampInterval initialInterval;
@@ -47,7 +48,7 @@ class Transaction {
             TimestampInterval interval;
             TimestampInterval potential;
 
-            ReadSetEntry(ReadReply r) : key(r.key), value(r.value), interval(r.interval), potential(r.potential) {}
+            ReadSetEntry(Key k, Value v, TimestampInterval i, TimestampInterval p) : key(k), value(v), interval(i), potential(p) {}
         } ReadSetEntry;
 
         typedef struct WriteSetEntry {
@@ -55,17 +56,15 @@ class Transaction {
             Value value;
             TimestampInterval interval;
             TimestampInterval potential;
-            ServerAddress address;
-
-            WriteSetEntry(Key k, Value v, ServerAddress s) : key(k), value(v), address(s) {}
+                    
+            WriteSetEntry(Key k, Value v, TimestampInterval i, TimestampInterval p) : key(k), value(v), interval(i), potential(p) {}
         } WriteSetEntry;
 
         typedef struct HintSetEntry { //FIXME: is it useful for anything to keep this around?
             Key key;
             TimestampInterval interval;
-            ServerAddress address;
 
-            HintSetEntry(Key k, TimestampInterval i, ServerAddress a): key(k), interval(i), address(s) {}
+            HintSetEntry(Key k, TimestampInterval i): key(k), interval(i) {}
         } HintSetEntry;
 };
 
