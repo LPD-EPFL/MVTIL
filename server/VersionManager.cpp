@@ -417,6 +417,79 @@ void VersionManager::getWriteLockHint(Key key, TimestampInterval interval, LockI
 }
 
 void VersionManager::tryExpandRead(Key k, Timestamp versionTimestamp, TimestampInterval newInterval, LockInfo& lockInfo) {
+    VersionManagerEntry* ve = getVersionSet(key);
+    if (ve == NULL) {
+        lockInfo.state = OperationState::ERROR;
+        return;
+    }
+    ve->lockEntry();
+    if (versionTimestamp == MIN_TIMESTAMP) {
+            if (ve->isEmpty()) {
+                markReadNotFound(key, newInterval.finish); //be conservative
+                lockInfo.locked = newInterval;
+                lockInfo.potential.start = MIN_TIMESTAMP;
+                lockInfo.potential.finish = MAX_TIMESTAMP;
+                lockInfo.state = OperationState::EXPANSION_OK;
+                ve->unlockEntry();
+                return;
+            }
+            if (ve->versions.getFirstTimestamp() < newInterval.start) {
+                lockInfo.state = OperationState::FAIL_EXPANSION;
+                ve->unlockEntry();
+                return;
+            }
+
+            Timestamp end = std::min(newInterval.finish, ve->versions.getFirstTimestamp);
+            markReadNotFound(key, end);
+            lockInfo.locked.start = newInterval.start;
+            lockInfo.locked.finish = end;
+            lockInfo.potential.start = MIN_TIMESTAMP;
+            lockInfo.potential.finish = end;
+            lockInfo.state = OperationState::EXPANSION_OK; 
+            ve->unlockEntry();
+            return;
+    }
+
+    OrderedSetNode* node;
+    node = ve->versions.find(versionTimestamp, &prev);
+
+    
+    Version* v = node->getVersion();
+    if (v->timestamp != versionTimestamp) {
+       lockInfo.state = OperationState::ERROR;
+       ve->unlockEntry();
+       return;
+    }
+
+    Timestamp next_timestamp = node->getNext()->timestamp; 
+
+    if ((newInterval.finish < v->timestamp) || (newInterval.start > next_timestamp)) {
+        lockInfo.state = FAIL_EXPANSION;
+        ve->unlockEntry();
+        return;
+    }
+
+    Timestamp start = std::max(v->timestamp, newInterval.start);
+    Timestamp end = std::min(next_timestamp, newInterval.finish);
+    
+    if (start > end) { //not really necessary to do this comparision at this point
+        lockInfo.state = OperationState::FAIL_EXPANSION;
+        ve->unlockEntry();
+        return;
+    }
+
+    lockInfo.locked.start = start;
+    lockInfo.locked.finish = end;
+    lockInfo.potential.start = v->timestamp;
+    lockInfo.potential.finish = next_timestamp;
+    lockInfo.state = OperationState::EXPANSION_OK;
+    
+    if (v->maxReadFrom < lockInfo.locked.finish) {
+        v->maxReadFrom = lockInfo.locked.finish;
+    }
+    
+    ve->unlockEntry();
+    return;
 
 }
 

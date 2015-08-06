@@ -54,7 +54,9 @@ int TransactionManager::readData(Transaction* t, Key key, Value ** val) { //NULL
     s->unlock();
 
     if (rR.OperationState == FAIL_NO_VERSION) {
-        t->addToReadSet(ReadSetEntry(key, NULL, t->currentInterval, t->currentInterval, c));
+        Timestamp in = t->currentInterval;
+        in.start = MIN_TIMESTAMP;
+        t->addToReadSet(ReadSetEntry(key, NULL, in, in, c));
         *val = NULL;
         return 1;
     }
@@ -220,7 +222,7 @@ int TransactionManager::restartTransaction(Transaction* t, Timestamp startBound,
                 s->client.handleExpandReadRequest(eR, tid, newInterval, key);
                 s->unlock();
 
-                if (eR.state != R_LOCK_SUCCESS) {
+                if (eR.state != EXPANSION_OK) {
                     can_restart = false;
                     break;
                 }
@@ -240,7 +242,7 @@ int TransactionManager::restartTransaction(Transaction* t, Timestamp startBound,
                     s->client.handleExpandWriteRequest(eW, tid, newInterval, key);
                     s->unlock();
 
-                    if (eW.state != W_LOCK_SUCCESS) {
+                    if (eW.state != EXPANSION_OK) {
                         can_restart = false;
                         break;
                     }
