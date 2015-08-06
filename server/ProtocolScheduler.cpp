@@ -120,7 +120,7 @@ void ProtocolScheduler::handleHintRequest(HintReplyl& _return, const Transaction
     std::cout<<"Handling hint request: Timestamp interval ["<<interval.start<<","<<interval.end<<"]; Key "<<k<<" ."<<endl;
 #endif
     versionManager.getWriteLockHint(k, interval, lockInfo);
-    _return.interval = lockInfo.interval;
+    _return.interval = lockInfo.locked;
     _retrun.potential = lockInfo.potential;
     _return.key = k;
     return;

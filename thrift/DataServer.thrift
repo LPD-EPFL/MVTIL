@@ -28,7 +28,8 @@ enum OperationState {
     NOT_IMPLEMENTED = 11,
     FAIL_PENDING_VERSION = 12,
     EXPANSION_OK = 13,
-    FAIL_EXPANSION = 14
+    FAIL_EXPANSION = 14, 
+    HINT_OK = 15
 }
 
 typedef string Key
