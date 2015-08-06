@@ -87,13 +87,13 @@ int TransactionManager::declareWrite(Transaction* t, Key key) {
         Interval  i = t->currentInterval;
         auto s = connectionService.getServer(key);
 
-        TimestampInterval ti; 
+        HintReply hR; 
         s->lock();
-        s->client.handleHintRequest(ti, tid, i, key);
+        s->client.handleHintRequest(hR, tid, i, key);
         s->unlock();
 
-        if ((ti.start == MIN_TIMESTAMP) && (ti.end == MIN_TIMESTAMP)) { //no interval found
-            if (restartTransaction(t, hint.potential.start, hint.potential.end) == 1) {
+        if (hR.state != OperationState::HINT_OK) { //no interval found
+            if (restartTransaction(t, hR.potential.start, hR.potential.end) == 1) {
                 continue;
             } else {
                 return 0;
@@ -101,8 +101,8 @@ int TransactionManager::declareWrite(Transaction* t, Key key) {
         }
         done = true;
     }
-    t->currentInterval = ti;
-    t->addToHintSet(key, ti);
+    t->currentInterval = hR.interval;
+    t->addToHintSet(HintSetEntry(key, hR.interval, hR.potential));
     return 1;
 }
 

@@ -75,6 +75,7 @@ struct HintReply {
     2: TimestampInterval interval,
     3: TimestampInterval potential,
     4: Key key,
+    5: OperationState state,
 }
 
 struct CommitReply {

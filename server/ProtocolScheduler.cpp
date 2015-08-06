@@ -123,6 +123,7 @@ void ProtocolScheduler::handleHintRequest(HintReplyl& _return, const Transaction
     _return.interval = lockInfo.locked;
     _retrun.potential = lockInfo.potential;
     _return.key = k;
+    _return.state = lockInfo.state;
     return;
 }
 

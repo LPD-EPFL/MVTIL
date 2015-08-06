@@ -75,6 +75,7 @@ class Transaction {
         typedef struct HintSetEntry { //FIXME: is it useful for anything to keep this around?
             Key key;
             TimestampInterval interval;
+            TimestampInterval potential;
 
             HintSetEntry(Key k, TimestampInterval i): key(k), interval(i) {}
         } HintSetEntry;
