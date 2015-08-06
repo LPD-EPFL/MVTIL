@@ -57,7 +57,7 @@ class VersionManager {
 
            private:
                 Timestamp readMark;
-                std::mutex lock;
+                std::recursive_mutex lock;
 
            public:
                 inline bool isEmpty() {

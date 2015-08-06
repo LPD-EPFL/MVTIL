@@ -99,12 +99,12 @@ void ProtocolScheduler::handleWriteRequest(WriteReply& _return, const Transactio
     }
     
     if (pendingWriteSets.find(tid) == pendingWriteSets.end()){
-        std::queue<WSEntry*>* q = new std::queue<WSEntry*>;
-        pendingWriteSets.insert(std::pair<TransactionId,std::queue<WSEntry*>*>(tid, q)); //TODO also stamp the write set with a timestamp; if too much time has passed and no commit received, may have to act
+        auto q = new std::unordered_set<<shared_ptr<WSEntry>>;
+        pendingWriteSets.insert(std::pair<TransactionId,std::unordered_set<shared_ptr<WSEntry>>*>(tid, q)); //TODO also stamp the write set with a timestamp; if too much time has passed and no commit received, may have to act
     }
-    WSEntry* wse = new WSEntry(lockInfo.version,k,v);
-    std::map<TransactionId, std::queue<WSEntry*>*>::iterator it = pendingWriteSets.find(tid); 
-    it->second->push(wse);
+    auto wse = make_shared(lockInfo.version,k,v);
+    auto it = pendingWriteSets.find(tid); 
+    it->second->insert(wse);
     _return.tid = tid;
     _return.state = lockInfo.state;
     _return.interval = lockInfo.locked;
@@ -132,23 +132,20 @@ void ProtocolScheduler::handleCommit(CommitReply& _return, const TransactionId t
 #ifdef DEBUG
     std::cout<<"Handling commit: Transaction id "<<tid<<"; Timestamp "<<ts<<" ."<<endl;
 #endif
-    std::queue<WSEntry*>* ws = pendingWriteSets.find(tid)->second; 
+    auto ws = pendingWriteSets.find(tid)->second; 
     if (ws == NULL) {
         _return.state = OperationState::WRITES_NOT_FOUND;
         _return.tid = tid;
         return;
     }
-    while (!ws->empty()) {
+    for (auto& ws_entry: ws) {
         //TODO do I need to protect this with locks?
-        WSEntry * ws_entry = ws->front();
-        ws->pop();
         versionManager.updateAndPersistVersion(ws_entry->key, ws_entry->version, ts, 0, ts, COMMITTED);
 #ifndef INITIAL_TESTING
         dataStore.write(toDsKey(ws_entry->key,ts), ws_entry->value);
 #endif
-        delete(ws_entry);
-        //TODO: delete members as well?
     }
+    ws->clear();
     pendingWriteSets.erase(tid);
     _return.state = OperationState::COMMIT_OK;
     _return.tid = tid;
@@ -159,20 +156,19 @@ void ProtocolScheduler::handleAbort(AbortReply& _return, const TransactionId tid
 #ifdef DEBUG
     std::cout<<"Handling abort: Transaction id "<<tid<<" ."<<endl;
 #endif
-    std::queue<WSEntry*>* ws = pendingWriteSets.find(tid)->second;
+    auto ws = pendingWriteSets.find(tid)->second;
     if (ws == NULL) {
         _return.state = OperationState::WRITES_NOT_FOUND;
         _return.tid = tid;
         return;
     }
-    while (!ws->empty()) {
+
+    for (auto& ws_entry: ws) {
         //TODO do I need to protect this with locks?
-        WSEntry * ws_entry = ws->front();
-        ws->pop();
         versionManager.removeVersion(ws_entry->key, ws_entry->version);
-        delete(ws_entry);
         //TODO: what else needs to be deleted? is the version deleted by removeVersion()?
     }
+    ws->clear();
 
     pendingWriteSets.erase(tid);
     _return.state = OperationState::ABORT_OK;
@@ -231,16 +227,53 @@ void ProtocolScheduler::handleExpandRead(ExpandReadReply& _return, const Transac
 }
 
 void ProtocolScheduler::handleExpandWrite(ExpandWriteReply& _return, const TransactionId tid, const TimestampInterval& newInterval, const Key& k) {
+    Value value;
     LockInfo lockInfo;
-    //TODO get versionTimestamp from write set
-    versionManager.tryExpandWrite(k, versionTimestamp, newInterval, lockInfo); 
+
+    auto ws = pendingWriteSets.find(tid)->second;
+    if (ws == NULL) {
+        _return.state = OperationState::WRITES_NOT_FOUND;
+        _return.tid = tid;
+        return;
+    }
+
+    bool found = false;
+
+    for (auto& ws_entry: ws) {
+        if (ws_entry->key == key) {
+            found = true;
+            value = ws_entry->value;
+            versionManager.tryExpandWrite(ws_entry->key, ws_entry->version->timestamp, newInterval, lockInfo);
+            ws->erase(ws_entry);
+            break;
+        }
+    }
+
+    if (found == false) {
+        _return.state = OperationState::WRITES_NOT_FOUND;
+        _return.tid = tid;
+        return;
+    }
+
+    if (lockInfo.state != OperationState::W_LOCK_SUCCESS) {
+        abortTransaction(tid);
+        _return.tid = tid;
+        _return.state = lockInfo.state;
+        _return.interval = lockInfo.locked;
+        _return.potential = lockInfo.potential;
+        _return.key = k;
+        return;
+    }
+    
+    auto wse = make_shared(lockInfo.version,k,value);
+    ws->insert(wse);
+
+    _return.tid = tid;
     _return.state = lockInfo.state;
     _return.interval = lockInfo.locked;
     _return.potential = lockInfo.potential;
     _return.key = k;
-    _return.tid = tid;
-    //TODO update in write set as well
-    return; 
+    return;
 }
 
 //TODO add code handling transactions aborted by the recovery manager

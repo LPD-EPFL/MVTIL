@@ -467,7 +467,7 @@ void VersionManager::getWriteLockHint(Key key, TimestampInterval interval, LockI
 
 }
 
-void VersionManager::tryExpandRead(Key k, Timestamp versionTimestamp, TimestampInterval newInterval, LockInfo& lockInfo) {
+void VersionManager::tryExpandRead(Key key, Timestamp versionTimestamp, TimestampInterval newInterval, LockInfo& lockInfo) {
     VersionManagerEntry* ve = getVersionSet(key);
     if (ve == NULL) {
         lockInfo.state = OperationState::ERROR;
@@ -544,8 +544,29 @@ void VersionManager::tryExpandRead(Key k, Timestamp versionTimestamp, TimestampI
 
 }
 
-void VersionManager::tryExpandWrite(Key k, Timestamp versionTimestamp, TimestampInterval newInterval, LockInfo& lockInfo) {
+void VersionManager::tryExpandWrite(Key key, Timestamp versionTimestamp, TimestampInterval newInterval, LockInfo& lockInfo) {
+    VersionManagerEntry* ve = getVersionSet(key);
+    if (ve == NULL) {
+        lockInfo.state = OperationState::ERROR;
+        return;
+    }
+    ve->lockEntry();
+    OrderedSetNode* node;
+    OrderedSetNode* prev;
+    node = ve->versions.find(versionTimestamp, &prev);
+    
+    Version* v = node->getVersion();
+    if (v->timestamp != versionTimestamp) {
+       lockInfo.state = OperationState::ERROR;
+       ve->unlockEntry();
+       return;
+    }
 
+    int res = ve->versions.remove(v->timestamp);
+    tryWriteLock(key, newInterval, lockInfo);
+ 
+    ve->unlockEntry();
+    return;
 }
 
 Timespan VersionManager::getIntersection(Timestamp ts1Left, Timestamp ts1Right, Timestamp ts2Left, Timestamp ts2Right) {
@@ -564,7 +585,10 @@ int VersionManager::removeVersion(Key k, Version* v) {
     if (ve == NULL) {
         return 0;
     }
+
+    ve->lockEntry();
     int res = ve->versions.remove(v->timestamp);
+    ve->unlockEntry();
     return res;
 }
 

@@ -18,6 +18,7 @@
 #include "DataServer.h"
 #include "DataServer_types.h"
 
+#include <unordered_set>
 #include <queue>
 #include <iostream>
 #include "common.h"
@@ -80,7 +81,7 @@ class ProtocolScheduler : virtual public DataServerIf {
 
         void garbageCollect(Timestamp barrier);
 
-        std::map<TransactionId, std::queue<WSEntry*>*> pendingWriteSets;
+        std::map<TransactionId, std::unordered_set<shared_ptr<WSEntry>>*> pendingWriteSets;
 
 };
 #endif
