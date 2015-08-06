@@ -269,7 +269,7 @@ void ProtocolScheduler::handleExpandWrite(ExpandWriteReply& _return, const Trans
     ws->insert(wse);
 
     _return.tid = tid;
-    _return.state = lockInfo.state;
+    _return.state = EXPANSION_OK;
     _return.interval = lockInfo.locked;
     _return.potential = lockInfo.potential;
     _return.key = k;

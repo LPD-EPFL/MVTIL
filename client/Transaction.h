@@ -15,8 +15,7 @@
 #ifndef _TRANSACTION_H_
 #define _TRANSACTION_H_
 
-#include <vector>
-#include <set>
+#include <unordered_set>
 #include "DataServer_types.h"
 #include "common.h"
 #include "TransactionManager.h"
@@ -43,10 +42,10 @@ class Transaction {
 
     private:
         TransactionId transactionId;
-        std::vector<ReadSetEntry> readSet;
-        std::vector<WriteSetEntry> writeSet;
-        std::vector<HintSetEntry> hintSet;
-        std::set<ClientConnection> writeSetServers; //TODO use the appropriate type here
+        std::unordered_set<ReadSetEntry> readSet;
+        std::unordered_set<WriteSetEntry> writeSet;
+        std::unordered_set<HintSetEntry> hintSet;
+        std::unordered_set<ClientConnection> writeSetServers; //TODO use the appropriate type here
 
         TimestampInterval currentInterval;
         TimestampInterval initialInterval;
