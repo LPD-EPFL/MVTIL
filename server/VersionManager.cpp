@@ -330,29 +330,43 @@ void VersionManager::tryWriteLock(Key key, TimestampInterval interval, LockInfo&
 
 void VersionManager::getWriteLockHint(Key key, TimestampInterval interval, LockInfo& lockInfo) {
     VersionManagerEntry* ve = getVersionSet(key);
-    TimestampInterval ret;
-    ret.start=MIN_TIMESTAMP;
-    ret.finish=MIN_TIMESTAMP;
     if (ve == NULL) {
-        return interval; 
+        lockInfo.locked = interval;
+        lockInfo.potential.start = MIN_TIMESTAMP;
+        lockInfo.potential.end = MAX_TIMESTAMP;
+        lockInfo.state = OperationState::HINT_OK;
+        return; 
     }
     
     ve->lockEntry(); 
     if (getMaxReadMark(key) > interval.finish) {
+        lockInfo.state = OperationState::FAIL_READ_MARK_LARGE;
+        lockInfo.locked.start = MIN_TIMESTAMP;
+        lockInfo.locked.finish = MIN_TIMESTAMP;
+        lockInfo.potential.start = MIN_TIMESTAMP;
+        lockInfo.potential.finish = getMaxReadMark(key);
         ve->unlockEntry();
-        return ret;
+        return;
     }
     if (ve->isEmpty() || (ve->versions.getFirstTimestamp() > interval.finish)) {
         if (getMaxReadMark(key) > interval.finish) {
+            lockInfo.state = OperationState::FAIL_READ_MARK_LARGE;
+            lockInfo.locked.start = MIN_TIMESTAMP;
+            lockInfo.locked.finish = MIN_TIMESTAMP;
+            lockInfo.potential.start = MIN_TIMESTAMP;
+            lockInfo.potential.finish = getMaxReadMark(key);
             ve->unlockEntry();
-            return ret;
+            return;
         }
         
         Timestamp start = std::max(interval.start, getMaxReadMark(key));
-        ret.start=start;
-        ret.finish=interval.finish;
+        lockInfo.locked.start=start;
+        lockInfo.locked.finish=interval.finish;
+        lockInfo.potential.start = start;
+        lockInfo.potential.finsih = std::max(interval.finish, ve->versions.getFirstTimestamp());
+        lockInfo.state = OperationState::HINT_OK;
         ve->unlockEntry();
-        return ret;
+        return;
     }
 
     Version* selected_version = NULL;   
@@ -377,26 +391,44 @@ void VersionManager::getWriteLockHint(Key key, TimestampInterval interval, LockI
     Timestamp next_timestamp = 0;
     Timestamp next_timestamp_pending = 0;
 
+    TimestampInterval maxIfFail;
+    maxIfFail.start = MIN_TIMESTAMP;
+    maxIfFail.finish = MIN_TIMESTAMP;
+
     while ((ver != NULL) && (ver->timestamp <= interval.finish)) {
         next = node->getNext();
         if (ver->state == COMMITTED) {
-            if ((selected_version == NULL) && (ver->maxReadFrom < interval.finish)){
-                selected_version =  ver;
-                next_timestamp = next->getTimestamp();
-            } else {
-                if (getIntersection(ver->maxReadFrom, next->getTimestamp(), interval.start, interval.finish) > getIntersection(selected_version->maxReadFrom, next_timestamp, interval.start, interval.finish)) {
-                    selected_version = ver;
+            if (ver->maxReadFrom < interval.finish){
+                if (selected_version == NULL){
+                    selected_version =  ver;
                     next_timestamp = next->getTimestamp();
+                } else {
+                    if (getIntersection(ver->maxReadFrom, next->getTimestamp(), interval.start, interval.finish) > getIntersection(selected_version->maxReadFrom, next_timestamp, interval.start, interval.finish)) {
+                        selected_version = ver;
+                        next_timestamp = next->getTimestamp();
+                    }
+                }
+            } else {
+                if ((next->getTimestamp() - ver->maxReadFrom) > (maxIfFail.finish - maxIfFail.start)) {
+                    maxIfFail.start = ver->maxReadFrom;
+                    maxIfFail.end = next->getTimestamp();
                 }
             }
         } else if (ver->state == PENDING) {
-            if ((selected_pending == NULL) && ((ver->timestamp + ver->duration) < interval.finish)){
-                selected_pending = ver;
-                next_timestamp_pending = next->getTimestamp();
-            } else {
-                if (getIntersection(ver->timestamp + ver->duration, next->getTimestamp(), interval.start, interval.finish) > getIntersection(selected_pending->timestamp + selected_pending->duration, next_timestamp_pending, interval.start, interval.finish)) {
-                    selected_pending=ver;
+            if ((ver->timestamp + ver->duration) < interval.finish){
+                if (selected_pending == NULL){
+                    selected_pending = ver;
                     next_timestamp_pending = next->getTimestamp();
+                } else {
+                    if (getIntersection(ver->timestamp + ver->duration, next->getTimestamp(), interval.start, interval.finish) > getIntersection(selected_pending->timestamp + selected_pending->duration, next_timestamp_pending, interval.start, interval.finish)) {
+                        selected_pending=ver;
+                        next_timestamp_pending = next->getTimestamp();
+                    }
+                }
+            } else {
+                if ((next->getTimestamp() - ver->duration - ver->timestamp) > (maxIfFail.finish - maxIfFail.start)) {
+                    maxIfFail.start = ver->timestamp + ver->duration;
+                    maxIfFail.finish = next->getTimestamp();
                 }
             }
         }
@@ -406,21 +438,32 @@ void VersionManager::getWriteLockHint(Key key, TimestampInterval interval, LockI
     if (selected_version != NULL) {
         Timestamp start = std::max(interval.start, selected_version->maxReadFrom);
         Timestamp end = std::min(interval.finish, next_timestamp);
-        ret.start = start;
-        ret.finish = end;
+        lockInfo.locked.start = start;
+        lockInfo.locked.finish = end;
+        lockInfo.potential.start = selected_version->maxReadFrom;
+        lockInfo.potential.finish = next_timestamp;
+        lockInfo.state = OperationState::HINT_OK;
         ve->unlockEntry();
-        return ret;
+        return;
     }
     if (selected_pending != NULL) {
         Timestamp start = std::max(interval.start, selected_pending->timestamp + selected_pending->duration);
         Timestamp end = std::min(interval.finish, next_timestamp_pending);
-        ret.start = start;
-        ret.finish = end;
+        lockInfo.locked.start = start;
+        lockInfo.locked.finish = end;
+        lockInfo.potential.start = selected_pending->timestamp + selected_pending->duration;
+        lockInfo.potential.finish = next_timestamp_pending;
+        lockInfo.state = OperationState::HINT_OK;
         ve->unlockEntry();
-        return ret;
+        return;
     }
+    lockInfo.locked.start = MIN_TIMESTAMP;
+    lockInfo.locked.finish = MIN_TIMESTAMP;
+    lockInfo.potential.start = maxIfFail.start;
+    lockInfo.potential.finish = maxIfFail.finsih;
+    lockInfo.state = OperationState::FAIL_INTERSECTION_EMPTY;
     ve->unlockEntry();
-    return ret;
+    return;
 
 }
 
