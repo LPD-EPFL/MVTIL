@@ -336,17 +336,22 @@ void VersionManager::getWriteLockHint(Key key, TimestampInterval interval, LockI
     if (ve == NULL) {
         return interval; 
     }
+    
+    ve->lockEntry(); 
     if (getMaxReadMark(key) > interval.finish) {
+        ve->unlockEntry();
         return ret;
     }
     if (ve->isEmpty() || (ve->versions.getFirstTimestamp() > interval.finish)) {
         if (getMaxReadMark(key) > interval.finish) {
+            ve->unlockEntry();
             return ret;
         }
         
         Timestamp start = std::max(interval.start, getMaxReadMark(key));
         ret.start=start;
         ret.finish=interval.finish;
+        ve->unlockEntry();
         return ret;
     }
 
@@ -403,6 +408,7 @@ void VersionManager::getWriteLockHint(Key key, TimestampInterval interval, LockI
         Timestamp end = std::min(interval.finish, next_timestamp);
         ret.start = start;
         ret.finish = end;
+        ve->unlockEntry();
         return ret;
     }
     if (selected_pending != NULL) {
@@ -410,8 +416,10 @@ void VersionManager::getWriteLockHint(Key key, TimestampInterval interval, LockI
         Timestamp end = std::min(interval.finish, next_timestamp_pending);
         ret.start = start;
         ret.finish = end;
+        ve->unlockEntry();
         return ret;
     }
+    ve->unlockEntry();
     return ret;
 
 }
@@ -451,8 +459,8 @@ void VersionManager::tryExpandRead(Key k, Timestamp versionTimestamp, TimestampI
     }
 
     OrderedSetNode* node;
+    OrderedSetNode* prev;
     node = ve->versions.find(versionTimestamp, &prev);
-
     
     Version* v = node->getVersion();
     if (v->timestamp != versionTimestamp) {

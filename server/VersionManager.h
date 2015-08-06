@@ -90,7 +90,7 @@ class VersionManager {
         //try to acquire a write lock
         void tryWriteLock(Key k, TimestampInterval interval, LockInfo& lockInfo);
         //get an info on the interval a write lock would be acquired for
-        void  getWriteLockHint(Key k, TimestampInterval interval, LockInfo& lockInfo);
+        void getWriteLockHint(Key k, TimestampInterval interval, LockInfo& lockInfo);
         //get a Rw lock
         void tryReadWriteLock(Key k, TimestampInterval interval, LockInfo& lockInfo);
         //try to expand the length of a read lock
