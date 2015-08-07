@@ -159,7 +159,7 @@ void VersionManager::tryReadLock(Key key, TimestampInterval interval, LockInfo& 
     if (selected_version == NULL) {
         markReadNotFound(key, interval.finish);
         if (pending_exists == true) {
-            lockInfo.state = OperationStats::FAIL_PENDING_VERSION;
+            lockInfo.state = OperationState::FAIL_PENDING_VERSION;
         } else {
             lockInfo.state = OperationState::FAIL_NO_VERSION;
         }
@@ -333,7 +333,7 @@ void VersionManager::getWriteLockHint(Key key, TimestampInterval interval, LockI
     if (ve == NULL) {
         lockInfo.locked = interval;
         lockInfo.potential.start = MIN_TIMESTAMP;
-        lockInfo.potential.end = MAX_TIMESTAMP;
+        lockInfo.potential.finish = MAX_TIMESTAMP;
         lockInfo.state = OperationState::HINT_OK;
         return; 
     }
@@ -363,7 +363,7 @@ void VersionManager::getWriteLockHint(Key key, TimestampInterval interval, LockI
         lockInfo.locked.start=start;
         lockInfo.locked.finish=interval.finish;
         lockInfo.potential.start = start;
-        lockInfo.potential.finsih = std::max(interval.finish, ve->versions.getFirstTimestamp());
+        lockInfo.potential.finish = std::max(interval.finish, ve->versions.getFirstTimestamp());
         lockInfo.state = OperationState::HINT_OK;
         ve->unlockEntry();
         return;
@@ -411,7 +411,7 @@ void VersionManager::getWriteLockHint(Key key, TimestampInterval interval, LockI
             } else {
                 if ((next->getTimestamp() - ver->maxReadFrom) > (maxIfFail.finish - maxIfFail.start)) {
                     maxIfFail.start = ver->maxReadFrom;
-                    maxIfFail.end = next->getTimestamp();
+                    maxIfFail.finish = next->getTimestamp();
                 }
             }
         } else if (ver->state == PENDING) {
@@ -460,7 +460,7 @@ void VersionManager::getWriteLockHint(Key key, TimestampInterval interval, LockI
     lockInfo.locked.start = MIN_TIMESTAMP;
     lockInfo.locked.finish = MIN_TIMESTAMP;
     lockInfo.potential.start = maxIfFail.start;
-    lockInfo.potential.finish = maxIfFail.finsih;
+    lockInfo.potential.finish = maxIfFail.finish;
     lockInfo.state = OperationState::FAIL_INTERSECTION_EMPTY;
     ve->unlockEntry();
     return;
@@ -490,7 +490,7 @@ void VersionManager::tryExpandRead(Key key, Timestamp versionTimestamp, Timestam
                 return;
             }
 
-            Timestamp end = std::min(newInterval.finish, ve->versions.getFirstTimestamp);
+            Timestamp end = std::min(newInterval.finish, ve->versions.getFirstTimestamp());
             markReadNotFound(key, end);
             lockInfo.locked.start = newInterval.start;
             lockInfo.locked.finish = end;
@@ -512,10 +512,10 @@ void VersionManager::tryExpandRead(Key key, Timestamp versionTimestamp, Timestam
        return;
     }
 
-    Timestamp next_timestamp = node->getNext()->timestamp; 
+    Timestamp next_timestamp = node->getNext()->getTimestamp();
 
     if ((newInterval.finish < v->timestamp) || (newInterval.start > next_timestamp)) {
-        lockInfo.state = FAIL_EXPANSION;
+        lockInfo.state = OperationState::FAIL_EXPANSION;
         ve->unlockEntry();
         return;
     }
@@ -563,7 +563,13 @@ void VersionManager::tryExpandWrite(Key key, Timestamp versionTimestamp, Timesta
     }
 
     int res = ve->versions.remove(v->timestamp);
-    tryWriteLock(key, newInterval, lockInfo);
+    if (res) {
+        tryWriteLock(key, newInterval, lockInfo);
+    } else {
+       lockInfo.state = OperationState::ERROR;
+       ve->unlockEntry();
+       return;
+    }
  
     ve->unlockEntry();
     return;

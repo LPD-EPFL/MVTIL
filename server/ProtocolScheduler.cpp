@@ -113,7 +113,7 @@ void ProtocolScheduler::handleWriteRequest(WriteReply& _return, const Transactio
     //auto it = pendingWriteSets.find(tid); 
     //it->second->insert(wse);
     ws->lock();
-    ws->insert(new WriteSetEntry(lockInfo.version, k, v));
+    ws->pendingWrites.insert(new WSEntry(lockInfo.version, k, v));
     ws->unlock();
     _return.tid = tid;
     _return.state = lockInfo.state;
@@ -124,14 +124,14 @@ void ProtocolScheduler::handleWriteRequest(WriteReply& _return, const Transactio
 }
 
 
-void ProtocolScheduler::handleHintRequest(HintReplyl& _return, const TransactionId tid, const TimestampInterval& interval, const Key& k) {
+void ProtocolScheduler::handleHintRequest(HintReply& _return, const TransactionId tid, const TimestampInterval& interval, const Key& k) {
     LockInfo lockInfo;
 #ifdef DEBUG
     std::cout<<"Handling hint request: Timestamp interval ["<<interval.start<<","<<interval.end<<"]; Key "<<k<<" ."<<endl;
 #endif
     versionManager.getWriteLockHint(k, interval, lockInfo);
     _return.interval = lockInfo.locked;
-    _retrun.potential = lockInfo.potential;
+    _return.potential = lockInfo.potential;
     _return.key = k;
     _return.state = lockInfo.state;
     return;
@@ -157,7 +157,7 @@ void ProtocolScheduler::handleCommit(CommitReply& _return, const TransactionId t
         dataStore.write(toDsKey(ws_entry->key,ts), ws_entry->value);
 #endif
     }
-    ws->clear();
+    ws->pendingWrites.clear();
     ws->unlock();
     pendingWriteSets.erase(tid);
     _return.state = OperationState::COMMIT_OK;
@@ -177,13 +177,13 @@ void ProtocolScheduler::handleAbort(AbortReply& _return, const TransactionId tid
         return;
     }
     
-    ws->lock;
+    ws->lock();
     for (auto& ws_entry: ws->pendingWrites) {
         //TODO do I need to protect this with locks?
         versionManager.removeVersion(ws_entry->key, ws_entry->version);
         //TODO: what else needs to be deleted? is the version deleted by removeVersion()?
     }
-    ws->clear();
+    ws->pendingWrites.clear();
     ws->unlock();
 
     pendingWriteSets.erase(tid);
@@ -246,8 +246,10 @@ void ProtocolScheduler::handleExpandWrite(ExpandWriteReply& _return, const Trans
     Value value;
     LockInfo lockInfo;
 
-    auto ws = pendingWriteSets.find(tid)->second;
-    if (ws == NULL) {
+    //auto ws = pendingWriteSets.find(tid)->second;
+
+    WriteSet* ws;
+    if (!pendingWriteSets.find(tid, ws)) {
         _return.state = OperationState::WRITES_NOT_FOUND;
         _return.tid = tid;
         return;
@@ -255,12 +257,13 @@ void ProtocolScheduler::handleExpandWrite(ExpandWriteReply& _return, const Trans
 
     bool found = false;
 
-    for (auto& ws_entry: ws) {
-        if (ws_entry->key == key) {
+    ws->lock();
+    for (auto& ws_entry: ws->pendingWrites) {
+        if (ws_entry->key == k) {
             found = true;
             value = ws_entry->value;
             versionManager.tryExpandWrite(ws_entry->key, versionTimestamp, newInterval, lockInfo);
-            ws->erase(ws_entry);
+            ws->pendingWrites.erase(ws_entry);
             break;
         }
     }
@@ -268,6 +271,7 @@ void ProtocolScheduler::handleExpandWrite(ExpandWriteReply& _return, const Trans
     if (found == false) {
         _return.state = OperationState::WRITES_NOT_FOUND;
         _return.tid = tid;
+        ws->unlock();
         return;
     }
 
@@ -278,14 +282,16 @@ void ProtocolScheduler::handleExpandWrite(ExpandWriteReply& _return, const Trans
         _return.interval = lockInfo.locked;
         _return.potential = lockInfo.potential;
         _return.key = k;
+        ws->unlock();
         return;
     }
     
-    auto wse = make_shared<WriteSetEntry>(lockInfo.version,k,value);
-    ws->insert(wse);
+    //auto wse = make_shared<WriteSetEntry>(lockInfo.version,k,value);
+    ws->pendingWrites.insert(new WSEntry(lockInfo.version, k, value));
+    ws->unlock();
 
     _return.tid = tid;
-    _return.state = EXPANSION_OK;
+    _return.state = OperationState::EXPANSION_OK;
     _return.interval = lockInfo.locked;
     _return.potential = lockInfo.potential;
     _return.key = k;

@@ -56,14 +56,14 @@ int TransactionManager::readData(Transaction* t, Key key, Value ** val) { //NULL
     if (rR.OperationState == FAIL_NO_VERSION) {
         Timestamp in = t->currentInterval;
         in.start = MIN_TIMESTAMP;
-        t->addToReadSet(ReadSetEntry(key, NULL, in, in, c));
+        t->addToReadSet(SetEntry(key, NULL, in, in, c));
         *val = NULL;
         return 1;
     }
    
     if (rR.OperationState == R_LOCK_SUCCESS) {
         t->currentInterval = rR.interval;
-        t->addToReadSet(ReadSetEntry(key, rR.value, rR.interval, rR.potential));
+        t->addToReadSet(SetEntry(key, rR.value, rR.interval, rR.potential));
         auto ptr = new Value(rR.value);
         *val = ptr; 
         return 1;
@@ -102,7 +102,7 @@ int TransactionManager::declareWrite(Transaction* t, Key key) {
         done = true;
     }
     t->currentInterval = hR.interval;
-    t->addToHintSet(HintSetEntry(key, hR.interval, hR.potential));
+    t->addToHintSet(SetEntry(key, NULL, hR.interval, hR.potential));
     return 1;
 }
 
@@ -124,7 +124,7 @@ int TransactionManager::writeData(Transaction* t, Key key, Value value) {
 
         if (wr.operationState == OperationState::W_LOCK_SUCCESS) {
             t->currentInterval = wr.interval; 
-            t->addToWriteSet(WriteSetEntry(key, value, wR.interval, wR.potential));
+            t->addToWriteSet(SetEntry(key, value, wR.interval, wR.potential));
             t->writeSetServers.insert(c);
             return 1;
         }

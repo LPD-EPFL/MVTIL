@@ -19,65 +19,77 @@
 #include "DataServer_types.h"
 #include "common.h"
 #include "TransactionManager.h"
+#include "ServerConnection.h"
 
 class Transaction {
     friend class TransactionManager;
+    private:
+    typedef struct SetEntry {
+        Key key;
+        Value value;
+        TimestampInterval interval;
+        TimestampInterval potential;
+
+        SetEntry(Key k, Value v, TimestampInterval i, TimestampInterval p) : key(k), value(v), interval(i), potential(p) {}
+    } SetEntry;
+
+    struct SetHasher
+    {
+        std::size_t operator()(const SetEntry& se) const
+        {
+            using std::size_t;
+            using std::hash;
+            using std::string;
+            return (hash<string>()(se.key));
+        }
+    };
+
+    //typedef struct WriteSetEntry {
+        //Key key;
+        //Value value;
+        //TimestampInterval interval;
+        //TimestampInterval potential;
+
+        //WriteSetEntry(Key k, Value v, TimestampInterval i, TimestampInterval p) : key(k), value(v), interval(i), potential(p) {}
+    //} WriteSetEntry;
+
+    //typedef struct HintSetEntry { //FIXME: is it useful for anything to keep this around?
+        //Key key;
+        //TimestampInterval interval;
+        //TimestampInterval potential;
+
+        //HintSetEntry(Key k, TimestampInterval i): key(k), interval(i) {}
+    //} HintSetEntry;
+
     public:
-        Transaction(TransactionId tid, bool RO, TimestampInterval interval) : transactionId(tid), isReadOnly(RO), currentInterval(interval), initialInterval(interval), numRestarts(0) {}
-        ~Transaction();
-    
-        Value alreadyContains(Key k);
+    Transaction(TransactionId tid, bool RO, TimestampInterval interval) : transactionId(tid), currentInterval(interval), initialInterval(interval), isReadOnly(RO), numRestarts(0) {}
+    ~Transaction();
 
-        inline void addToReadSet(ReadSetEntry e) { 
-            readSet.insert(e); 
-        }
-                
-        inline void addToWriteSet(WriteSetEntry e) {
-            writeSet.insert(e);
-        }
+    Value alreadyContains(Key k);
 
-        inline void addToHintSet(HintSetEntry e) {
-            hintSet.insert(e);
-        }
+    inline void addToReadSet(SetEntry e) { 
+        readSet.insert(e); 
+    }
+
+    inline void addToWriteSet(SetEntry e) {
+        writeSet.insert(e);
+    }
+
+    inline void addToHintSet(SetEntry e) {
+        hintSet.insert(e);
+    }
 
     private:
-        TransactionId transactionId;
-        std::unordered_set<ReadSetEntry> readSet;
-        std::unordered_set<WriteSetEntry> writeSet;
-        std::unordered_set<HintSetEntry> hintSet;
-        std::unordered_set<ClientConnection> writeSetServers; //TODO use the appropriate type here
+    TransactionId transactionId;
+    std::unordered_set<SetEntry, SetHasher> readSet;
+    std::unordered_set<SetEntry, SetHasher> writeSet;
+    std::unordered_set<SetEntry, SetHasher> hintSet;
+    std::unordered_set<ServerConnection, ServerConnectionHasher> writeSetServers; //TODO use the appropriate type here
 
-        TimestampInterval currentInterval;
-        TimestampInterval initialInterval;
-        bool isReadOnly;
-        uint32_t numRestarts;
-
-        //FIXME do I gain any performance by keeping the connections in these structures? the key to server mapping should be pretty fast
-        typedef struct ReadSetEntry {
-            Key key;
-            Value value;
-            TimestampInterval interval;
-            TimestampInterval potential;
-
-            ReadSetEntry(Key k, Value v, TimestampInterval i, TimestampInterval p) : key(k), value(v), interval(i), potential(p) {}
-        } ReadSetEntry;
-
-        typedef struct WriteSetEntry {
-            Key key;
-            Value value;
-            TimestampInterval interval;
-            TimestampInterval potential;
-                    
-            WriteSetEntry(Key k, Value v, TimestampInterval i, TimestampInterval p) : key(k), value(v), interval(i), potential(p) {}
-        } WriteSetEntry;
-
-        typedef struct HintSetEntry { //FIXME: is it useful for anything to keep this around?
-            Key key;
-            TimestampInterval interval;
-            TimestampInterval potential;
-
-            HintSetEntry(Key k, TimestampInterval i): key(k), interval(i) {}
-        } HintSetEntry;
+    TimestampInterval currentInterval;
+    TimestampInterval initialInterval;
+    bool isReadOnly;
+    uint32_t numRestarts;
 };
 
 #endif

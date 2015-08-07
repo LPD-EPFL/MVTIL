@@ -27,7 +27,7 @@ class CommunicationService {
         CommunicationService(FILE* configFile); //configFile contains the list of servers
         ~CommunicationService();
 
-        shared_ptr<ServerConnection> getServer(Key k);
+        std::shared_ptr<ServerConnection> getServer(Key k);
 
     private:
         std::vector<shared_ptr<ServerConnection>> servers;

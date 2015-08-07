@@ -14,17 +14,26 @@
 
 #include "ServerConnection.h"
 
-ServerConnection::ServerConnection(std::string host, int port) {
-    socket = new TSocket(host,port);
-    transport = new TBufferedTransport(socket);
-    protocol = new TBinaryProtocol(transport);
-    client = DataServerClient(protocol);
+
+ServerConnection::ServerConnection(std::string h, int prt) {
+    boost::shared_ptr<TSocket> s(new TSocket(h, prt));
+    boost::shared_ptr<TTransport> t(new TBufferedTransport(socket));
+    boost::shared_ptr<TProtocol> p(new TBinaryProtocol(transport));
+
+    host = h;
+    port = prt;
+    socket = s;
+    transport = t;
+    protocol = p;
+
+    client = new DataServerClient(protocol);
+
     transport->open(); //TODO is it a good idae to keep the transprot open all the time?
 
 }
 
 ServerConnection::~ServerConnection() {
-    if (tranport->isOpen()) {
+    if (transport->isOpen()) {
         transport->close();
     }
 }

@@ -11,7 +11,7 @@ endif
 CC        := g++
 LD        := g++
 
-LIBS := -lthrift
+LIBS := -lthrift -lcityhash
 
 #server
 MODULES_SERVER   := common server thrift/gen-cpp

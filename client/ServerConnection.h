@@ -33,12 +33,12 @@ class ServerConnection{
     public:
         ServerConnection(std::string host, int port);
         ~ServerConnection();
-        DataServerClient client;
+        DataServerClient* client;
         inline void lock() {
-            lock.lock();
+            mutex.lock();
         }
         inline void unlock() {
-            lock.unlock();
+            mutex.unlock();
         }
 
         inline void ensureOpen() {
@@ -47,12 +47,26 @@ class ServerConnection{
             }
         }
 
+        std::string host;
+        int port;
+
     private:
-        std::mutex lock;
-        std::shared_ptr<TSocket> socket;
-        std::shared_ptr<TTransport> transport;
-        std::shared_ptr<TProtocol> protocol;
+        std::mutex mutex;
+        boost::shared_ptr<TSocket> socket;
+        boost::shared_ptr<TTransport> transport;
+        boost::shared_ptr<TProtocol> protocol;
 
 };
 
+struct ServerConnectionHasher
+{
+    friend class ServerConnection;
+    std::size_t operator()(const ServerConnection& sc) const
+    {
+        using std::size_t;
+        using std::hash;
+        using std::string;
+        return (hash<string>()(sc.host+std::to_string(sc.port)));
+    }
+};
 #endif

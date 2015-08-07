@@ -18,8 +18,8 @@
 #include <unordered_set>
 #include <queue>
 #include <mutex>
-#include <cuckoohash_map.hh>
-#include <city_hasher.hh>
+#include <libcuckoo/cuckoohash_map.hh>
+#include <libcuckoo/city_hasher.hh>
 #include <iostream>
 #include "common.h"
 #include "VersionManager.h"
@@ -48,7 +48,15 @@ class ProtocolScheduler : virtual public DataServerIf {
        
         typedef struct WriteSet {
             std::unordered_set<WSEntry*> pendingWrites;
-            std::recursive_mutex lock;
+            std::recursive_mutex mutex;
+
+            inline void lock() {
+                mutex.lock();
+            }
+
+            inline void unlock() {
+                mutex.unlock();
+            }
         } WriteSet;
 
     public:
