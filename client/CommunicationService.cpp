@@ -22,6 +22,9 @@ CommunicationService::CommunicationService() {
 
 }
 
+CommunicationService::~CommunicationService() {
+}
+
 
 ServerConnection* CommunicationService::getServer(const Key k) {
     size_t h = std::hash<std::string>()(k);

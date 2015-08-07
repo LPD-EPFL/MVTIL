@@ -22,6 +22,7 @@
 #include "TimestampOracle.h"
 
 #define RESTART_THRESHOLD 4
+#define MULTIPLICATION_FACTOR 10000 //more than the total number of separate client threads (in all clients); could replace with a remote component giving out transaction ids
 
 #define TX_INIT TransactionManager transactionManager;
 
@@ -75,8 +76,31 @@ class TransactionManager {
         //std::map<TransactionId, Transaction> ongoingTransactions();
 
         int64_t id; //use this to obtain unique transaction ids
+        int64_t crt;
 
         TransactionId getNewTransactionId();
+
+        inline bool intersects(TimestampInterval i1, TimestampInterval i2) {
+            if ((i1.start > i2.finish) || (i2.start > i1.finish)) {
+                return false;
+            }
+            return true;
+        }
+
+        inline TimestampInterval computeIntersection(TimestampInterval i1, TimestampInterval i2) {
+            TimestampInterval ts;
+            ts.start = MIN_TIMESTAMP;
+            ts.finish = MIN_TIMESTAMP;
+            if (i1.start > i2.finish) return ts;
+            if (i2.start > i1.finish) return ts;
+            Timestamp l = std::max(i1.start, i2.start);
+            Timestamp r = std::min(i2.finish, i2.finish);
+            if (r < l) return ts;
+            ts.start = l;
+            ts.finish = r;
+            return ts;
+        }
+
 };
 
 #endif

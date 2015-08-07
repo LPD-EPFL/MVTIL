@@ -61,12 +61,12 @@ class ServerConnection{
 struct ServerConnectionHasher
 {
     friend class ServerConnection;
-    std::size_t operator()(const ServerConnection& sc) const
+    std::size_t operator()(const ServerConnection* sc) const
     {
         using std::size_t;
         using std::hash;
         using std::string;
-        return (hash<string>()(sc.host+std::to_string(sc.port)));
+        return (hash<string>()(sc->host+std::to_string(sc->port)));
     }
 };
 #endif
