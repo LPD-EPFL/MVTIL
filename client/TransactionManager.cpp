@@ -45,7 +45,7 @@ int TransactionManager::readData(Transaction* t, Key key, Value ** val) { //NULL
     }
 
     Interval i = t->currentInterval;
-    auto s = connectionService.getServer(key);
+    auto s = communicationService.getServer(key);
     
     ReadReply rR;
 
@@ -53,15 +53,15 @@ int TransactionManager::readData(Transaction* t, Key key, Value ** val) { //NULL
     s->client.handleReadRequest(rR, tid, i, key, t->isReadOnly);
     s->unlock();
 
-    if (rR.OperationState == FAIL_NO_VERSION) {
+    if (rR.OperationState == OperationState::FAIL_NO_VERSION) {
         Timestamp in = t->currentInterval;
-        in.start = MIN_TIMESTAMP;
+        in.start = OperationState::MIN_TIMESTAMP;
         t->addToReadSet(SetEntry(key, NULL, in, in, c));
         *val = NULL;
         return 1;
     }
    
-    if (rR.OperationState == R_LOCK_SUCCESS) {
+    if (rR.OperationState == OperationState::R_LOCK_SUCCESS) {
         t->currentInterval = rR.interval;
         t->addToReadSet(SetEntry(key, rR.value, rR.interval, rR.potential));
         auto ptr = new Value(rR.value);
@@ -85,7 +85,7 @@ int TransactionManager::declareWrite(Transaction* t, Key key) {
     while (!done) {
 
         Interval  i = t->currentInterval;
-        auto s = connectionService.getServer(key);
+        auto s = communicationService.getServer(key);
 
         HintReply hR; 
         s->lock();
@@ -115,7 +115,7 @@ int TransactionManager::writeData(Transaction* t, Key key, Value value) {
 
     while (1) {
         Interval i = t->currentInterval;
-        auto s = connectionService.getServer(key);
+        auto s = communicationService.getServer(key);
         WriteReply wR;
 
         s->lock();
@@ -215,14 +215,14 @@ int TransactionManager::restartTransaction(Transaction* t, Timestamp startBound,
         for (auto& entry: t->readSet) {
             if(!intersects(t->currentInterval, entry->interval)) {
                 Interval newInterval = computeIntersection(entry->potential, t->currentInterval);
-                auto s = connectionService.getServer(key);
+                auto s = communicationService.getServer(key);
                 ExpandReadReply eR;
 
                 s->lock();
                 s->client.handleExpandReadRequest(eR, tid, newInterval, key);
                 s->unlock();
 
-                if (eR.state != EXPANSION_OK) {
+                if (eR.state != OperationState::EXPANSION_OK) {
                     can_restart = false;
                     break;
                 }
@@ -236,14 +236,14 @@ int TransactionManager::restartTransaction(Transaction* t, Timestamp startBound,
             for (auto& entry: t->writeSet) {
                 if(!intersects(t->currentInterval, entry->interval)) {
                     Interval newInterval = computeIntersection(entry->potential, t->currentInterval);
-                    auto s = connectionService.getServer(key);
+                    auto s = communicationService.getServer(key);
                     ExpandWwriteReply eW;
 
                     s->lock();
                     s->client.handleExpandWriteRequest(eW, tid, newInterval, key);
                     s->unlock();
 
-                    if (eW.state != EXPANSION_OK) {
+                    if (eW.state != OperationState::EXPANSION_OK) {
                         can_restart = false;
                         break;
                     }

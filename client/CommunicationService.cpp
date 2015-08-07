@@ -12,25 +12,15 @@
  * limitations under the License.
  */
 
-#ifndef _COMMUNICATION_SERVICE_H_
-#define _COMMUNICATION_SERVICE_H_
+#include "CommunicationService.h"
 
-#include <vector>
-#include <memory>
-#include "ServerConnection.h"
+CommunicationService::CommunicationService(FILE* configFile) {
 
-using namespace apache::thrift;
+}
 
+ServerConnection* CommunicationService::getServer(const Key k) {
+    size_t h = std::hash<std::string>()(k);
+    size_t sz = servers.size();
+    return servers.at(h%sz);
+}
 
-class CommunicationService {
-    public:
-        CommunicationService(FILE* configFile); //configFile contains the list of servers
-        ~CommunicationService();
-
-        ServerConnection* getServer(Key k);
-
-    private:
-        std::vector<ServerConnection*> servers;
-};
-
-#endif

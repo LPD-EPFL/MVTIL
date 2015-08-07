@@ -68,7 +68,7 @@ class TransactionManager {
         int writeData(Transaction* t, Key k, Value v);
 
     private:
-        ConnectionService connectionService;
+        CommunicationService communicationService;
         TimestampOracle timestampOracle;
 
         //std::map<TransactionId, Transaction> ongoingTransactions();

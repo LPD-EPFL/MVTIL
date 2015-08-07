@@ -12,25 +12,17 @@
  * limitations under the License.
  */
 
-#ifndef _COMMUNICATION_SERVICE_H_
-#define _COMMUNICATION_SERVICE_H_
+#ifndef _TIMESTAMP_ORACLE_H_
+#define _TIMESTAMP_ORACLE_H_
 
-#include <vector>
-#include <memory>
-#include "ServerConnection.h"
-
-using namespace apache::thrift;
-
-
-class CommunicationService {
-    public:
-        CommunicationService(FILE* configFile); //configFile contains the list of servers
-        ~CommunicationService();
-
-        ServerConnection* getServer(Key k);
-
+class TimestampOracle {
     private:
-        std::vector<ServerConnection*> servers;
+        Timestamp current;
+    public:
+        TimestampOracle(): current(MIN_TIMESTAMP) {}
+        inline Timestamp getTimestamp() {
+            return ++current;
+        }
 };
 
 #endif
