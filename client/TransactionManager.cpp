@@ -33,8 +33,23 @@ Transaction* TransactionManager::transactionStart(bool isReadOnly) {
 }
 
 int TransactionManager::transactionEnd(Transaction* t) {
+    //pick serialization point;
+    Timestamp serialization = t->currentInterval.start;
+    for (auto& c: t->writeSetServers) {
+        c->client->send_handleCommit(t->transactionId, serialization);
+    }
 
-    return 0;
+    CommitReply cR;
+    for (auto& c: t->writeSetServers) {
+        c->client->recv_handleCommit(cR); 
+    }
+
+    t->readSet.clear(); 
+    t->writeSet.clear();
+    t->hintSet.clear();
+    t->writeSetServers.clear();
+
+    return 1;
 }
 
 int TransactionManager::readData(Transaction* t, Key key, Value ** val) { //NULL in case of no key found, pointer to string otherwise

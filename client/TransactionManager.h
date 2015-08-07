@@ -27,6 +27,7 @@
 #define TX_INIT TransactionManager transactionManager;
 
 #define TX_START_RO \
+    { \
     Transaction* t; \
     while (1) { \
         t = transactionManager.transactionStart(true);
@@ -40,7 +41,8 @@
         transactionManager.transactionEnd(t); \
         break ; \
     } \
-    delete t;
+    delete t; \
+    }
 
 #define TX_READ(key, val) \
     if (transactionManager.read_data(t, key, &val) == 0) { \
