@@ -70,6 +70,8 @@ class TransactionManager {
         CommunicationService communicationService;
         TimestampOracle oracle;
 
+        int abortTransaction(Transaction* t);
+        int restartTransaction(Transaction* t, Timestamp startBound, Timestamp endBound);
         //std::map<TransactionId, Transaction> ongoingTransactions();
 
         int64_t id; //use this to obtain unique transaction ids

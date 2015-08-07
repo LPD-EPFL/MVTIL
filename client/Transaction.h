@@ -80,6 +80,8 @@ class Transaction {
         hintSet.insert(std::pair<Key, SetEntry>(k,e)); 
     }
 
+    void updateValue(Key k, Value value)
+
     private:
     TransactionId transactionId;
     std::unordered_map<Key, SetEntry> readSet;

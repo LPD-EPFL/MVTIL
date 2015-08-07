@@ -34,9 +34,9 @@ int TransactionManager::transactionEnd(Transaction* t) {
 }
 
 int TransactionManager::readData(Transaction* t, Key key, Value ** val) { //NULL in case of no key found, pointer to string otherwise
-    Value* contains = t->alreadyInReadSet(key);
+    Value* contains = t->alreadyInWriteSet(key);
     if (contains == NULL) {
-       contains = t->alreadyInWriteSet(key);
+       contains = t->alreadyInReadSet(key);
     }
 
     if (contains != NULL) {
@@ -81,19 +81,19 @@ int TransactionManager::declareWrite(Transaction* t, Key key) {
         return 1; //nothing to be done, I already have a write lock for this key
     }
 
+    HintReply hR; 
     bool done = false;
     while (!done) {
 
         TimestampInterval  i = t->currentInterval;
         auto s = communicationService.getServer(key);
 
-        HintReply hR; 
         s->lock();
         s->client->handleHintRequest(hR, t->transactionId, i, key);
         s->unlock();
 
         if (hR.state != OperationState::HINT_OK) { //no interval found
-            if (restartTransaction(t, hR.potential.start, hR.potential.end) == 1) {
+            if (restartTransaction(t, hR.potential.start, hR.potential.finish) == 1) {
                 continue;
             } else {
                 return 0;
@@ -107,37 +107,37 @@ int TransactionManager::declareWrite(Transaction* t, Key key) {
 }
 
 int TransactionManager::writeData(Transaction* t, Key key, Value value) {
-    Value contains = t->alreadyInWriteSet(key); //not good enough if it's in the read set; need to take write lock for it
+    Value* contains = t->alreadyInWriteSet(key); //not good enough if it's in the read set; need to take write lock for it
     if (contains != NULL) {
-        updateValueLocally(t->transactionId, key, value);
+        t->updateValue(key, value);
         return;
     }
 
+    WriteReply wR;
     while (1) {
         Interval i = t->currentInterval;
         auto s = communicationService.getServer(key);
-        WriteReply wR;
 
         s->lock();
         s->client->handleWriteRequest(wR, t->transactionId, i, key, value);
         s->unlock();
 
-        if (wr.operationState == OperationState::W_LOCK_SUCCESS) {
-            t->currentInterval = wr.interval; 
+        if (wR.operationState == OperationState::W_LOCK_SUCCESS) {
+            t->currentInterval = wR.interval; 
             t->addToWriteSet(key, SetEntry(value, wR.interval, wR.potential));
-            t->writeSetServers.insert(c);
+            t->wRiteSetServers.insert(c);
             return 1;
         }
-        if (wr.operationState == OperationState::FAIL_READ_MARK_LARGE) {
-            if (restartTransaction(t, wr.potential.start, MIN_TIMESTAMP) == 1) {
+        if (wR.operationState == OperationState::FAIL_READ_MARK_LARGE) {
+            if (restartTransaction(t, wR.potential.start, MIN_TIMESTAMP) == 1) {
                 continue;
             } else {
                 return 0;
             }
         }
 
-        if (wr.operationState == OperationState::FAIL_INTERSECTION_EMPTY) {
-            if (restartTransaction(t, wr.potential.start, wr.potential.end) == 1) {
+        if (wR.operationState == OperationState::FAIL_INTERSECTION_EMPTY) {
+            if (restartTransaction(t, wR.potential.start, wR.potential.end) == 1) {
                 continue;
             } else {
                 return 0;
@@ -152,9 +152,9 @@ int TransactionManager::writeData(Transaction* t, Key key, Value value) {
 int TransactionManager::restartTransaction(Transaction* t, Timestamp startBound, Timestamp endBound) {
     Timespan duration = t->initialInterval.end - t->initialInterval.start;
     if (t->numRestarts > RESTART_THRESHOLD) {
-        abortTransaction(t, duration);
+        abortTransaction(t);
     }
-    bool redo = false;
+    bool abort = false;
     duration *= INTERVAL_MULTIPLICATION_FACTOR;
     if (duration > INTERVAL_MAX_DURATION) {
         duration = INTERVAL_MAX_DURATION;
@@ -167,11 +167,11 @@ int TransactionManager::restartTransaction(Transaction* t, Timestamp startBound,
         if ((endBound - t->initialInterval.start) < INTERVAL_MAX_DURATION) {
          t->initialInterval.end = endBound;
         } else {
-            redo = true;
+            abort = true;
         }
     }
-    if (redo) {
-        abortTransaction(t, duration);
+    if (abort) {
+        abortTransaction(t);
         return 0;
     }
 
@@ -257,14 +257,14 @@ int TransactionManager::restartTransaction(Transaction* t, Timestamp startBound,
     }
 
     if (!can_restart) {
-        abortTransaction(t, duration);
+        abortTransaction(t);
         return 0;
     }
 
     return 1;
 }
 
-int TransactionManager::abortTransaction(Transaction* t, Timespan duration) {
+int TransactionManager::abortTransaction(Transaction* t) {
     // release all write locks 
     for (auto& value: t->writeSetServers) {
         c.send_handleAbort(t->transactionId);
@@ -278,6 +278,13 @@ int TransactionManager::abortTransaction(Transaction* t, Timespan duration) {
     t->writeSet.clear();
     t->hintSet.clear();
     t->writeSetServers.clear();
+
+    Timespan duration = t->initialInterval.finish  - t->initialInterval.start; //TODO when I abort, should I restart with the minimum duration or not?
+    if ((duration * INTERVAL_MULTIPLICATION_FACTOR) < MAX_DURATION) {
+        duration *= INTERVAL_MULTIPLICATION_FACTOR;        
+    } else {
+        duration = MAX_DURATION;
+    }
 
     t->transactionId = getNewTransactionId();
     t->initialInterval = oracle.getInterval(t->isReadOnly, duration);
