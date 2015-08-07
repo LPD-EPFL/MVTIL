@@ -119,6 +119,6 @@ service DataServer {
 
     ExpandReadReply handleExpandRead(TransactionId tid, Timestamp versionTimestamp, TimestampInterval newInterval, Key k)
 
-    ExpandWriteReply handleExpandWrite(TransactionId tid, TimestampInterval newInterval, Key k)
+    ExpandWriteReply handleExpandWrite(TransactionId tid, Timestamp versionTimestamp, TimestampInterval newInterval, Key k)
    
 }

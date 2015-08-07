@@ -15,15 +15,17 @@
 #ifndef _PROTOCOL_SCHEDULER_H_
 #define _PROTOCOL_SCHEDULER_H_
 
-#include "DataServer.h"
-#include "DataServer_types.h"
-
 #include <unordered_set>
 #include <queue>
+#include <mutex>
+#include <cuckoohash_map.hh>
+#include <city_hasher.hh>
 #include <iostream>
 #include "common.h"
 #include "VersionManager.h"
 #include "Timer.h"
+#include "DataServer.h"
+#include "DataServer_types.h"
 
 using namespace  ::TxProtocol;
 
@@ -43,6 +45,12 @@ class ProtocolScheduler : virtual public DataServerIf {
             WSEntry(Version* ver, Key k, Value val) : version(ver), key(k), value(val) {}
             WSEntry() : version(), key(), value() {}
         } WSEntry;
+       
+        typedef struct WriteSet {
+            std::unordered_set<WSEntry*> pendingWrites;
+            std::recursive_mutex lock;
+        } WriteSet;
+
     public:
         ProtocolScheduler();
 
@@ -64,7 +72,7 @@ class ProtocolScheduler : virtual public DataServerIf {
 
         void handleExpandRead(ExpandReadReply& _return, const TransactionId tid, const Timestamp versionTimestamp, const TimestampInterval& newInterval, const Key& k);
 
-        void handleExpandWrite(ExpandWriteReply& _return, const TransactionId tid, const TimestampInterval& newInterval, const Key& k);
+        void handleExpandWrite(ExpandWriteReply& _return, const TransactionId tid, const Timestamp versionTimestamp, const TimestampInterval& newInterval, const Key& k);
 #ifndef INITIAL_TESTING
         void handleNewEpoch(Timestamp barrier);
 #endif
@@ -81,7 +89,9 @@ class ProtocolScheduler : virtual public DataServerIf {
 
         void garbageCollect(Timestamp barrier);
 
-        std::map<TransactionId, std::unordered_set<shared_ptr<WSEntry>>*> pendingWriteSets;
+        cuckoohash_map<TransactionId, WriteSet*, CityHasher<TransactionId>> pendingWriteSets;
+
+        //std::map<TransactionId, WriteSet*> pendingWriteSets; //TODO needs to be concurrent!
 
 };
 #endif
