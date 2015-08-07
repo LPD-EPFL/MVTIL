@@ -15,34 +15,33 @@
 #ifndef _TRANSACTION_H_
 #define _TRANSACTION_H_
 
+#include <unordered_map>
 #include <unordered_set>
 #include "DataServer_types.h"
 #include "common.h"
-#include "TransactionManager.h"
 #include "ServerConnection.h"
 
+typedef struct SetEntry {
+    Value value;
+    TimestampInterval interval;
+    TimestampInterval potential;
+
+    SetEntry(Value v, TimestampInterval i, TimestampInterval p) :  value(v), interval(i), potential(p) {}
+} SetEntry;
+
 class Transaction {
-    friend class TransactionManager;
     private:
-    typedef struct SetEntry {
-        Key key;
-        Value value;
-        TimestampInterval interval;
-        TimestampInterval potential;
-
-        SetEntry(Key k, Value v, TimestampInterval i, TimestampInterval p) : key(k), value(v), interval(i), potential(p) {}
-    } SetEntry;
-
-    struct SetHasher
-    {
-        std::size_t operator()(const SetEntry& se) const
-        {
-            using std::size_t;
-            using std::hash;
-            using std::string;
-            return (hash<string>()(se.key));
-        }
-    };
+    friend class TransactionManager;
+    //struct SetHasher
+    //{
+        //std::size_t operator()(const SetEntry& se) const
+        //{
+            //using std::size_t;
+            //using std::hash;
+            //using std::string;
+            //return (hash<string>()(se.key));
+        //}
+    //};
 
     //typedef struct WriteSetEntry {
         //Key key;
@@ -65,25 +64,27 @@ class Transaction {
     Transaction(TransactionId tid, bool RO, TimestampInterval interval) : transactionId(tid), currentInterval(interval), initialInterval(interval), isReadOnly(RO), numRestarts(0) {}
     ~Transaction();
 
-    Value alreadyContains(Key k);
+    Value* alreadyInReadSet(Key key);
 
-    inline void addToReadSet(SetEntry e) { 
-        readSet.insert(e); 
+    Value* alreadyInWriteSet(Key key);
+
+    inline void addToReadSet(Key k, SetEntry e) { 
+        readSet.insert(std::pair<Key, SetEntry>(k,e)); 
     }
 
-    inline void addToWriteSet(SetEntry e) {
-        writeSet.insert(e);
+    inline void addToWriteSet(Key k, SetEntry e) {
+        writeSet.insert(std::pair<Key, SetEntry>(k,e)); 
     }
 
-    inline void addToHintSet(SetEntry e) {
-        hintSet.insert(e);
+    inline void addToHintSet(Key k, SetEntry e) {
+        hintSet.insert(std::pair<Key, SetEntry>(k,e)); 
     }
 
     private:
     TransactionId transactionId;
-    std::unordered_set<SetEntry, SetHasher> readSet;
-    std::unordered_set<SetEntry, SetHasher> writeSet;
-    std::unordered_set<SetEntry, SetHasher> hintSet;
+    std::unordered_map<Key, SetEntry> readSet;
+    std::unordered_map<Key, SetEntry> writeSet;
+    std::unordered_map<Key, SetEntry> hintSet;
     std::unordered_set<ServerConnection, ServerConnectionHasher> writeSetServers; //TODO use the appropriate type here
 
     TimestampInterval currentInterval;

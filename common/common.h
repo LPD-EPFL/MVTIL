@@ -27,6 +27,8 @@ using namespace TxProtocol;
 typedef int64_t Timespan;
 //typedef uint64_t TransactionId;
 
+const std::string NULL_VALUE = "_";
+
 #define MIN_TIMESTAMP INT64_MIN
 #define MAX_TIMESTAMP (INT64_MAX-1)
 

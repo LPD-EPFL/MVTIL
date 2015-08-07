@@ -15,13 +15,24 @@
 #ifndef _TIMESTAMP_ORACLE_H_
 #define _TIMESTAMP_ORACLE_H_
 
+#include "common.h"
+#include "DataServer_types.h"
+
+#define INITIAL_INTERVAL 100
+#define INTERVAL_MULTIPLICATION_FACTOR 2
+#define INTERVAL_MAX_DURATION 1600
+
 class TimestampOracle {
     private:
         Timestamp current;
     public:
         TimestampOracle(): current(MIN_TIMESTAMP) {}
-        inline Timestamp getTimestamp() {
-            return ++current;
+        TimestampInterval getInterval(bool isReadOnly, Timespan duration) {
+            //TODO  implement this
+            TimestampInterval ret;
+            ret.start = MIN_TIMESTAMP;
+            ret.finish = MIN_TIMESTAMP;
+            return ret;
         }
 };
 

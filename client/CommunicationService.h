@@ -25,6 +25,7 @@ using namespace apache::thrift;
 class CommunicationService {
     public:
         CommunicationService(FILE* configFile); //configFile contains the list of servers
+        CommunicationService(); //configFile contains the list of servers
         ~CommunicationService();
 
         ServerConnection* getServer(Key k);

@@ -16,7 +16,6 @@
 
 
 TransactionManager::TransactionManager(int64_t clientId) : id(clientId) {
-
 }
 
 TransactionManager::~TransactionManager() {
@@ -25,12 +24,13 @@ TransactionManager::~TransactionManager() {
 
 Transaction* TransactionManager::transactionStart(bool isReadOnly) {
     TransactionId tid = getNewTransactionId();
-    Transaction* t = new Transaction(tid, isReadOnly, oracle.getInterval(isReadOnly));
-    return;
+    Transaction* t = new Transaction(tid, isReadOnly, oracle.getInterval(isReadOnly, INITIAL_INTERVAL));
+    return t;
 }
 
-int TransactionManager::transactionEnd() {
+int TransactionManager::transactionEnd(Transaction* t) {
 
+    return 0;
 }
 
 int TransactionManager::readData(Transaction* t, Key key, Value ** val) { //NULL in case of no key found, pointer to string otherwise
@@ -44,26 +44,26 @@ int TransactionManager::readData(Transaction* t, Key key, Value ** val) { //NULL
         return 1;
     }
 
-    Interval i = t->currentInterval;
+    TimestampInterval i = t->currentInterval;
     auto s = communicationService.getServer(key);
     
     ReadReply rR;
 
     s->lock();
-    s->client.handleReadRequest(rR, tid, i, key, t->isReadOnly);
+    s->client->handleReadRequest(rR, t->transactionId, i, key, t->isReadOnly);
     s->unlock();
 
-    if (rR.OperationState == OperationState::FAIL_NO_VERSION) {
-        Timestamp in = t->currentInterval;
-        in.start = OperationState::MIN_TIMESTAMP;
-        t->addToReadSet(SetEntry(key, NULL, in, in, c));
+    if (rR.state == OperationState::FAIL_NO_VERSION) {
+        TimestampInterval in = t->currentInterval;
+        in.start = MIN_TIMESTAMP;
+        t->addToReadSet(key, SetEntry(NULL_VALUE, in, in));
         *val = NULL;
         return 1;
     }
    
-    if (rR.OperationState == OperationState::R_LOCK_SUCCESS) {
+    if (rR.state == OperationState::R_LOCK_SUCCESS) {
         t->currentInterval = rR.interval;
-        t->addToReadSet(SetEntry(key, rR.value, rR.interval, rR.potential));
+        t->addToReadSet(key, SetEntry(rR.value, rR.interval, rR.potential));
         auto ptr = new Value(rR.value);
         *val = ptr; 
         return 1;
@@ -76,7 +76,7 @@ int TransactionManager::readData(Transaction* t, Key key, Value ** val) { //NULL
 }
 
 int TransactionManager::declareWrite(Transaction* t, Key key) {
-    Value contains = t->alreadyInWriteSet(key);
+    Value* contains = t->alreadyInWriteSet(key);
     if (contains != NULL) {
         return 1; //nothing to be done, I already have a write lock for this key
     }
@@ -84,12 +84,12 @@ int TransactionManager::declareWrite(Transaction* t, Key key) {
     bool done = false;
     while (!done) {
 
-        Interval  i = t->currentInterval;
+        TimestampInterval  i = t->currentInterval;
         auto s = communicationService.getServer(key);
 
         HintReply hR; 
         s->lock();
-        s->client.handleHintRequest(hR, tid, i, key);
+        s->client->handleHintRequest(hR, t->transactionId, i, key);
         s->unlock();
 
         if (hR.state != OperationState::HINT_OK) { //no interval found
@@ -102,14 +102,14 @@ int TransactionManager::declareWrite(Transaction* t, Key key) {
         done = true;
     }
     t->currentInterval = hR.interval;
-    t->addToHintSet(SetEntry(key, NULL, hR.interval, hR.potential));
+    t->addToHintSet(key, SetEntry(NULL, hR.interval, hR.potential));
     return 1;
 }
 
 int TransactionManager::writeData(Transaction* t, Key key, Value value) {
     Value contains = t->alreadyInWriteSet(key); //not good enough if it's in the read set; need to take write lock for it
     if (contains != NULL) {
-        updateValueLocally(tid, key, value);
+        updateValueLocally(t->transactionId, key, value);
         return;
     }
 
@@ -119,12 +119,12 @@ int TransactionManager::writeData(Transaction* t, Key key, Value value) {
         WriteReply wR;
 
         s->lock();
-        s->client.handleWriteRequest(wR, tid, i, key, value);
+        s->client->handleWriteRequest(wR, t->transactionId, i, key, value);
         s->unlock();
 
         if (wr.operationState == OperationState::W_LOCK_SUCCESS) {
             t->currentInterval = wr.interval; 
-            t->addToWriteSet(SetEntry(key, value, wR.interval, wR.potential));
+            t->addToWriteSet(key, SetEntry(value, wR.interval, wR.potential));
             t->writeSetServers.insert(c);
             return 1;
         }
@@ -189,37 +189,37 @@ int TransactionManager::restartTransaction(Transaction* t, Timestamp startBound,
      */
     bool can_restart = true;
 
-    for (auto& entry: t->readSet) {
-        if (!intersects(t->initialInterval, entry->potential)) {
+    for (auto entry: t->readSet) {
+        if (!intersects(t->initialInterval, entry->second.potential)) {
             can_restart = false;
         }
     }
 
     if (can_restart) {
-        for (auto& entry: t->writeSet) {
-             if (!intersects(t->initialInterval, entry->potential)) {
+        for (auto entry: t->writeSet) {
+             if (!intersects(t->initialInterval, entry->second.potential)) {
                  can_restart = false;
             }
         }
     }
     
     if (can_restart) {
-        for (auto& entry: t->hintSet) {
-             if (!intersects(t->initialInterval, entry->potential)) {
+        for (auto entry: t->hintSet) {
+             if (!intersects(t->initialInterval, entry->second.potential)) {
                  can_restart = false;
             }
         }
     }
 
     if (can_restart) {
-        for (auto& entry: t->readSet) {
-            if(!intersects(t->currentInterval, entry->interval)) {
-                Interval newInterval = computeIntersection(entry->potential, t->currentInterval);
-                auto s = communicationService.getServer(key);
+        for (auto entry: t->readSet) {
+            if(!intersects(t->currentInterval, entry->second.interval)) {
+                Interval newInterval = computeIntersection(entry->second.potential, t->currentInterval);
+                auto s = communicationService.getServer(entry->first);
                 ExpandReadReply eR;
 
                 s->lock();
-                s->client.handleExpandReadRequest(eR, tid, newInterval, key);
+                s->client->handleExpandReadRequest(eR, t->transactionId, newInterval, entry->first);
                 s->unlock();
 
                 if (eR.state != OperationState::EXPANSION_OK) {
@@ -228,19 +228,19 @@ int TransactionManager::restartTransaction(Transaction* t, Timestamp startBound,
                 }
 
                 t->currentInterval = eR.interval;
-                entry->interval = eR.interval;
-                entry->potential = eR.potential;
+                entry->second.interval = eR.interval;
+                entry->second.potential = eR.potential;
             }
         }
         if (can_restart) {
-            for (auto& entry: t->writeSet) {
-                if(!intersects(t->currentInterval, entry->interval)) {
-                    Interval newInterval = computeIntersection(entry->potential, t->currentInterval);
-                    auto s = communicationService.getServer(key);
+            for (auto entry: t->writeSet) {
+                if(!intersects(t->currentInterval, entry->second.interval)) {
+                    Interval newInterval = computeIntersection(entry->second.potential, t->currentInterval);
+                    auto s = communicationService.getServer(entry->first);
                     ExpandWwriteReply eW;
 
                     s->lock();
-                    s->client.handleExpandWriteRequest(eW, tid, newInterval, key);
+                    s->client->handleExpandWriteRequest(eW, t->transactionId, newInterval, entry->first);
                     s->unlock();
 
                     if (eW.state != OperationState::EXPANSION_OK) {
@@ -249,8 +249,8 @@ int TransactionManager::restartTransaction(Transaction* t, Timestamp startBound,
                     }
 
                     t->currentInterval = eW.interval;
-                    entry->interval = eW.interval;
-                    entry->potential = eW.potential;
+                    entry->second.interval = eW.interval;
+                    entry->second.potential = eW.potential;
                 }
             }
         }
@@ -264,7 +264,7 @@ int TransactionManager::restartTransaction(Transaction* t, Timestamp startBound,
     return 1;
 }
 
-int abortTransaction(Transaction* t, Timespan duration) {
+int TransactionManager::abortTransaction(Transaction* t, Timespan duration) {
     // release all write locks 
     for (auto& value: t->writeSetServers) {
         c.send_handleAbort(t->transactionId);

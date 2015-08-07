@@ -18,6 +18,11 @@ CommunicationService::CommunicationService(FILE* configFile) {
 
 }
 
+CommunicationService::CommunicationService() {
+
+}
+
+
 ServerConnection* CommunicationService::getServer(const Key k) {
     size_t h = std::hash<std::string>()(k);
     size_t sz = servers.size();

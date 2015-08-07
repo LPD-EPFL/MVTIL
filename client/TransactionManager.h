@@ -21,9 +21,6 @@
 #include "CommunicationService.h"
 #include "TimestampOracle.h"
 
-#define INITIAL_INTERVAL 100
-#define INTERVAL_MULTIPLICATION_FACTOR 2
-#define INTERVAL_MAX_DURATION 1600
 #define RESTART_THRESHOLD 4
 
 #define TX_INIT TransactionManager transactionManager;
@@ -61,15 +58,17 @@
 
 class TransactionManager {
     public:
-        TransactionId transactionStart(bool isReadOnly);
+        TransactionManager(int64_t cid);
+        ~TransactionManager();
+        Transaction* transactionStart(bool isReadOnly);
         int transactionEnd(Transaction* t);
         int declareWrite(Transaction* t, Key k);
-        Value* readData(Transaction* t, Key k);
+        int readData(Transaction* t, Key k, Value** v);
         int writeData(Transaction* t, Key k, Value v);
 
     private:
         CommunicationService communicationService;
-        TimestampOracle timestampOracle;
+        TimestampOracle oracle;
 
         //std::map<TransactionId, Transaction> ongoingTransactions();
 
