@@ -46,7 +46,7 @@ VersionSkiplist::~VersionSkiplist() {
         delete node;
         node = next;
     }
-
+    delete seeds;
 }
 
 inline int VersionSkiplist::getRandomLevel()

@@ -15,6 +15,9 @@
 #ifndef _TIMESTAMP_ORACLE_H_
 #define _TIMESTAMP_ORACLE_H_
 
+#include <chrono>
+#include <ctime>
+
 #include "common.h"
 #include "DataServer_types.h"
 
@@ -24,16 +27,14 @@
 
 class TimestampOracle {
     private:
-        Timestamp current;
+        Timestamp initialTimestamp;
+        std::chrono::time_point<std::chrono::steady_clock> initialTime;
     public:
-        TimestampOracle(): current(MIN_TIMESTAMP) {}
-        TimestampInterval getInterval(bool isReadOnly, Timespan duration) {
-            //TODO  implement this
-            TimestampInterval ret;
-            ret.start = MIN_TIMESTAMP;
-            ret.finish = MIN_TIMESTAMP;
-            return ret;
-        }
+        //TimestampOracle(): current(MIN_TIMESTAMP) {}
+        TimestampOracle();
+        TimestampOracle(Timestamp initial);
+        TimestampInterval getInterval(bool isReadOnly, Timespan duration);
+        Timestamp getTimestamp();
 };
 
 #endif
