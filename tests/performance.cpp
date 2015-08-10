@@ -13,6 +13,8 @@
  */
 
 #include <string>
+#include <thread>
+#include <chrono>
 #include <iostream>
 #include "TransactionManager.h"
 
@@ -21,6 +23,12 @@
 #define RW_SIZE 50
 #define KEY_SIZE 10
 #define VAL_SIZE 100
+
+#define TEST_DURATION_MS 10000
+
+volatile bool start;
+volatile bool stop;
+volatile uint64_t thr[NUM_THREADS];
 
 //https://stackoverflow.com/a/12468109
 std::string random_string( size_t length )
@@ -47,7 +55,11 @@ inline std::string generate_random_value() {
     return random_string(VALUE_SIZE);
 }
 
-typedef enum {READ_ONLY, MANY_READS_ONE_WRITE, WRITE_INTENSIVE, RW_ONE_KEY, R_ONE_KEY, RW_SHORT} TransactionType;
+typedef enum {READ_ONLY, MANY_READS_ONE_WRITE, WRITE_INTENSIVE, RW_ONE_KEY, R_ONE_KEY, RW_SHORT, NUM_TTYPES} TransactionType;
+
+inline TransactionType get_random_transaction_type() {
+  return static_cast<TransactionType>(rand() % NUM_TTYPES);   //TODO change rand function
+}
 
 void execute_transaction(TransactionType type) {
 
@@ -120,9 +132,57 @@ void execute_transaction(TransactionType type) {
 
 }
 
+void execute_test(int threadId) {
+    uint64_t myThroughput = 0;
 
+    while (start == false) {
+        //wait
+    }
+
+    while (stop == false) {
+       TransactionType t = generate_random_transaction_type();
+       execute_transaction(t);
+       myThroughput++; 
+    }
+
+    thr[threadId] = myThroughput; 
+}
 
 int main(int argc, char **argv) {
-    TX_INIT;
+    start = false;
+    stop = false;
+    std::vector<std::thread> threads;
+    int i;
 
+    TX_INIT;
+    for  (i = 0; i < NUM_THREADS; i++) {
+        thr[i] = 0;
+    }
+
+    for  (i = 0; i < NUM_THREADS; i++) {
+       threads.push_back(&execute_test, i); 
+    }
+
+    //allow threads to start 
+    start = true;
+
+    //sleep
+    std::this_thread::sleep_for(std::chrono::milliseconds(TEST_DURATION_MS));
+
+    stop = true; 
+
+
+    for (auto& th: threads) {
+        th.join();
+    }
+
+    //gather statistics
+    
+    uint64_t total_throughput = 0;
+    
+    for  (i = 0; i < NUM_THREADS; i++) {
+        total_throughput+=thr[i]; 
+    }
+    
+    return 0;
 }
