@@ -30,7 +30,9 @@ volatile bool start;
 volatile bool stop;
 volatile uint64_t thr[NUM_THREADS];
 
-//https://stackoverflow.com/a/12468109
+TransactionManager* transactionManager;
+
+//function from https://stackoverflow.com/a/12468109
 std::string random_string( size_t length )
 {
     auto randchar = []() -> char
@@ -40,7 +42,7 @@ std::string random_string( size_t length )
         "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
         "abcdefghijklmnopqrstuvwxyz";
         const size_t max_index = (sizeof(charset) - 1);
-        return charset[ rand() % max_index ];
+        return charset[ rand() % max_index ]; //TODO change rand function
     };
     std::string str(length,0);
     std::generate_n( str.begin(), length, randchar );
@@ -154,7 +156,8 @@ int main(int argc, char **argv) {
     std::vector<std::thread> threads;
     int i;
 
-    TX_INIT;
+    transactionManager=new TransactionManager(0);
+
     for  (i = 0; i < NUM_THREADS; i++) {
         thr[i] = 0;
     }
@@ -171,13 +174,11 @@ int main(int argc, char **argv) {
 
     stop = true; 
 
-
     for (auto& th: threads) {
         th.join();
     }
 
     //gather statistics
-    
     uint64_t total_throughput = 0;
     
     for  (i = 0; i < NUM_THREADS; i++) {

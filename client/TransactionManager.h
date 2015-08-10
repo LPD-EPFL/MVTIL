@@ -24,8 +24,6 @@
 #define RESTART_THRESHOLD 4
 #define MULTIPLICATION_FACTOR 10000 //more than the total number of separate client threads (in all clients); could replace with a remote component giving out transaction ids
 
-#define TX_INIT TransactionManager transactionManager;
-
 #define TX_START_RO \
     { \
     Transaction* t; \

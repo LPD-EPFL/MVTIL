@@ -19,7 +19,7 @@ CommunicationService::CommunicationService(FILE* configFile) {
 }
 
 CommunicationService::CommunicationService() {
-
+    servers.push_back(new ServerConnection("localhost", 9090)); //TODO just for local testing oconvenience; update later
 }
 
 CommunicationService::~CommunicationService() {

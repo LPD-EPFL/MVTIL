@@ -21,9 +21,9 @@
 #include "common.h"
 #include "DataServer_types.h"
 
-#define INITIAL_INTERVAL 100
+#define INITIAL_INTERVAL 1 //ms
 #define INTERVAL_MULTIPLICATION_FACTOR 2
-#define INTERVAL_MAX_DURATION 1600
+#define INTERVAL_MAX_DURATION 16 //ms
 
 class TimestampOracle {
     private:
