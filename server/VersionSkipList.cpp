@@ -24,6 +24,7 @@ OrderedSetNode::~OrderedSetNode() {
 }
 
 VersionSkiplist::VersionSkiplist() {
+    seeds = seed_rand();
     levelmax = MAXLEVEL;
     OrderedSetNode* min = new OrderedSetNode(MIN_TIMESTAMP, NULL, levelmax);
     OrderedSetNode* max = new OrderedSetNode(MAX_TIMESTAMP + 1, NULL, levelmax);

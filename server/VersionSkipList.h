@@ -69,6 +69,7 @@ class VersionSkiplist {
         inline int getRandomLevel();
         int levelmax;
         size_t sz;
+        unsigned long* seeds;
 };
 
 
