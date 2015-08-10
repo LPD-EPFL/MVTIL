@@ -19,6 +19,7 @@
 #include <queue>
 #include <chrono>
 #include <mutex>
+#include <thread>
 #include <libcuckoo/cuckoohash_map.hh>
 #include <libcuckoo/city_hasher.hh>
 #include <iostream>

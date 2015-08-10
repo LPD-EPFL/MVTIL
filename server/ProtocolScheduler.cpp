@@ -68,6 +68,8 @@ void ProtocolScheduler::handleReadRequest(ReadReply& _return, const TransactionI
             _return.potential.finish = 0;
             return;
         }
+
+       std::this_thread::yield();
 #ifndef INITIAL_TESTING
        pause(PAUSE_LENGTH);
 #endif
