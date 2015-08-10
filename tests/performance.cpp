@@ -16,15 +16,17 @@
 
 #define NUM_THREADS 10
 #define RO_SIZE 100
+#define RW_SIZE 50
 
 typedef enum {READ_ONLY, MANY_READS_ONE_WRITE, WRITE_INTENSIVE, RW_ONE_KEY, R_ONE_KEY, RW_SHORT} TransactionType;
 
 void execute_transaction(TransactionType type) {
+
+    int i;
+    Value* val;
+    Key key;
     switch(type) {
         case READ_ONLY:
-            int i;
-            Value* val;
-            Key key;
             TX_START_RO;
             for (i=0; i<RO_SIZE; i++) {
                 key = generate_random_key();
@@ -33,19 +35,54 @@ void execute_transaction(TransactionType type) {
             TX_END;
             break;
         case MANY_READS_ONE_WRITE:
-
+            TX_START;
+            Key w = generate_radom_key();
+            TX_DECLARE_WRITE(w);
+            for (i=0; i<RO_SIZE; i++) {
+                key = generate_random_key();
+                TX_READ(key, val);
+            }
+            val = generate_random_value();
+            TX_WRITE(w, val);
+            TX_END;
             break;
-        case WRITE_INTENSIVE;
-
+        case WRITE_INTENSIVE:
+            TX_START;
+            for (i=0; i<RW_SIZE; i++) {
+                key = generate_random_key();
+                TX_READ(key, val);
+                key = generate_random_key();
+                TX_WRITE(key, val);
+            }
+            TX_END;
             break;
-        case RW_ONE_KEY;
-
+        case RW_ONE_KEY:
+            TX_START;
+            key = generate_random_key();
+            TX_READ(key, val);
+            val = generate_random_value();
+            TX_WRITE(key, val);
+            TX_END;
             break;
-        case R_ONE_KEY;
-
+        case R_ONE_KEY:
+            TX_START_RO;
+            key = generate_random_key();
+            TX_READ(key, val);
+            TX_END;
             break;
-        case RW_SHORT;
-
+        case RW_SHORT:
+            TX_START;
+            key = generate_random_key();
+            TX_READ(key, val);
+            key = generate_random_key();
+            TX_READ(key, val);
+            val = generate_random_value();
+            TX_WRITE(key, val);
+            key = generate_random_key();
+            TX_READ(key, val);
+            val = generate_random_value();
+            TX_WRITE(key, val);
+            TX_END;
             break;
         default:
             std::cout<<"Unknown transaction type"<<std::endl;
