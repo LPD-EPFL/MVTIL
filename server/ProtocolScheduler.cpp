@@ -25,13 +25,14 @@ ProtocolScheduler::~ProtocolScheduler() {
 }
 
 void ProtocolScheduler::handleReadRequest(ReadReply& _return, const TransactionId tid, const TimestampInterval& interval, const Key& k, const bool isReadOnly) {
-    Timer timer;
+    //Timer timer;
     int numRetries = 0;
 #ifdef DEBUG
     std::cout<<"Handling read: Transaction id "<<tid<<"; Timestamp interval ["<<interval.start<<","<<interval.end<<"]; Key "<<k<<" ."<<endl;
 #endif
     LockInfo lockInfo; 
-    timer.start();
+    //timer.start();
+    std::chrono::time_point<std::chrono::high_resolution_clock> tStart = std::chrono::high_resolution_clock::now();
     Value value;
     while(1) {
         versionManager.tryReadLock(k,interval,lockInfo);
@@ -55,7 +56,8 @@ void ProtocolScheduler::handleReadRequest(ReadReply& _return, const TransactionI
             return;
         }
  
-        if (!isReadOnly && (numRetries > MIN_NUM_RETRIES) && (timer.timeout())) {
+        auto now = std::chrono::high_resolution_clock::now();
+        if (!isReadOnly && (numRetries > MIN_NUM_RETRIES) && (timeout(tStart, now))) {
             _return.tid = tid;
             _return.state = lockInfo.state; //should be FAIL_PENDING_VERSION
             _return.key = k;

@@ -17,13 +17,14 @@
 
 #include <unordered_set>
 #include <queue>
+#include <chrono>
 #include <mutex>
 #include <libcuckoo/cuckoohash_map.hh>
 #include <libcuckoo/city_hasher.hh>
 #include <iostream>
 #include "common.h"
 #include "VersionManager.h"
-#include "Timer.h"
+//#include "Timer.h"
 #include "DataServer.h"
 #include "DataServer_types.h"
 
@@ -34,6 +35,8 @@ using namespace  ::TxProtocol;
 #ifdef INITIAL_TESTING
 typedef std::string DsKey;
 #endif
+
+#define DEFAULT_TIMEOUT 100 //in milliseconds
 
 class ProtocolScheduler : virtual public DataServerIf {
     private:
@@ -98,6 +101,15 @@ class ProtocolScheduler : virtual public DataServerIf {
         void garbageCollect(Timestamp barrier);
 
         cuckoohash_map<TransactionId, WriteSet*, CityHasher<TransactionId>> pendingWriteSets;
+
+        inline bool timeout(std::chrono::time_point<std::chrono::high_resolution_clock> start, std::chrono::time_point<std::chrono::high_resolution_clock> end) {
+           auto diff = end - start;
+           auto ms = std::chrono::duration_cast<std::chrono::milliseconds>(diff);
+           if (ms.count() > DEFAULT_TIMEOUT) {
+            return true;
+           }
+           return false;
+        }
 
         //std::map<TransactionId, WriteSet*> pendingWriteSets; //TODO needs to be concurrent!
 

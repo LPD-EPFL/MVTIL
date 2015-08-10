@@ -24,12 +24,12 @@ TimestampOracle::TimestampOracle(Timestamp initial) : initialTimestamp(initial) 
 
 Timestamp TimestampOracle::getTimestamp() {
     auto now = std::chrono::steady_clock::now();
-    auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(now - initialTime).count(); //TODO what resolution should I support
+    auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(now - initialTime).count(); //TODO what resolution should I support?
     Timestamp res = initialTimestamp + duration;
     return res;
 }
 
-TimestampInterval getInterval(bool isReadOnly, Timespan duration) {
+TimestampInterval TimestampOracle::getInterval(bool isReadOnly, Timespan duration) {
     TimestampInterval ret;
     ret.start = getTimestamp();
     ret.finish = ret.start + duration;
