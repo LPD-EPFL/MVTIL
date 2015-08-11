@@ -25,6 +25,7 @@
 #define INTERVAL_MULTIPLICATION_FACTOR 2
 #define INTERVAL_MAX_DURATION 16 //ms
 
+// provides the client with serialization intervals for transactions
 class TimestampOracle {
     private:
         Timestamp initialTimestamp;

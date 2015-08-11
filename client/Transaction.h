@@ -21,6 +21,7 @@
 #include "common.h"
 #include "ServerConnection.h"
 
+// describes an entry in the read, write or hint set
 typedef struct SetEntry {
     Value value;
     TimestampInterval interval;
@@ -29,37 +30,9 @@ typedef struct SetEntry {
     SetEntry(Value v, TimestampInterval i, TimestampInterval p) :  value(v), interval(i), potential(p) {}
 } SetEntry;
 
+// contains the state an ongoing trnsaction
 class Transaction {
-    private:
     friend class TransactionManager;
-    //struct SetHasher
-    //{
-        //std::size_t operator()(const SetEntry& se) const
-        //{
-            //using std::size_t;
-            //using std::hash;
-            //using std::string;
-            //return (hash<string>()(se.key));
-        //}
-    //};
-
-    //typedef struct WriteSetEntry {
-        //Key key;
-        //Value value;
-        //TimestampInterval interval;
-        //TimestampInterval potential;
-
-        //WriteSetEntry(Key k, Value v, TimestampInterval i, TimestampInterval p) : key(k), value(v), interval(i), potential(p) {}
-    //} WriteSetEntry;
-
-    //typedef struct HintSetEntry { //FIXME: is it useful for anything to keep this around?
-        //Key key;
-        //TimestampInterval interval;
-        //TimestampInterval potential;
-
-        //HintSetEntry(Key k, TimestampInterval i): key(k), interval(i) {}
-    //} HintSetEntry;
-
     public:
     Transaction(TransactionId tid, bool RO, TimestampInterval interval) : transactionId(tid), currentInterval(interval), initialInterval(interval), isReadOnly(RO), numRestarts(0) {}
     ~Transaction();
@@ -87,7 +60,7 @@ class Transaction {
     std::unordered_map<Key, SetEntry> readSet;
     std::unordered_map<Key, SetEntry> writeSet;
     std::unordered_map<Key, SetEntry> hintSet;
-    std::unordered_set<ServerConnection*, ServerConnectionHasher> writeSetServers; //TODO use the appropriate type here
+    std::unordered_set<ServerConnection*, ServerConnectionHasher> writeSetServers; 
 
     TimestampInterval currentInterval;
     TimestampInterval initialInterval;

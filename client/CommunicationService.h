@@ -21,7 +21,7 @@
 
 using namespace apache::thrift;
 
-
+// contains connections to all the servers
 class CommunicationService {
     public:
         CommunicationService(FILE* configFile); //configFile contains the list of servers

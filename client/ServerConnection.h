@@ -29,6 +29,7 @@ using namespace apache::thrift::transport;
 
 using namespace ::TxProtocol;
 
+// abstracts a connection to a server; protected by a mutex
 class ServerConnection{
     public:
         ServerConnection(std::string host, int port);
