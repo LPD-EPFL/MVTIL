@@ -18,8 +18,10 @@
 #include "common.h"
 #include "DataServer_types.h"
 
+//the state a version object can be in
 typedef enum {COMMITTED, PENDING, ABORTED, NO_SUCH_VERSION} OpState;
 
+//the metadata associated with a version
 typedef struct Version {
     OpState state;
     Timestamp timestamp;

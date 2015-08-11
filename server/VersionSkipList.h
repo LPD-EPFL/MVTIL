@@ -23,6 +23,9 @@
 #include "DataServer_types.h"
 
 #define MAXLEVEL 4
+
+//a node in the skip list
+//contains a version and its timestamp
 class OrderedSetNode {
     friend class VersionSkiplist;
     public:
@@ -47,6 +50,7 @@ class OrderedSetNode {
         OrderedSetNode** next;
 };
 
+//skip-list containing all the versions of a key
 class VersionSkiplist {
     public:
         VersionSkiplist();
@@ -58,6 +62,7 @@ class VersionSkiplist {
         OrderedSetNode* find(Timestamp ts, OrderedSetNode** prev);
         int insert(Timestamp ts, Version* v);
         int remove(Timestamp ts);
+        //updated the positin of a version when its timestamp is updated
         int reposition(Timestamp old_ts);
         //returns the max read from ts seen in the removed versions
         Timestamp removeTo(Timestamp ts, std::queue<Timestamp>* q);

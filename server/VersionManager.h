@@ -30,16 +30,18 @@
 
 typedef OperationState::type lockState;
 
+//the information associated wiht a "lock"
 typedef struct LockInfo {
-    lockState state;
-    TimestampInterval locked;
-    TimestampInterval potential;
-    Version* version;
+    lockState state; //the status the operation finished with
+    TimestampInterval locked; //the interval that was successfully locked
+    TimestampInterval potential; //the potential interval that could have been locked had there not been the initial bounds
+    Version* version; //the version that was locked or created
 } LockInfo;
 
 
 class VersionManager {
     private:
+       // Version Manager Entry: contains all the versions of a particular key; protected by a lock
        class VersionManagerEntry {
             friend class VersionManager;
             public:
@@ -53,9 +55,11 @@ class VersionManager {
                 Key key;
                 VersionSkiplist versions;
 
+                //garbage collection: remove committed versions up to a barrier timestamp, and return their timestamps
                 void collectTo(Timestamp barrier, std::queue<Timestamp> * q);
 
            private:
+                // the maximum timestamp with which this key has been unsuccessfully read 
                 Timestamp readMark;
                 std::recursive_mutex lock;
 
@@ -120,6 +124,7 @@ class VersionManager {
 #ifndef INITIAL_TESTING
         Log* log;
 #endif
+        //must grab lock before inserting removing a new entry in the version store
         LockSet storeLocks; //TODO inserting does not invalidate iterators in STL containers; what I want to avoid is multiple threads trying to add an entry for the same key at the same time; maybe lock striping would work better than a single lock (with #locks of the same order as the number of concurrent threads) 
         std::map<Key, VersionManagerEntry*> versionStore;
 

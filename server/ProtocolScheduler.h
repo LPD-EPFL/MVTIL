@@ -39,8 +39,10 @@ typedef std::string DsKey;
 
 #define DEFAULT_TIMEOUT 100 //in milliseconds
 
+// Handles incoming messages from clients or other servers and schedules events on the server accordingly
 class ProtocolScheduler : virtual public DataServerIf {
     private:
+        //write set entry: describes a single pending write
         typedef struct WSEntry{
             Version *version;
             Key key;
@@ -50,6 +52,7 @@ class ProtocolScheduler : virtual public DataServerIf {
             WSEntry() : version(), key(), value() {}
         } WSEntry;
        
+        //the write set of a single pending transaction; access to it is protected by a mutex
         typedef struct WriteSet {
             std::unordered_set<WSEntry*> pendingWrites;
             std::recursive_mutex mutex;
@@ -79,13 +82,22 @@ class ProtocolScheduler : virtual public DataServerIf {
 
         void handleAbort(AbortReply& _return, const TransactionId tid);
 
-
+        // handles a generic operation (e.g., a RMW)
         void handleOperation(ServerGenericReply& _return, const ClientGenericRequest& cr);
 
+        // if a transaction needs to be restarted (and not completely aborted), 
+        // the coordinator might pick a different interval for operations it has done so far; 
+        // this method tries to adjust the read locks on a version accordingly 
+        // note that the version which is locked cannot change
         void handleExpandRead(ExpandReadReply& _return, const TransactionId tid, const Timestamp versionTimestamp, const TimestampInterval& newInterval, const Key& k);
 
+
+        // if a transaction needs to be restarted (and not completely aborted), 
+        // the coordinator might pick a different interval for operations it has done so far; 
+        // this method tries to adjust the corresponding pending vesion accordingly 
         void handleExpandWrite(ExpandWriteReply& _return, const TransactionId tid, const Timestamp versionTimestamp, const TimestampInterval& newInterval, const Key& k);
 #ifndef INITIAL_TESTING
+        // this method gets called when a garbage collection round should be run
         void handleNewEpoch(Timestamp barrier);
 #endif
 
@@ -101,6 +113,9 @@ class ProtocolScheduler : virtual public DataServerIf {
 
         void garbageCollect(Timestamp barrier);
 
+        // pending write sets of all the ongoing transactions; using a concurrent hash table,
+        // as multiple threads may be inserting/removing/searching transactions at the same time;
+        // for the concurrent hash table implementation, see https://github.com/efficient/libcuckoo
         cuckoohash_map<TransactionId, WriteSet*, CityHasher<TransactionId>> pendingWriteSets;
 
         inline bool timeout(std::chrono::time_point<std::chrono::high_resolution_clock> start, std::chrono::time_point<std::chrono::high_resolution_clock> end) {
