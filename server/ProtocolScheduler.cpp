@@ -28,7 +28,7 @@ void ProtocolScheduler::handleReadRequest(ReadReply& _return, const TransactionI
     //Timer timer;
     int numRetries = 0;
 #ifdef DEBUG
-    std::cout<<"Handling read: Transaction id "<<tid<<"; Timestamp interval ["<<interval.start<<","<<interval.end<<"]; Key "<<k<<" ."<<endl;
+    std::cout<<"Handling read: Transaction id "<<tid<<"; Timestamp interval ["<<interval.start<<","<<interval.finish<<"]; Key "<<k<<" ."<<endl;
 #endif
     LockInfo lockInfo; 
     //timer.start();
@@ -87,7 +87,7 @@ void ProtocolScheduler::handleReadRequest(ReadReply& _return, const TransactionI
 
 void ProtocolScheduler::handleWriteRequest(WriteReply& _return, const TransactionId tid, const TimestampInterval& interval, const Key& k, const Value& v) {
 #ifdef DEBUG
-    std::cout<<"Handling write: Transaction id "<<tid<<"; Timestamp interval ["<<interval.start<<","<<interval.end<<"]; Key "<<k<<"; Value "<<v<<" ."<<endl;
+    std::cout<<"Handling write: Transaction id "<<tid<<"; Timestamp interval ["<<interval.start<<","<<interval.finish<<"]; Key "<<k<<"; Value "<<v<<" ."<<endl;
 #endif
     LockInfo lockInfo;
     versionManager.tryWriteLock(k, interval, lockInfo);
@@ -131,7 +131,7 @@ void ProtocolScheduler::handleWriteRequest(WriteReply& _return, const Transactio
 void ProtocolScheduler::handleHintRequest(HintReply& _return, const TransactionId tid, const TimestampInterval& interval, const Key& k) {
     LockInfo lockInfo;
 #ifdef DEBUG
-    std::cout<<"Handling hint request: Timestamp interval ["<<interval.start<<","<<interval.end<<"]; Key "<<k<<" ."<<endl;
+    std::cout<<"Handling hint request: Timestamp interval ["<<interval.start<<","<<interval.finish<<"]; Key "<<k<<" ."<<endl;
 #endif
     versionManager.getWriteLockHint(k, interval, lockInfo);
     _return.interval = lockInfo.locked;
@@ -199,7 +199,7 @@ void ProtocolScheduler::handleAbort(AbortReply& _return, const TransactionId tid
 
 void ProtocolScheduler::handleOperation(ServerGenericReply& _return, const ClientGenericRequest& cr) {
 #ifdef DEBUG
-    std::cout<<"Handling single key operation: Transaction id "<<tid<<"; Operation "<<opName<<"; Timestamp interval ["<<interval.start<<","<<interval.end<<"]; Key "<<k<<"; Value "<<v<<" ."<<endl;
+    std::cout<<"Handling single key operation: Transaction id "<<cr.tid<<"; Operation "<<cr.op<<"; Timestamp interval ["<<cr.interval.start<<","<<interval.finish<<"]; Key "<<cr.key<<"; Value "<<cr.value<<" ."<<endl;
 #endif
     _return.state = OperationState::NOT_IMPLEMENTED;
     return;
@@ -215,6 +215,9 @@ void ProtocolScheduler::abortTransaction(TransactionId tid) {
 #ifndef INITIAL_TESTING
 //sent by the timestamp oracle
 void ProtocolScheduler::handleNewEpoch(Timestamp barrier) {
+#ifdef DEBUG
+    std::cout<<"Handling new epoch with timestamp "<<barrier<<endl;
+#endif
     //garbage collection
     std::queue<Timestamp> q;
     //iterate over the keys in the version manager
@@ -236,6 +239,9 @@ void ProtocolScheduler::handleNewEpoch(Timestamp barrier) {
 
 
 void ProtocolScheduler::handleExpandRead(ExpandReadReply& _return, const TransactionId tid, const Timestamp versionTimestamp, const TimestampInterval& newInterval, const Key& k) {
+#ifdef DEBUG
+    std::cout<<"Handling expand read request: Transaction id "<<tid<<"; VersionTimestamp "<<versionTimestamp<<"; New timestamp interval ["<<newInterval.start<<","<<newInterval.finish<<"]; Key "<<k<<" ."<<endl;
+#endif
     LockInfo lockInfo;
     versionManager.tryExpandRead(k, versionTimestamp, newInterval, lockInfo); 
     _return.state = lockInfo.state;
@@ -247,6 +253,9 @@ void ProtocolScheduler::handleExpandRead(ExpandReadReply& _return, const Transac
 }
 
 void ProtocolScheduler::handleExpandWrite(ExpandWriteReply& _return, const TransactionId tid, const Timestamp versionTimestamp, const TimestampInterval& newInterval, const Key& k) {
+#ifdef DEBUG
+    std::cout<<"Handling expand write request: Transaction id "<<tid<<"; VersionTimestamp "<<versionTimestamp<<"; New timestamp interval ["<<newInterval.start<<","<<newInterval.finish<<"]; Key "<<k<<" ."<<endl;
+#endif
     Value value;
     LockInfo lockInfo;
 
