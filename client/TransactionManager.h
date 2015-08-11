@@ -31,6 +31,7 @@
         t = transactionManager->transactionStart(true);
 
 #define TX_START \
+    { \
     Transaction* t; \
     while (1) { \
         t = transactionManager->transactionStart(false);

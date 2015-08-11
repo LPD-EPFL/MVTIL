@@ -14,6 +14,8 @@
 
 #include "Transaction.h"
 
+Transaction::~Transaction() {
+}
 
 Value* Transaction::alreadyInReadSet(Key key) {
     auto it = readSet.find(key);

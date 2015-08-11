@@ -70,7 +70,7 @@ void execute_transaction(TransactionType type) {
     Value generated;
     Key key;
     switch(type) {
-        case TransactionType::READ_ONLY:
+        case READ_ONLY:
             TX_START_RO;
             for (i=0; i<RO_SIZE; i++) {
                 key = generate_random_key();
@@ -78,7 +78,7 @@ void execute_transaction(TransactionType type) {
             }
             TX_END;
             break;
-        case TransactionType::MANY_READS_ONE_WRITE:
+        case MANY_READS_ONE_WRITE:
             TX_START;
             Key w = generate_random_key();
             TX_DECLARE_WRITE(w);
@@ -90,7 +90,7 @@ void execute_transaction(TransactionType type) {
             TX_WRITE(w, generated);
             TX_END;
             break;
-        case TransactionType::WRITE_INTENSIVE:
+        case WRITE_INTENSIVE:
             TX_START;
             for (i=0; i<RW_SIZE; i++) {
                 key = generate_random_key();
@@ -100,7 +100,7 @@ void execute_transaction(TransactionType type) {
             }
             TX_END;
             break;
-        case TransactionType::RW_ONE_KEY:
+        case RW_ONE_KEY:
             TX_START;
             key = generate_random_key();
             TX_READ(key, val);
@@ -108,13 +108,13 @@ void execute_transaction(TransactionType type) {
             TX_WRITE(key, generated);
             TX_END;
             break;
-        case TransactionType::R_ONE_KEY:
+        case R_ONE_KEY:
             TX_START_RO;
             key = generate_random_key();
             TX_READ(key, val);
             TX_END;
             break;
-        case TransactionType::RW_SHORT:
+        case RW_SHORT:
             TX_START;
             key = generate_random_key();
             TX_READ(key, val);
@@ -143,7 +143,7 @@ void execute_test(int threadId) {
     }
 
     while (stop == false) {
-       TransactionType t = generate_random_transaction_type();
+       TransactionType t = get_random_transaction_type();
        execute_transaction(t);
        myThroughput++; 
     }
@@ -164,7 +164,7 @@ int main(int argc, char **argv) {
     }
 
     for  (i = 0; i < NUM_THREADS; i++) {
-       threads.push_back(&execute_test, i); 
+       threads.push_back(std::thread(&execute_test, i)); 
     }
 
     //allow threads to start 
