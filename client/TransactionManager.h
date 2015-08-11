@@ -28,32 +28,32 @@
     { \
     Transaction* t; \
     while (1) { \
-        t = transactionManager.transactionStart(true);
+        t = transactionManager->transactionStart(true);
 
 #define TX_START \
     Transaction* t; \
     while (1) { \
-        t = transactionManager.transactionStart(false);
+        t = transactionManager->transactionStart(false);
 
 #define TX_END \
-        transactionManager.transactionEnd(t); \
+        transactionManager->transactionEnd(t); \
         break ; \
     } \
     delete t; \
     }
 
 #define TX_READ(key, val) \
-    if (transactionManager.read_data(t, key, &val) == 0) { \
+    if (transactionManager->readData(t, key, &val) == 0) { \
         continue; \
     }
 
 #define TX_WRITE(key, val) \
-    if (transactionManager.writeData(t, key, val) == 0) { \
+    if (transactionManager->writeData(t, key, val) == 0) { \
         continue; \
     }
 
 #define TX_DECLARE_WRITE(key) \
-    if (transactionManager.declareWrite(t, key) == 0) { \
+    if (transactionManager->declareWrite(t, key) == 0) { \
         continue; \
     }
 

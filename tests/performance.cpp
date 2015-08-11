@@ -22,7 +22,7 @@
 #define RO_SIZE 100
 #define RW_SIZE 50
 #define KEY_SIZE 10
-#define VAL_SIZE 100
+#define VALUE_SIZE 100
 
 #define TEST_DURATION_MS 10000
 
@@ -67,9 +67,10 @@ void execute_transaction(TransactionType type) {
 
     int i;
     Value* val;
+    Value generated;
     Key key;
     switch(type) {
-        case READ_ONLY:
+        case TransactionType::READ_ONLY:
             TX_START_RO;
             for (i=0; i<RO_SIZE; i++) {
                 key = generate_random_key();
@@ -77,54 +78,54 @@ void execute_transaction(TransactionType type) {
             }
             TX_END;
             break;
-        case MANY_READS_ONE_WRITE:
+        case TransactionType::MANY_READS_ONE_WRITE:
             TX_START;
-            Key w = generate_radom_key();
+            Key w = generate_random_key();
             TX_DECLARE_WRITE(w);
             for (i=0; i<RO_SIZE; i++) {
                 key = generate_random_key();
                 TX_READ(key, val);
             }
-            val = generate_random_value();
-            TX_WRITE(w, val);
+            generated = generate_random_value();
+            TX_WRITE(w, generated);
             TX_END;
             break;
-        case WRITE_INTENSIVE:
+        case TransactionType::WRITE_INTENSIVE:
             TX_START;
             for (i=0; i<RW_SIZE; i++) {
                 key = generate_random_key();
                 TX_READ(key, val);
                 key = generate_random_key();
-                TX_WRITE(key, val);
+                TX_WRITE(key, *val);
             }
             TX_END;
             break;
-        case RW_ONE_KEY:
+        case TransactionType::RW_ONE_KEY:
             TX_START;
             key = generate_random_key();
             TX_READ(key, val);
-            val = generate_random_value();
-            TX_WRITE(key, val);
+            generated = generate_random_value();
+            TX_WRITE(key, generated);
             TX_END;
             break;
-        case R_ONE_KEY:
+        case TransactionType::R_ONE_KEY:
             TX_START_RO;
             key = generate_random_key();
             TX_READ(key, val);
             TX_END;
             break;
-        case RW_SHORT:
+        case TransactionType::RW_SHORT:
             TX_START;
             key = generate_random_key();
             TX_READ(key, val);
             key = generate_random_key();
             TX_READ(key, val);
-            val = generate_random_value();
-            TX_WRITE(key, val);
+            generated = generate_random_value();
+            TX_WRITE(key, generated);
             key = generate_random_key();
             TX_READ(key, val);
-            val = generate_random_value();
-            TX_WRITE(key, val);
+            generated = generate_random_value();
+            TX_WRITE(key, generated);
             TX_END;
             break;
         default:

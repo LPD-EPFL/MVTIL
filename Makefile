@@ -64,12 +64,14 @@ build/server_exec.o: tests/server_exec.cpp
 	$(CC) $(INCLUDES_SERVER) $(CFLAGS) $(DEBUG_FLAGS) -c $< -o $@
 
 #client
-build/client_exec: $(OBJ_CLIENT) build/client_exec.o
+build/client_exec: $(OBJ_CLIENT) build/performance.o
 	$(LD) $(CFLAGS) $(DEBUG_FLAGS) $^ -o $@ -L/usr/local/lib $(LIBS)
 
 build/client_exec.o: tests/client_exec.cpp
 	$(CC) $(INCLUDES_CLIENT) $(CFLAGS) $(DEBUG_FLAGS) -c $< -o $@
 
+build/performance.o: tests/performance.cpp
+	$(CC) $(INCLUDES_CLIENT) $(CFLAGS) $(DEBUG_FLAGS) -c $< -o $@
 checkdirs: $(BUILD_DIR_ALL)
 
 $(BUILD_DIR_ALL):
