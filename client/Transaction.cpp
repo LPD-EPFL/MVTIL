@@ -1,44 +1,21 @@
-/* 
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- * 
- *     http://www.apache.org/licenses/LICENSE-2.0
- * 
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
 
 #include "Transaction.h"
 
-Transaction::~Transaction() {
+Transaction::~Transaction(){
 }
 
-Value* Transaction::alreadyInReadSet(Key key) {
-    auto it = readSet.find(key);
-    if (it == readSet.end()) {
-        return NULL;
-    }
-    return &(it->second.value);
+const Value* Transaction::FindInReadSet(Key key){
+	if(read_set.count(key) == 0)
+		return NULL;
+	else
+		return &(read_set[key].value);
 }
 
-Value* Transaction::alreadyInWriteSet(Key key) {
-    auto it = writeSet.find(key);
-    if (it == writeSet.end()) {
-        return NULL;
-    }
-    return &(it->second.value);
 
+const Value* Transaction::FindInWriteSet(Key key){
+	if(write_set.count(key) == 0)
+		return NULL;
+	else
+		return &(write_set[key].value);
 }
 
-void Transaction::updateValue(Key key, Value val) {
-    auto it = writeSet.find(key);
-    if (it == writeSet.end()) {
-        return;
-    }
-    it->second.value = val;
-
-}

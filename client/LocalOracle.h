@@ -1,0 +1,37 @@
+
+#ifndef _LOCAL_ORACLE_H
+#define _LOCAL_ORACLE_H
+
+#include "OracleService.h"
+
+#include <chrono>
+#include <ctime>
+
+#include <thrift/protocol/TBinaryProtocol.h>
+#include <thrift/transport/TSocket.h>
+#include <thrift/transport/TBufferTransports.h>
+
+using namespace apache::thrift;
+using namespace apache::thrift::protocol;
+using namespace apache::thrift::transport;
+
+using namespace ::Oracle;
+
+#define MAX_FACTOR 10000
+
+class LocalOracle
+{
+private:
+    int64_t client_id;
+    int64_t crt;
+	std::chrono::time_point<std::chrono::system_clock> initialTime;
+public:
+	Timestamp GetTimestamp();
+	TransactionId GetTransactionId();
+    Timestamp GetGlobalTimestamp(std::string host,int port);
+    TransactionId GetGlobalTransactionId(std::string host,int port);
+	LocalOracle(int64_t cid);
+	~LocalOracle();
+};
+
+#endif

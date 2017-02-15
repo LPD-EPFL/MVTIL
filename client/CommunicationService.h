@@ -1,37 +1,29 @@
-/* 
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- * 
- *     http://www.apache.org/licenses/LICENSE-2.0
- * 
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
 
-#ifndef _COMMUNICATION_SERVICE_H_
-#define _COMMUNICATION_SERVICE_H_
+#ifndef _COMMUNICATION_SERVER_
+#define _COMMUNICATION_SERVER_
 
-#include <vector>
-#include <memory>
+#include "common.h"
 #include "ServerConnection.h"
+#include <thrift/protocol/TBinaryProtocol.h>
+#include <thrift/transport/TSocket.h>
+#include <thrift/transport/TBufferTransports.h>
 
-using namespace apache::thrift;
+#include <boost/property_tree/xml_parser.hpp>
+#include <boost/property_tree/ptree.hpp>
 
-// contains connections to all the servers
-class CommunicationService {
-    public:
-        CommunicationService(FILE* configFile); //configFile contains the list of servers
-        CommunicationService(); //configFile contains the list of servers
-        ~CommunicationService();
-
-        ServerConnection* getServer(Key k);
-
-    private:
-        std::vector<ServerConnection*> servers;
+class CommunicationService
+{
+	public:
+		CommunicationService();
+		~CommunicationService();
+		ServerConnection* GetServer(Key key);
+    
+	
+	private:
+		std::vector<ServerConnection*> servers;
+    
+    
+        std::vector<DataServerInfo> LoadServerInfo();
 };
 
 #endif
