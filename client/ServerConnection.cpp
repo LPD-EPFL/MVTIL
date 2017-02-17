@@ -16,7 +16,6 @@ ServerConnection::ServerConnection(std::string host,int port) {
     socket = s;
     transport = t;
     protocol = p;
-    
     transport->open();//keep the transport to open all the time
 }
 

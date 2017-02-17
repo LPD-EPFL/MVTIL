@@ -1,17 +1,17 @@
 
-#ifndef _TRANSACTION_H_
-#define _TRANSACTION_H_
+#ifndef _TRANSACTION_MANAGER_H_
+#define _TRANSACTION_MANAGER_H_
 
 #include "Transaction.h"
 #include "LocalOracle.h"
-#include "CommunicationServer.h"
+#include "CommunicationService.h"
 
 class TransactionManager
 {
 
 private:
 	LocalOracle oracle;
-    CommunicationServer servers;
+    CommunicationService servers;
     
 public:
 	TransactionManager();

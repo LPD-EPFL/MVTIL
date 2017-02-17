@@ -17,9 +17,9 @@ TransactionId LocalOracle::GetTransactionId(){
     return tid;
 }
 
-Timestamp LocalOracle::GetGlobalTimestamp(std::string host,int port){
-    
-    boost::shared_ptr<TSocket> socket(new TSocket(host, port));
+Timestamp LocalOracle::GetGlobalTimestamp(){
+    DataServerInfo info = ConfigLoader::GetOracleServerInfo();
+    boost::shared_ptr<TSocket> socket(new TSocket(info.host, info.port));
     boost::shared_ptr<TTransport> transport(new TBufferedTransport(socket));
     boost::shared_ptr<TProtocol> protocol(new TBinaryProtocol(transport));
     
@@ -30,8 +30,9 @@ Timestamp LocalOracle::GetGlobalTimestamp(std::string host,int port){
     return ts;
 }
 
-Timestamp LocalOracle::GetGlobalTransactionId(std::string host,int port){
-    boost::shared_ptr<TSocket> socket(new TSocket(host, port));
+Timestamp LocalOracle::GetGlobalTransactionId(){
+    DataServerInfo info = ConfigLoader::GetOracleServerInfo();
+    boost::shared_ptr<TSocket> socket(new TSocket(info.host, info.port));
     boost::shared_ptr<TTransport> transport(new TBufferedTransport(socket));
     boost::shared_ptr<TProtocol> protocol(new TBinaryProtocol(transport));
     

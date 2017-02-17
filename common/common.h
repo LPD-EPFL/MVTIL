@@ -10,8 +10,8 @@
 #define MAX_TIMESTAMP INT64_MAX
 #define INTERVAL_MAX_DURATION 16
 
-typedef std::uint64_t Timestamp;
-typedef std::uint64_t TransactionId;
+typedef int64_t Timestamp;
+typedef int64_t TransactionId;
 
 typedef struct TI{
 	Timestamp start;
@@ -29,7 +29,7 @@ typedef struct LE
 
 typedef struct DS{
     std::string host;
-    std::int port;
+    int port;
 }DataServerInfo;
 
 #endif

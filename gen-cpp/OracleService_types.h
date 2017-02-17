@@ -7,6 +7,7 @@
 #ifndef OracleService_TYPES_H
 #define OracleService_TYPES_H
 
+#include "common.h"
 #include <iosfwd>
 
 #include <thrift/Thrift.h>
@@ -19,9 +20,9 @@
 
 namespace Oracle {
 
-typedef int64_t TransactionId;
+// typedef int64_t TransactionId;
 
-typedef int64_t Timestamp;
+// typedef int64_t Timestamp;
 
 } // namespace
 

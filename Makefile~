@@ -54,7 +54,7 @@ endef
 
 .PHONY: all checkdirs thrift clean
 
-all: checkdirs thrift build/server_exec build/client_exec
+all: checkdirs thrift
 
 #server
 build/server_exec: $(OBJ_SERVER) build/server_exec.o

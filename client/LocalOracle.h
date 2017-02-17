@@ -3,6 +3,7 @@
 #define _LOCAL_ORACLE_H
 
 #include "OracleService.h"
+#include "ConfigLoader.h"
 
 #include <chrono>
 #include <ctime>
@@ -24,14 +25,14 @@ class LocalOracle
 private:
     int64_t client_id;
     int64_t crt;
-	std::chrono::time_point<std::chrono::system_clock> initialTime;
+    std::chrono::time_point<std::chrono::system_clock> initialTime;
 public:
-	Timestamp GetTimestamp();
-	TransactionId GetTransactionId();
-    Timestamp GetGlobalTimestamp(std::string host,int port);
-    TransactionId GetGlobalTransactionId(std::string host,int port);
-	LocalOracle(int64_t cid);
-	~LocalOracle();
+    Timestamp GetTimestamp();
+    TransactionId GetTransactionId();
+    Timestamp GetGlobalTimestamp();
+    TransactionId GetGlobalTransactionId();
+    LocalOracle(int64_t cid);
+    ~LocalOracle();
 };
 
 #endif

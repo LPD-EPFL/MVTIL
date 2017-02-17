@@ -4,6 +4,7 @@
 
 #include "common.h"
 #include "ServerConnection.h"
+#include "ConfigLoader.h"
 #include <thrift/protocol/TBinaryProtocol.h>
 #include <thrift/transport/TSocket.h>
 #include <thrift/transport/TBufferTransports.h>
@@ -17,13 +18,9 @@ class CommunicationService
 		CommunicationService();
 		~CommunicationService();
 		ServerConnection* GetServer(Key key);
-    
 	
 	private:
 		std::vector<ServerConnection*> servers;
-    
-    
-        std::vector<DataServerInfo> LoadServerInfo();
 };
 
 #endif

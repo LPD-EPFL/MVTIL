@@ -17,10 +17,11 @@ bool TransactionManager::ReadData(Transaction* transaction, Key key, Value& valu
         value = *contains;
         return true;
     }
-    servers.
-
+    
+    //servers.
+    return false;
 }
 
 bool TransactionManager::CommitTransaction(Transaction* transaction){
-
+    return true;
 }
