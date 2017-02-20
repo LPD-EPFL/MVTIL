@@ -8,7 +8,7 @@
 #ifndef _SERVER_CONNECTION_H_
 #define _SERVER_CONNECTION_H_
 
-#include "common.h"
+#include "client.h"
 #include <thrift/protocol/TBinaryProtocol.h>
 #include <thrift/transport/TSocket.h>
 #include <thrift/transport/TBufferTransports.h>

@@ -18,7 +18,8 @@ bool TransactionManager::ReadData(Transaction* transaction, Key key, Value& valu
         return true;
     }
     
-    //servers.
+    TimestampInterval current_interval = transaction->committed_interval;
+    service.GetServer(key);
     return false;
 }
 

@@ -9,7 +9,7 @@
 #ifndef _CONFIG_LOADER_H_
 #define _CONFIG_LOADER_H_
 
-#include "common.h"
+#include "client.h"
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/xml_parser.hpp>
 #include <boost/foreach.hpp>
