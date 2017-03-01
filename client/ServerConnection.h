@@ -24,6 +24,7 @@ private:
     boost::shared_ptr<TTransport> transport;
     boost::shared_ptr<TProtocol> protocol;
 public:
+	DataServiceClient *client;
     ServerConnection(std::string host,int port);
 	virtual ~ServerConnection();
 };

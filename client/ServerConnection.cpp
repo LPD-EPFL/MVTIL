@@ -16,6 +16,8 @@ ServerConnection::ServerConnection(std::string host,int port) {
     socket = s;
     transport = t;
     protocol = p;
+
+    client = new DataServiceClient(protocol);
     transport->open();//keep the transport to open all the time
 }
 
