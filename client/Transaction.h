@@ -1,9 +1,10 @@
 
-#ifndef _TRANSACTION_H
-#define _TRANSACTION_H
+#ifndef _TRANSACTION_H_
+#define _TRANSACTION_H_
 
-#include "client.h"
+#include "ServerConnection.h"
 #include <unordered_map>
+#include <unordered_set>
 
 #define TRANSACTION_MAX_DURATION 16
 
@@ -16,6 +17,7 @@ class Transaction{
 		TimestampInterval committed_interval;
 		std::unordered_map<Key,LockEntry> read_set;
 		std::unordered_map<Key,LockEntry> write_set;
+		std::unordered_set<ServerConnection*, ServerConnectionHasher> writeSetServers; 
 
 	public:
 		Transaction(TransactionId tid, Timestamp start, Timestamp duration):transaction_id(tid),start_time(start){
@@ -29,7 +31,15 @@ class Transaction{
 		~Transaction();
 		const Value* FindInReadSet(Key key);
 		const Value* FindInWriteSet(Key key);
+		inline void AddToReadSet(Key k, LockEntry e) { 
+	        read_set.insert(std::pair<Key, LockEntry>(k,e)); 
+	    }
 
+	    inline void AddToWriteSet(Key k, LockEntry e) {
+	        write_set.insert(std::pair<Key, LockEntry>(k,e)); 
+	    } 
+
+	    void UpdateValue(Key key, Value update);
 };
 
 

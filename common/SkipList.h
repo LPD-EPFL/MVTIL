@@ -8,6 +8,8 @@
 #include <string>
 #include <iostream>
 
+//#define MIN_KEY 0
+//#define MAX_KEY 0xFFFF
 //#define SKIP_LIST_MAXLEVEL 4
 
 using namespace std;
@@ -48,24 +50,36 @@ class skiplist_node{
 };
 
 
-template<class K, class V, int MAXLEVEL = SKIP_LIST_MAXLEVEL>
+template<class K, class V, int MAXLEVEL = 4>
 class skiplist
 {
 public:
     typedef K KeyType;
     typedef V ValueType;
     typedef skiplist_node<K,V,MAXLEVEL> NodeType;
- 
-    skiplist(K minKey,K maxKey):head(NULL),max_level(MAXLEVEL),
-                                min_key(minKey),max_key(maxKey)
+
+    skiplist(K minKey,K maxKey):max_level(MAXLEVEL),min_key(minKey),max_key(maxKey)
     {
-        head = new NodeType(minKey);
-        NodeType *tail = new NodeType(maxKey);
-        for ( int i=0; i<MAXLEVEL; i++ ) {
+        prob = 0.5;
+        len = 0;
+        head = new NodeType(min_key);
+        NodeType *tail = new NodeType(max_key);
+        for ( int i=0; i<max_level; i++ ) {
             head->next[i] = tail;
         }
         seeds = seed_rand();
     }
+
+    // skiplist():max_level(MAXLEVEL),
+    //            min_key(0),max_key(0xFFFF)
+    // {
+    //     head = new NodeType(min_key);
+    //     NodeType *tail = new NodeType(max_key);
+    //     for ( int i=0; i<MAXLEVEL; i++ ) {
+    //         head->next[i] = tail;
+    //     }
+    //     seeds = seed_rand();   
+    // }
  
     virtual ~skiplist()
     {
@@ -110,6 +124,7 @@ public:
             for(int i=0;i<level;i++){
                 insertNode->next[i] = nextNode;
             }
+            len++;
         }
         return result;
     }
@@ -130,6 +145,7 @@ public:
                 node->next[i] = nextNode->next[0];
             }
             delete nextNode;
+            len--;
         }
         return result;
     }
@@ -140,6 +156,7 @@ public:
             NodeType* cur = node;
             node = node->next[0];
             delete cur;
+            len--;
         }
         for(int i=0;i<MAXLEVEL;i++){
             head->next[i] = node;
@@ -160,13 +177,18 @@ public:
         return;
     }
 
+    int size(){
+        return len;
+    }
+
 private:
+    int max_level;
     K min_key;
     K max_key;
-    int max_level;
     NodeType *head;
     unsigned long* seeds;
-    double prob = 0.5;
+    double prob;
+    int len;
 
     int GetRandomLevel() {
         int level = 1;        

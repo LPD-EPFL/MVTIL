@@ -2,14 +2,13 @@
 #ifndef _VERSION_MANAGER_H_
 #define _VERSION_MANAGER_H_
 
-#include "DataService_types.h"
-#include "SkipList.h"
+#include "LockManager.h"
+//#include "server.h"
 
-#define SKIP_LIST_MAXLEVEL 4
+//#define MIN_TIMESTAMP 0
+//#define MAX_TIMESTAMP 0xFFFF
 
-typedef skiplist<Timestamp,Value,SKIP_LIST_MAXLEVEL> VersionList;
-typedef skiplist_node<Timestamp,Value,SKIP_LIST_MAXLEVEL> Version;
-typedef OperationState::type LockState;
+using namespace std;
 
 // typedef struct LockInfo {
 //     LockState state; //the status the operation finished with
@@ -19,6 +18,40 @@ typedef OperationState::type LockState;
 // } LockInfo;
 
 class VersionManager{
+
+    private:
+
+        class VersionEntry{
+            //friend class VersionManager;
+            //private:
+                //Timestamp readMark;
+                //std::recursive_mutex lock;
+            public:
+                Key key;
+                VersionList versions;
+
+                //VersionEntry();
+                VersionEntry(Key k) : key(k), versions(MIN_TIMESTAMP,MAX_TIMESTAMP){}
+
+                inline bool isEmpty() {
+                    if (versions.size() == 0) return true;
+                    return false;
+                }
+
+                // inline void lockEntry() {
+                //     lock.lock();
+                // }
+
+                // inline void unlockEntry() {
+                //     lock.unlock();
+                // }
+
+        };
+
+        unordered_map<Key,VersionEntry*> committed_version;
+        unordered_map<Key,LockManager*> locks_manager;
+        //unordered_map<Key,VersionEntry*> pending_version;
+        //LockManager lock_manager;
 	
 	public:
 
@@ -26,49 +59,17 @@ class VersionManager{
         VersionEntry* CreateNewEntry(Key k);
         VersionEntry* GetVersionList(Key k);
 
-        int RemoveVersion(Key k, Version* v);
+        //int RemoveVersion(Key k, Version* v);
 
+        //Acquire a read lock
 		void TryReadLock(Key k, TimestampInterval interval, LockInfo& lockInfo);
-        //try to acquire a write lock
+        //Acquire a write lock
         void TryWriteLock(Key k, TimestampInterval interval, LockInfo& lockInfo);
-        //get an info on the interval a write lock would be acquired for
-        void GetWriteLockHint(Key k, TimestampInterval interval, LockInfo& lockInfo);
-        //get a Rw lock
-        void TryReadWriteLock(Key k, TimestampInterval interval, LockInfo& lockInfo);
-        //try to expand the length of a read lock
-        void TryExpandRead(Key k, Timestamp versionTimestamp, TimestampInterval newInterval, LockInfo& lockInfo);
-        //try to change the interval of a write lock 
-        void TryExpandWrite(Key k, Timestamp versionTimestamp, TimestampInterval newInterval, LockInfo& lockInfo);
+        //Persist a version
+        bool UpdateAndPersistVersion(Key k, Value value, Timestamp new_ts);
+        //Remove a lock
+        bool RemoveVersion(Key k, TimestampInterval interval);
 
-
-	private:
-
-		class VersionEntry{
-			//friend class VersionManager;
-			private:
-               	//Timestamp readMark;
-                std::recursive_mutex lock;
-           public:
-           		Key key;
-                VersionList versions;
-
-                inline bool isEmpty() {
-                    if (versions.size() == 0) return true;
-                    return false;
-                }
-
-                inline void lockEntry() {
-                    lock.lock();
-                }
-
-                inline void unlockEntry() {
-                    lock.unlock();
-                }
-
-		};
-
-		unordered_map<Key,VersionEntry*> committed_version;
-		unordered_map<Key,VersionEntry*> pending_version;
-}
+};
 
 #endif

@@ -49,16 +49,16 @@ class DataServiceHandler : virtual public DataServiceIf {
 
 };
 
-int main(int argc, char **argv) {
-  int port = 9090;
-  shared_ptr<DataServiceHandler> handler(new DataServiceHandler());
-  shared_ptr<TProcessor> processor(new DataServiceProcessor(handler));
-  shared_ptr<TServerTransport> serverTransport(new TServerSocket(port));
-  shared_ptr<TTransportFactory> transportFactory(new TBufferedTransportFactory());
-  shared_ptr<TProtocolFactory> protocolFactory(new TBinaryProtocolFactory());
+// int main(int argc, char **argv) {
+//   int port = 9090;
+//   shared_ptr<DataServiceHandler> handler(new DataServiceHandler());
+//   shared_ptr<TProcessor> processor(new DataServiceProcessor(handler));
+//   shared_ptr<TServerTransport> serverTransport(new TServerSocket(port));
+//   shared_ptr<TTransportFactory> transportFactory(new TBufferedTransportFactory());
+//   shared_ptr<TProtocolFactory> protocolFactory(new TBinaryProtocolFactory());
 
-  TSimpleServer server(processor, serverTransport, transportFactory, protocolFactory);
-  server.serve();
-  return 0;
-}
+//   TSimpleServer server(processor, serverTransport, transportFactory, protocolFactory);
+//   server.serve();
+//   return 0;
+// }
 

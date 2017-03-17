@@ -1,0 +1,26 @@
+Scheduler: Read Operation, tid:1025,key:A,interval:[2050,2066]
+VersionManager: Read Key:A,Timestamp interval[2050,2066]
+Scheduler: Read Operation, tid:1026,key:A,interval:[2051,2067]
+VersionManager: Read Key:A,Timestamp interval[2051,2067]
+Scheduler: Write Operation, tid:1026,key:A,interval:[2051,2067]
+VersionManager: Write Key:A,Timestamp interval [2051,2067]
+LockManager: Write interval[2051,2067]
+LockManager: Create Write Lock interval[2051,2067]
+Scheduler: Commit Operation, tid:1026,timestamp:2051
+VersionManager: Persist Key:A,Timestamp:2051
+Scheduler: Write Operation, tid:1025,key:A,interval:[2050,2066]
+VersionManager: Write Key:A,Timestamp interval [2050,2066]
+LockManager: Write interval[2050,2051]
+LockManager: Create Write Lock interval[2050,2051]
+Scheduler: Commit Operation, tid:1025,timestamp:2050
+VersionManager: Persist Key:A,Timestamp:2050
+Scheduler: Read Operation, tid:1027,key:A,interval:[2052,2068]
+VersionManager: Read Key:A,Timestamp interval[2052,2068]
+LockManager: Read interval[2051,2068]
+LockManager: Create Read Lock interval[2067,2068]
+Scheduler: Read Operation, tid:1027,key:A,interval:[2052,2068]
+VersionManager: Read Key:A,Timestamp interval[2052,2068]
+LockManager: Read interval[2051,2068]
+Scheduler: Write Operation, tid:1027,key:A,interval:[2052,2068]
+VersionManager: Write Key:A,Timestamp interval [2052,2068]
+LockManager: Write interval[2052,2068]

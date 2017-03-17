@@ -44,16 +44,16 @@ class OracleServiceHandler : virtual public OracleServiceIf {
 
 };
 
-int main(int argc, char **argv) {
-  int port = 9090;
-  shared_ptr<OracleServiceHandler> handler(new OracleServiceHandler());
-  shared_ptr<TProcessor> processor(new OracleServiceProcessor(handler));
-  shared_ptr<TServerTransport> serverTransport(new TServerSocket(port));
-  shared_ptr<TTransportFactory> transportFactory(new TBufferedTransportFactory());
-  shared_ptr<TProtocolFactory> protocolFactory(new TBinaryProtocolFactory());
+// int main(int argc, char **argv) {
+//   int port = 9090;
+//   shared_ptr<OracleServiceHandler> handler(new OracleServiceHandler());
+//   shared_ptr<TProcessor> processor(new OracleServiceProcessor(handler));
+//   shared_ptr<TServerTransport> serverTransport(new TServerSocket(port));
+//   shared_ptr<TTransportFactory> transportFactory(new TBufferedTransportFactory());
+//   shared_ptr<TProtocolFactory> protocolFactory(new TBinaryProtocolFactory());
 
-  TSimpleServer server(processor, serverTransport, transportFactory, protocolFactory);
-  server.serve();
-  return 0;
-}
+//   TSimpleServer server(processor, serverTransport, transportFactory, protocolFactory);
+//   server.serve();
+//   return 0;
+// }
 

@@ -13,12 +13,14 @@ LD        := g++
 
 LIBS := -lthrift -lcityhash
 
+FILTER_FILE := gen-cpp/OracleServer_server.skeleton.cpp gen-cpp/DataServer_server.skeleton.cpp
+
 #server
 MODULES_SERVER   := common server gen-cpp
 SRC_DIR_SERVER   := $(MODULES_SERVER)
 BUILD_DIR_SERVER := $(addprefix build/,$(MODULES_SERVER))
 
-SRC_SERVER       := $(foreach sdir,$(SRC_DIR_SERVER),$(filter-out gen-cpp/DataServer_server.skeleton.cpp, $(wildcard $(sdir)/*.cpp)))
+SRC_SERVER       := $(foreach sdir,$(SRC_DIR_SERVER),$(filter-out $FILTER_FILE, $(wildcard $(sdir)/*.cpp)))
 OBJ_SERVER       :=  $(patsubst %.cpp,build/%.o,$(SRC_SERVER))
 INCLUDES_SERVER  := $(addprefix -I,$(SRC_DIR_SERVER))
 
@@ -29,7 +31,7 @@ MODULES_CLIENT   := common client gen-cpp
 SRC_DIR_CLIENT   := $(MODULES_CLIENT)
 BUILD_DIR_CLIENT := $(addprefix build/,$(MODULES_CLIENT))
 
-SRC_CLIENT       := $(foreach sdir,$(SRC_DIR_CLIENT),$(filter-out gen-cpp/DataServer_server.skeleton.cpp, $(wildcard $(sdir)/*.cpp)))
+SRC_CLIENT       := $(foreach sdir,$(SRC_DIR_CLIENT),$(filter-out $FILTER_FILE, $(wildcard $(sdir)/*.cpp)))
 OBJ_CLIENT       :=  $(patsubst %.cpp,build/%.o,$(SRC_CLIENT))
 INCLUDES_CLIENT  := $(addprefix -I,$(SRC_DIR_CLIENT))
 
@@ -54,7 +56,7 @@ endef
 
 .PHONY: all checkdirs thrift clean
 
-all: checkdirs thrift build/server_exec build/client_exec
+all: checkdirs thrift build/server_exec build/client_exec build/test_single_client
 
 #server
 build/server_exec: $(OBJ_SERVER) build/server_exec.o
@@ -64,14 +66,23 @@ build/server_exec.o: tests/server_exec.cpp
 	$(CC) $(INCLUDES_SERVER) $(CFLAGS) $(DEBUG_FLAGS) -c $< -o $@
 
 #client
-build/client_exec: $(OBJ_CLIENT) build/performance.o
+# build/client_exec: $(OBJ_CLIENT) build/performance.o
+# 	$(LD) $(CFLAGS) $(DEBUG_FLAGS) $^ -o $@ -L/usr/local/lib $(LIBS)
+
+build/client_exec: $(OBJ_CLIENT) build/client_exec.o
 	$(LD) $(CFLAGS) $(DEBUG_FLAGS) $^ -o $@ -L/usr/local/lib $(LIBS)
 
 build/client_exec.o: tests/client_exec.cpp
 	$(CC) $(INCLUDES_CLIENT) $(CFLAGS) $(DEBUG_FLAGS) -c $< -o $@
 
-build/performance.o: tests/performance.cpp
+build/test_single_client: $(OBJ_CLIENT) build/test_single_client.o
+	$(LD) $(CFLAGS) $(DEBUG_FLAGS) $^ -o $@ -L/usr/local/lib $(LIBS)
+
+build/test_single_client.o: tests/test_single_client.cpp
 	$(CC) $(INCLUDES_CLIENT) $(CFLAGS) $(DEBUG_FLAGS) -c $< -o $@
+
+# build/performance.o: tests/performance.cpp
+#	$(CC) $(INCLUDES_CLIENT) $(CFLAGS) $(DEBUG_FLAGS) -c $< -o $@
 checkdirs: $(BUILD_DIR_ALL)
 
 $(BUILD_DIR_ALL):
@@ -84,10 +95,14 @@ $(foreach bdir,$(BUILD_DIR_SERVER),$(eval $(call make-goal-server,$(bdir))))
 
 $(foreach bdir,$(BUILD_DIR_CLIENT),$(eval $(call make-goal-client,$(bdir))))
 
-THRIFT_SERVICE:=OracleService
+ORACLE_SERVICE:=OracleService
 
-thrift: gen-cpp/$(THRIFT_SERVICE)_types.cpp
+DATA_SERVICE:=DataService
 
-gen-cpp/$(THRIFT_SERVICE)_types.cpp: thrift/$(THRIFT_SERVICE).thrift
+thrift: gen-cpp/$(ORACLE_SERVICE)_types.cpp gen-cpp/$(DATA_SERVICE)_types.cpp
+
+gen-cpp/$(ORACLE_SERVICE)_types.cpp: thrift/$(ORACLE_SERVICE).thrift
 	thrift -r --gen cpp $<
 
+gen-cpp/$(DATA_SERVICE)_types.cpp: thrift/$(DATA_SERVICE).thrift
+	thrift -r --gen cpp $<

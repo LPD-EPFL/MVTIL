@@ -2,51 +2,46 @@
 #ifndef _SCHEDULER_H_
 #define _SCHEDULER_H_
 
+#include "VersionManager.h"
 #include "DataService.h"
-#include <thrift/protocol/TBinaryProtocol.h>
-#include <thrift/server/TSimpleServer.h>
-#include <thrift/transport/TServerSocket.h>
-#include <thrift/transport/TBufferTransports.h>
+#include <chrono>
+#include <thread>
 
-using namespace ::apache::thrift;
-using namespace ::apache::thrift::protocol;
-using namespace ::apache::thrift::transport;
-using namespace ::apache::thrift::server;
+#include <libcuckoo/cuckoohash_map.hh>
+#include <libcuckoo/city_hasher.hh>
 
-using boost::shared_ptr;
 
-using namespace ::TxProtocol;
+#define DEFAULT_TIMEOUT 100 //in milliseconds
+#define MIN_NUM_RETRIES 5
 
-class DataServiceHandler : virtual public DataServiceIf {
- public:
-  DataServiceHandler() {
-    // Your initialization goes here
-  }
+class Scheduler : virtual public DataServiceIf {
+  public:
+    Scheduler() {
+      // Your initialization goes here
+    }
 
-  void HandleAbort(AbortReply& _return, const TransactionId tid) {
-    // Your implementation goes here
-    printf("HandleAbort\n");
-  }
+    void HandleAbort(AbortReply& _return, const TransactionId tid);
+    void HandleCommit(CommitReply& _return, const TransactionId tid, const Timestamp ts);
+    void HandleReadRequest(ReadReply& _return, const TransactionId tid, const TimestampInterval& interval, const Key& k);
+    void HandleWriteRequest(WriteReply& _return, const TransactionId tid, const TimestampInterval& interval, const Key& k, const Value& v);
+    void HandleFreezeReadRequest(ReadReply& _return, const TransactionId tid, const TimestampInterval& interval, const Key& k);
 
-  void HandleCommit(CommitReply& _return, const TransactionId tid, const Timestamp ts) {
-    // Your implementation goes here
-    printf("HandleCommit\n");
-  }
+  private:
+    VersionManager version_manager;
 
-  void HandleReadRequest(ReadReply& _return, const TransactionId tid, const TimestampInterval& interval, const Key& k) {
-    // Your implementation goes here
-    printf("HandleReadRequest\n");
-  }
+    //For the concurrent hash table implementation, see https://github.com/efficient/libcuckoo
+    //Map
+    //cuckoohash_map<TransactionId, cuckoohash_map<Key, std::pair<Value,TimestampInterval>, CityHasher<Key>>, CityHasher<TransactionId>> pendingWriteSets;
+    cuckoohash_map<TransactionId, unordered_map<Key, std::pair<Value,TimestampInterval>>, CityHasher<TransactionId>> pendingWriteSets;
 
-  void HandleWriteRequest(WriteReply& _return, const TransactionId tid, const TimestampInterval& interval, const Key& k, const Value& v) {
-    // Your implementation goes here
-    printf("HandleWriteRequest\n");
-  }
-
-  void HandleFreezeReadRequest(ReadReply& _return, const TransactionId tid, const TimestampInterval& interval, const Key& k) {
-    // Your implementation goes here
-    printf("HandleFreezeReadRequest\n");
-  }
+    inline bool timeout(std::chrono::time_point<std::chrono::high_resolution_clock> start, std::chrono::time_point<std::chrono::high_resolution_clock> end) {
+       auto diff = end - start;
+       auto ms = std::chrono::duration_cast<std::chrono::milliseconds>(diff);
+       if (ms.count() > DEFAULT_TIMEOUT) {
+        return true;
+       }
+       return false;
+    }
 
 };
 

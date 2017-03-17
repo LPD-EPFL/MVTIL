@@ -1,4 +1,5 @@
 // #include "SkipList.h"
+// #define SKIP_LIST_MAXLEVEL 4
 
 // int main(){
 // 	skiplist<int,int> list(1,1000);

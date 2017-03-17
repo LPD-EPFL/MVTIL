@@ -5,17 +5,26 @@ Transaction::~Transaction(){
 }
 
 const Value* Transaction::FindInReadSet(Key key){
-	if(read_set.count(key) == 0)
-		return NULL;
-	else
-		return &(read_set[key].value);
+	auto it = read_set.find(key);
+    if (it == read_set.end()) {
+        return NULL;
+    }
+    return &(it->second.value);
 }
 
 
 const Value* Transaction::FindInWriteSet(Key key){
-	if(write_set.count(key) == 0)
-		return NULL;
-	else
-		return &(write_set[key].value);
+	auto it = write_set.find(key);
+    if (it == write_set.end()) {
+        return NULL;
+    }
+    return &(it->second.value);
 }
 
+void Transaction::UpdateValue(Key key, Value update){
+	auto it = write_set.find(key);
+    if (it == write_set.end()) {
+        return;
+    }
+    it->second.value = update;
+}

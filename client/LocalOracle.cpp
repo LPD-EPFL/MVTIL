@@ -6,8 +6,11 @@ LocalOracle::LocalOracle(int64_t cid):client_id(cid){
     initialTime = std::chrono::system_clock::now();
 }
 
+LocalOracle::~LocalOracle(){
+}
+
 Timestamp LocalOracle::GetTimestamp(){
-    Timestamp duration = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now() -initialTime).count();
+    Timestamp duration = ((std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now() -initialTime).count()) << 10) + crt;
     return duration;
 }
 

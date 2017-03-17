@@ -2,7 +2,7 @@
 #ifndef _VERSION_H_
 #define _VERSION_H_
 
-#include "common.h"
+#include "server.h"
 
 //the state a version object can be in
 typedef enum {COMMITTED, PENDING, ABORTED, NO_SUCH_VERSION} OpState;

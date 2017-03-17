@@ -1,14 +1,15 @@
-
 #include "CommunicationService.h"
 
 CommunicationService::CommunicationService(){
-    for(DataServerInfo info:ConfigLoader::GetDataServerInfo())
+    for(DataServerInfo info:ConfigLoader::GetDataServerInfo()){
         servers.push_back(new ServerConnection(info.host,info.port));
+    }
 }
 
 CommunicationService::~CommunicationService(){
-    for(ServerConnection* server:servers)
+    for(ServerConnection* server:servers){
         delete server;
+    }
 }
 
 

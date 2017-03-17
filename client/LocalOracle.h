@@ -1,6 +1,6 @@
 
-#ifndef _LOCAL_ORACLE_H
-#define _LOCAL_ORACLE_H
+#ifndef _LOCAL_ORACLE_H_
+#define _LOCAL_ORACLE_H_
 
 #include "OracleService.h"
 #include "ConfigLoader.h"
@@ -18,7 +18,7 @@ using namespace apache::thrift::transport;
 
 using namespace ::Oracle;
 
-#define MAX_FACTOR 10000
+#define MAX_FACTOR 1024
 
 class LocalOracle
 {
