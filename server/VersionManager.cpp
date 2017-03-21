@@ -24,7 +24,7 @@ VersionManager::VersionEntry* VersionManager::GetVersionList(Key key){
 	return NULL;
 }
 
-void VersionManager::TryReadLock(Key key, TimestampInterval interval, LockInfo& lockInfo)
+void VersionManager::TryReadLock(TransactionId tid, Key key, TimestampInterval interval, LockInfo& lockInfo)
 {
     #ifdef DEBUG
         std::cout<<"VersionManager: Read Key:"<<key<<",Timestamp interval["<<interval.start<<","<<interval.finish<<"]"<<endl;
@@ -32,6 +32,9 @@ void VersionManager::TryReadLock(Key key, TimestampInterval interval, LockInfo& 
 
 	VersionEntry* ve = GetVersionList(key);
 	if(ve == NULL){
+        ve = CreateNewEntry(key);
+        interval.start = 0;
+        locks_manager[key]->LockReadInterval(tid, interval);
 		lockInfo.state = OperationState::FAIL_NO_VERSION;
 		return;
 	}
@@ -44,8 +47,8 @@ void VersionManager::TryReadLock(Key key, TimestampInterval interval, LockInfo& 
     candidateInterval.start = prev->key;
     //There are many policies here. Looking As much as possible.
     candidateInterval.finish = min(interval.finish,curr->key);
-    bool is_confilct = locks_manager[key]->LockReadInterval(candidateInterval);
-    if(is_confilct){
+    bool is_success = locks_manager[key]->LockReadInterval(tid, candidateInterval);
+    if(!is_success){
     	lockInfo.state = OperationState::FAIL_PENDING_VERSION;
     	return;
     }
@@ -58,7 +61,7 @@ void VersionManager::TryReadLock(Key key, TimestampInterval interval, LockInfo& 
 }
 
 
-void VersionManager::TryWriteLock(Key key, TimestampInterval interval, LockInfo& lockInfo)
+void VersionManager::TryWriteLock(TransactionId tid, Key key, TimestampInterval interval, LockInfo& lockInfo)
 {
 
     #ifdef DEBUG
@@ -89,7 +92,7 @@ void VersionManager::TryWriteLock(Key key, TimestampInterval interval, LockInfo&
     // 	candidateInterval.finish = min(interval.finish,curr->key);
     // }
 
-    bool is_success = locks_manager[key]->LockWriteInterval(candidateInterval);
+    bool is_success = locks_manager[key]->LockWriteInterval(tid, candidateInterval);
     if(!is_success){
     	lockInfo.state = OperationState::FAIL_PENDING_VERSION;
     	return;

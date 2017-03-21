@@ -7,7 +7,6 @@
 #ifndef DataService_TYPES_H
 #define DataService_TYPES_H
 
-
 #include "common.h"
 #include <iosfwd>
 #include <thrift/Thrift.h>
@@ -15,6 +14,7 @@
 #include <thrift/TBase.h>
 #include <thrift/protocol/TProtocol.h>
 #include <thrift/transport/TTransport.h>
+
 #include <thrift/cxxfunctional.h>
 
 
@@ -48,15 +48,15 @@ struct OperationState {
 
 extern const std::map<int, const char*> _OperationState_VALUES_TO_NAMES;
 
-// typedef int64_t TransactionId;
+typedef int64_t TransactionId;
 
-// typedef int64_t Timestamp;
+typedef int64_t Timestamp;
 
-// typedef std::string Key;
+typedef std::string Key;
 
-// typedef std::string Value;
+typedef std::string Value;
 
-// class TimestampInterval;
+class TimestampInterval;
 
 class ClientGenericRequest;
 

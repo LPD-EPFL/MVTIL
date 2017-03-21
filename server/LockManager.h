@@ -6,6 +6,7 @@
 #define MAX_LEVEL 4
 
 typedef struct IL{
+	TransactionId transaction_id; 
 	TimestampInterval interval;
 	LockOperation lock_operation;
 	Value value;
@@ -29,8 +30,8 @@ private:
 
 public:
 	LockManager(Key k);
-	bool LockReadInterval(TimestampInterval& candidate_interval);
-	bool LockWriteInterval(TimestampInterval& candidate_interval);
+	bool LockReadInterval(TransactionId tid, TimestampInterval& candidate_interval);
+	bool LockWriteInterval(TransactionId tid, TimestampInterval& candidate_interval);
 	IntervalLock* CreateReadLock(TimestampInterval read_interval);
 	IntervalLock* CreateWriteLock(TimestampInterval write_interval);
 	bool RemoveLock(TimestampInterval write_interval);

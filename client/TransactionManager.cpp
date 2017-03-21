@@ -113,6 +113,13 @@ bool TransactionManager::WriteData(Transaction* transaction, Key key, Value valu
 
 bool TransactionManager::CommitTransaction(Transaction* transaction){
 
+    if(transaction->is_abort){
+        #ifdef DEBUG
+            std::cout<<"Transaction has already be aborted!"<<endl;
+        #endif
+        return false;
+    }
+
     Timestamp committed_timestamp = transaction->committed_interval.start;
     //we can have other policy
     #ifdef DEBUG
@@ -132,6 +139,13 @@ bool TransactionManager::CommitTransaction(Transaction* transaction){
 
 bool TransactionManager::AbortTransaction(Transaction* transaction){
 
+    if(transaction->is_abort){
+        #ifdef DEBUG
+            std::cout<<"Transaction has already be aborted!"<<endl;
+        #endif
+        return true;
+    }
+
     #ifdef DEBUG
         std::cout<<"HandleAbort: Xact_id "<<transaction->transaction_id<<endl;
     #endif
@@ -144,6 +158,7 @@ bool TransactionManager::AbortTransaction(Transaction* transaction){
     transaction->read_set.clear(); 
     transaction->write_set.clear();
     transaction->writeSetServers.clear();
+    transaction->is_abort = true;
 
     // Timespan duration = transaction->initialInterval.finish  transaction->initialInterval.start;
     //TODO when I abort, should I restart with the minimum duration or not?

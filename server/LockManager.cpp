@@ -6,18 +6,20 @@ LockManager::LockManager(Key k) : key(k){
     head->interval.start = MIN_TIMESTAMP - 1;
     head->interval.finish = MIN_TIMESTAMP - 1;
     head->lock_operation = LockOperation::WRITE;
+    head->transaction_id = 0;
     IntervalLock *tail = new IntervalLock;
     tail->top_level = 1;
     tail->interval.start = MAX_TIMESTAMP;
     tail->interval.finish = MAX_TIMESTAMP;
     tail->lock_operation = LockOperation::WRITE;
+    tail->transaction_id = 0;
     for(int i=0;i<MAX_LEVEL;i++){
         head->next[i] = tail;
         tail->next[i] = NULL;
     }
 }
 
-bool LockManager::LockReadInterval(TimestampInterval &candidate_interval){
+bool LockManager::LockReadInterval(TransactionId tid, TimestampInterval& candidate_interval){
     #ifdef DEBUG
         std::cout<<"LockManager: Read interval["<<candidate_interval.start<<","<<candidate_interval.finish<<"]"<<endl;
     #endif
@@ -25,6 +27,12 @@ bool LockManager::LockReadInterval(TimestampInterval &candidate_interval){
 	IntervalLock* node = head;
 	for(int level=node->top_level-1; level >=0; level--) {
         while (node->next[level] != NULL && (node->next[level]->interval).start <= searchTimestamp ) {
+            if((node->next[level]->interval.finish >= candidate_interval.finish) && TestConflict(node->next[level]->lock_operation,LockOperation::READ)){
+               return false; 
+            }
+            // else if(TestConflict(node->next[level]->lock_operation,LockOperation::READ)){
+            //     candidate_interval.finish = min(candidate_interval.finish,);
+            // }
             node = node->next[level];
         }
     }
@@ -32,36 +40,53 @@ bool LockManager::LockReadInterval(TimestampInterval &candidate_interval){
     IntervalLock* prev = node;
     IntervalLock* curr = node->next[0];
 
+    //One policy
+    candidate_interval.finish = min(candidate_interval.finish, curr->interval.start);
+
+    IntervalLock* lock = CreateReadLock(candidate_interval);
+    lock->transaction_id = tid;
+    for(int i=0;i<prev->top_level;i++)
+        prev->next[i] = lock;
+    for(int i=0;i<lock->top_level;i++)
+        lock->next[i] = curr;
+    return true;
+
+    //Two policy largest interval first
+
+
     //Should I combine the interval????????
-    if(candidate_interval.start >= (prev->interval).finish && candidate_interval.finish <= (curr->interval).start){
-    	//create new read lock for candidate interval
-    	IntervalLock* lock = CreateReadLock(candidate_interval);
-    	for(int i=0;i<prev->top_level;i++)
-    		prev->next[i] = lock;
-    	for(int i=0;i<lock->top_level;i++)
-    		lock->next[i] = curr;
-    	return true;
-    }
-    else if(candidate_interval.finish <= (curr->interval).start && !TestConflict(prev->lock_operation, LockOperation::READ)){
-    	(prev->interval).finish = candidate_interval.finish;
-    	return true;
-    }
-    else if(candidate_interval.start >= (prev->interval).finish && !TestConflict(curr->lock_operation, LockOperation::READ)){
-    	(curr->interval).start = candidate_interval.start;
-    	return true;
-    }else if(candidate_interval.finish > prev->interval.finish && candidate_interval.finish < curr->interval.start ){
-        candidate_interval.start =  prev->interval.finish;
-        IntervalLock* lock = CreateReadLock(candidate_interval);
-        for(int i=0;i<prev->top_level;i++)
-            prev->next[i] = lock;
-        for(int i=0;i<lock->top_level;i++)
-            lock->next[i] = curr;
-        return true;
-    }
-    return false;
+    // if(candidate_interval.start >= (prev->interval).finish && candidate_interval.finish <= (curr->interval).start){
+    // 	//create new read lock for candidate interval
+    // 	IntervalLock* lock = CreateReadLock(candidate_interval);
+    //     lock->transaction_id = tid;
+    // 	for(int i=0;i<prev->top_level;i++)
+    // 		prev->next[i] = lock;
+    // 	for(int i=0;i<lock->top_level;i++)
+    // 		lock->next[i] = curr;
+    // 	return true;
+    // }
+    // else if(candidate_interval.finish <= (curr->interval).start && !TestConflict(prev->lock_operation, LockOperation::READ)){
+    // 	(prev->interval).finish = candidate_interval.finish;
+    // 	return true;
+    // }
+    // else if(candidate_interval.start >= (prev->interval).finish && !TestConflict(curr->lock_operation, LockOperation::READ)){
+    // 	(curr->interval).start = candidate_interval.start;
+    // 	return true;
+    //}
+
+    // else if(candidate_interval.finish > prev->interval.finish && candidate_interval.finish < curr->interval.start ){
+    //     candidate_interval.start =  prev->interval.finish;
+    //     IntervalLock* lock = CreateReadLock(candidate_interval);
+    //     for(int i=0;i<prev->top_level;i++)
+    //         prev->next[i] = lock;
+    //     for(int i=0;i<lock->top_level;i++)
+    //         lock->next[i] = curr;
+    //     return true;
+    // }
+    // return false;
 }
 
-bool LockManager::LockWriteInterval(TimestampInterval& candidate_interval){
+bool LockManager::LockWriteInterval(TransactionId tid, TimestampInterval& candidate_interval){
     #ifdef DEBUG
         std::cout<<"LockManager: Write interval["<<candidate_interval.start<<","<<candidate_interval.finish<<"]"<<endl;
     #endif
@@ -69,20 +94,32 @@ bool LockManager::LockWriteInterval(TimestampInterval& candidate_interval){
 	IntervalLock* node = head;
 	for(int level=node->top_level-1; level >=0; level--) {
         while (node->next[level] != NULL && (node->next[level]->interval).start <= searchTimestamp ) {
+            // #ifdef DEBUG
+            //     std::cout<<(node->next[level]->interval).start<<" "<<(node->next[level]->interval).finish<<endl;
+            // #endif
+            if(node->next[level]->transaction_id != tid && (node->next[level]->interval.finish > searchTimestamp) && TestConflict(node->next[level]->lock_operation,LockOperation::WRITE)){
+               searchTimestamp = (node->next[level])->interval.finish;
+            }
+            if(searchTimestamp >= candidate_interval.finish){
+                return false;
+            }
             node = node->next[level];
         }
     }
     IntervalLock* prev = node;
     IntervalLock* curr = node->next[0];
-    candidate_interval.start = max(prev->interval.finish,candidate_interval.start);
-    candidate_interval.finish = min(curr->interval.start,candidate_interval.finish);
-    if(candidate_interval.start >= candidate_interval.finish){
-        return false;
-    }
+    candidate_interval.start = searchTimestamp;
+
+    //candidate_interval.start = max(prev->interval.finish,candidate_interval.start);
+    //candidate_interval.finish = min(curr->interval.start,candidate_interval.finish);
+    //if(candidate_interval.start >= candidate_interval.finish){
+        //return false;
+    //}
 
     //if(candidate_interval.start >= (prev->interval).finish && candidate_interval.finish <= (curr->interval).start){
     	//create new write lock for candidate interval
     	IntervalLock* lock = CreateWriteLock(candidate_interval);
+        lock->transaction_id = tid;
     	for(int i=0;i<prev->top_level;i++)
     		prev->next[i] = lock;
     	for(int i=0;i<lock->top_level;i++)

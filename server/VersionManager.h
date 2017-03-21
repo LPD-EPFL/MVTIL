@@ -62,9 +62,9 @@ class VersionManager{
         //int RemoveVersion(Key k, Version* v);
 
         //Acquire a read lock
-		void TryReadLock(Key k, TimestampInterval interval, LockInfo& lockInfo);
+		void TryReadLock(TransactionId tid, Key k, TimestampInterval interval, LockInfo& lockInfo);
         //Acquire a write lock
-        void TryWriteLock(Key k, TimestampInterval interval, LockInfo& lockInfo);
+        void TryWriteLock(TransactionId tid, Key k, TimestampInterval interval, LockInfo& lockInfo);
         //Persist a version
         bool UpdateAndPersistVersion(Key k, Value value, Timestamp new_ts);
         //Remove a lock
