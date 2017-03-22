@@ -10,8 +10,10 @@ TransactionManager::~TransactionManager(){
 }
 
 Transaction* TransactionManager::StartTransaction(){
-	TransactionId tid = oracle.GetTransactionId();
-	Timestamp ts = oracle.GetTimestamp();
+	//TransactionId tid = oracle.GetTransactionId();
+	//Timestamp ts = oracle.GetTimestamp();
+    TransactionId tid = oracle.GetGlobalTransactionId();
+    Timestamp ts = oracle.GetGlobalTimestamp();
 	Transaction *t = new Transaction(tid,ts);
 	return t;
 }

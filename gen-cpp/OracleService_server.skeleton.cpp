@@ -26,12 +26,14 @@ class OracleServiceHandler : virtual public OracleServiceIf {
  public:
   OracleServiceHandler() {
     // Your initialization goes here
+    initialTime = std::chrono::system_clock::now();
+    unique_id = 1;
   }
 
   Timestamp GetTimestamp() {
     // Your implementation goes here
     printf("GetTimestamp\n");
-      Timestamp duration = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now() -initialTime).count();
+    Timestamp duration = ((std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now() -initialTime).count())<<10) + (unique_id)%1024;
     return duration;
   }
 

@@ -41,12 +41,20 @@ void VersionManager::TryReadLock(TransactionId tid, Key key, TimestampInterval i
 
 	Version* prev;
     Version* curr;
-    curr = ve->versions.find(interval.start, prev);
 
+    /*Policy one */
+    // curr = ve->versions.find(interval.start, prev);
+    // TimestampInterval candidateInterval;
+    // candidateInterval.start = prev->key;
+    // //There are many policies here. Looking As much as possible.
+    // candidateInterval.finish = min(interval.finish,curr->key);
+
+    /*Policy two*/
+    curr = ve->versions.find(interval.finish, prev);
     TimestampInterval candidateInterval;
     candidateInterval.start = prev->key;
-    //There are many policies here. Looking As much as possible.
     candidateInterval.finish = min(interval.finish,curr->key);
+
     bool is_success = locks_manager[key]->LockReadInterval(tid, candidateInterval);
     if(!is_success){
     	lockInfo.state = OperationState::FAIL_PENDING_VERSION;
@@ -75,11 +83,18 @@ void VersionManager::TryWriteLock(TransactionId tid, Key key, TimestampInterval 
 
 	Version* prev;
     Version* curr;
-    curr = ve->versions.find(interval.start, prev);
+    /* Policy 1*/
+    // curr = ve->versions.find(interval.start, prev);
+    // TimestampInterval candidateInterval;
+    // candidateInterval.start = max(prev->key,interval.start);
+    // candidateInterval.finish = min(curr->key,interval.finish);
 
+    /* Policy 2*/
+    curr = ve->versions.find(interval.finish, prev);
     TimestampInterval candidateInterval;
     candidateInterval.start = max(prev->key,interval.start);
     candidateInterval.finish = min(curr->key,interval.finish);
+    
     //One Policy
     // if(interval.finish > curr->key)
     // {
@@ -105,7 +120,7 @@ void VersionManager::TryWriteLock(TransactionId tid, Key key, TimestampInterval 
 	lockInfo.state = OperationState::W_LOCK_SUCCESS;
 }
 
-bool VersionManager::UpdateAndPersistVersion(Key key, Value value, Timestamp new_ts) {
+bool VersionManager::UpdateAndPersistVersion(TransactionId tid, Key key, Value value, Timestamp new_ts) {
 
     #ifdef DEBUG
         std::cout<<"VersionManager: Persist Key:"<<key<<",Timestamp:"<<new_ts<<endl;
@@ -113,6 +128,7 @@ bool VersionManager::UpdateAndPersistVersion(Key key, Value value, Timestamp new
 
     VersionEntry* ve = GetVersionList(key);
     ve->versions.insert(new_ts,value);
+    locks_manager[key]->CommitInterval(tid,new_ts);
     return true;
 }
 

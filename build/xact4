@@ -3,4 +3,4 @@ T4 Read l
 T4 Write k 9
 T4 Write m 4
 T4 Write l 7
-T4 Abort
+T4 Commit

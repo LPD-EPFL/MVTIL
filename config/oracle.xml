@@ -2,6 +2,6 @@
 <OracleServers>
     <OracleServer>
     	<ip>127.0.0.1</ip>
-        <port>9090</port>
+        <port>9999</port>
     </OracleServer>
 </OracleServers>

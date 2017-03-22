@@ -7,12 +7,14 @@ LockManager::LockManager(Key k) : key(k){
     head->interval.finish = MIN_TIMESTAMP - 1;
     head->lock_operation = LockOperation::WRITE;
     head->transaction_id = 0;
+    head->is_committed = true;
     IntervalLock *tail = new IntervalLock;
     tail->top_level = 1;
     tail->interval.start = MAX_TIMESTAMP;
     tail->interval.finish = MAX_TIMESTAMP;
     tail->lock_operation = LockOperation::WRITE;
     tail->transaction_id = 0;
+    tail->is_committed = true;
     for(int i=0;i<MAX_LEVEL;i++){
         head->next[i] = tail;
         tail->next[i] = NULL;
@@ -27,7 +29,11 @@ bool LockManager::LockReadInterval(TransactionId tid, TimestampInterval& candida
 	IntervalLock* node = head;
 	for(int level=node->top_level-1; level >=0; level--) {
         while (node->next[level] != NULL && (node->next[level]->interval).start <= searchTimestamp ) {
-            if((node->next[level]->interval.finish >= candidate_interval.finish) && TestConflict(node->next[level]->lock_operation,LockOperation::READ)){
+            //if((node->next[level]->interval.finish >= candidate_interval.finish) && TestConflict(node->next[level]->lock_operation,LockOperation::READ)){
+            if(!node->next[level]->is_committed && (node->next[level]->interval.finish >= searchTimestamp) && TestConflict(node->next[level]->lock_operation,LockOperation::READ)){
+               #ifdef DEBUG
+                  std::cout<<"Read conflict happens!"<<endl;
+               #endif
                return false; 
             }
             // else if(TestConflict(node->next[level]->lock_operation,LockOperation::READ)){
@@ -101,6 +107,9 @@ bool LockManager::LockWriteInterval(TransactionId tid, TimestampInterval& candid
                searchTimestamp = (node->next[level])->interval.finish;
             }
             if(searchTimestamp >= candidate_interval.finish){
+                #ifdef DEBUG
+                    std::cout<<"Write conflict happens!"<<endl;
+                #endif
                 return false;
             }
             node = node->next[level];
@@ -109,6 +118,10 @@ bool LockManager::LockWriteInterval(TransactionId tid, TimestampInterval& candid
     IntervalLock* prev = node;
     IntervalLock* curr = node->next[0];
     candidate_interval.start = searchTimestamp;
+    candidate_interval.finish = min(curr->interval.start,candidate_interval.finish);
+    if(candidate_interval.start >= candidate_interval.finish){
+        return false;
+    }
 
     //candidate_interval.start = max(prev->interval.finish,candidate_interval.start);
     //candidate_interval.finish = min(curr->interval.start,candidate_interval.finish);
@@ -129,6 +142,18 @@ bool LockManager::LockWriteInterval(TransactionId tid, TimestampInterval& candid
     //return false;
 }
 
+void LockManager::CommitInterval(TransactionId tid, const Timestamp& committed_time){
+    IntervalLock* node = head;
+    for(int level=node->top_level-1; level >=0; level--) {
+        while (node->next[level] != NULL && (node->next[level]->interval).start <= committed_time ) {
+            if(node->next[level]->transaction_id == tid){
+                node->next[level]->is_committed = true;
+            }
+            node = node->next[level];
+        }
+    }
+}
+
 
 IntervalLock* LockManager::CreateReadLock(TimestampInterval read_interval){
     #ifdef DEBUG
@@ -137,6 +162,7 @@ IntervalLock* LockManager::CreateReadLock(TimestampInterval read_interval){
 	IntervalLock *lock = new IntervalLock;
 	lock->interval = read_interval;
 	lock->lock_operation = LockOperation::READ;
+    lock->is_committed = false;
 	lock->top_level = GetRandomLevel();
 	for(int i=0;i<MAX_LEVEL;i++)
 		lock->next[i] = NULL;
@@ -150,6 +176,7 @@ IntervalLock* LockManager::CreateWriteLock(TimestampInterval write_interval){
 	IntervalLock *lock = new IntervalLock;
 	lock->interval = write_interval;
 	lock->lock_operation = LockOperation::WRITE;
+    lock->is_committed = false;
 	lock->top_level = GetRandomLevel();
 	for(int i=0;i<MAX_LEVEL;i++)
 		lock->next[i] = NULL;
@@ -178,7 +205,6 @@ bool LockManager::RemoveLock(TimestampInterval write_interval){
     }
     return false;
 }
-
 
 void LockManager::GarbageCollection(){
 

@@ -2,6 +2,7 @@ T1 Create
 T2 Create
 T3 Create
 T1 Read A
+T2 Read A
 T2 Write A 12
 T2 Commit
 T1 Write A 34

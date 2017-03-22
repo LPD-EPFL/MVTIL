@@ -12,6 +12,7 @@ typedef struct IL{
 	Value value;
 	int top_level;
 	struct IL *next[MAX_LEVEL];
+	bool is_committed;
 }IntervalLock;
 
 class LockManager{
@@ -32,6 +33,7 @@ public:
 	LockManager(Key k);
 	bool LockReadInterval(TransactionId tid, TimestampInterval& candidate_interval);
 	bool LockWriteInterval(TransactionId tid, TimestampInterval& candidate_interval);
+	void CommitInterval(TransactionId tid,const Timestamp& committed_time);
 	IntervalLock* CreateReadLock(TimestampInterval read_interval);
 	IntervalLock* CreateWriteLock(TimestampInterval write_interval);
 	bool RemoveLock(TimestampInterval write_interval);

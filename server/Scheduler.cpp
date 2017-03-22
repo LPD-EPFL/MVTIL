@@ -65,16 +65,21 @@ void Scheduler::HandleWriteRequest(WriteReply& _return, const TransactionId tid,
 	//????
 	//cuckoohash_map<Key, std::pair<Value,TimestampInterval>, CityHasher<Key>> write_set;
 	std::unordered_map<Key, std::pair<Value,TimestampInterval>> write_set;
-	if(pendingWriteSets.find(tid, write_set)){
+	bool tid_exists = pendingWriteSets.find(tid, write_set);
+	if(tid_exists){
 		//std::pair<Value,TimestampInterval> value_set;
 		if(write_set.count(k) > 0){
 			auto& value_time = write_set[k];
 			value_time.first = value;
+			_return.tid = tid;
+    		_return.state = OperationState::W_LOCK_SUCCESS;
+    		_return.interval = interval;
+    		_return.key = k;
+			return;
 		}
 		// if(write_set.find(k,value_set)){
 		// 	value_set.first = value;
 		// }
-		return;
 	}
 
 	LockInfo lockInfo;
@@ -97,12 +102,18 @@ void Scheduler::HandleWriteRequest(WriteReply& _return, const TransactionId tid,
     _return.key = k;
 
     //cuckoohash_map<Key, std::pair<Value,TimestampInterval>, CityHasher<Key>> valueEntry;
-    std::unordered_map<Key, std::pair<Value,TimestampInterval>> valueEntry; 
-
     auto value_pair = make_pair(value,lockInfo.locked);
-    //valueEntry.insert(k, value_pair);
-    valueEntry[k] = value_pair;
-    pendingWriteSets.insert(tid, valueEntry);
+
+    if(tid_exists){
+    	write_set[k] = value_pair;
+    	pendingWriteSets.update(tid,write_set);
+    }
+    else{
+    	std::unordered_map<Key, std::pair<Value,TimestampInterval>> valueEntry; 
+    	//valueEntry.insert(k, value_pair);
+    	valueEntry[k] = value_pair;
+    	pendingWriteSets.insert(tid, valueEntry);
+    }
     return;
 }
 
@@ -163,8 +174,11 @@ void Scheduler::HandleCommit(CommitReply& _return, const TransactionId tid, cons
 	std::unordered_map<Key, std::pair<Value,TimestampInterval>> write_set;
 	bool suss = true;
 	if(pendingWriteSets.find(tid, write_set)){
+		// #ifdef DEBUG
+		// 	std::cout<<write_set.size()<<endl;
+		// #endif
 		for(const auto& item:write_set){
-			suss &= version_manager.UpdateAndPersistVersion(item.first,item.second.first,ts);
+			suss &= version_manager.UpdateAndPersistVersion(tid,item.first,item.second.first,ts);
 		}
 	}
 
