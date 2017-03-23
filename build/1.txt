@@ -1,40 +1,87 @@
-Scheduler: Write Operation, tid:1,key:s,interval:[6441,6457]
-VersionManager: Write Key:s,Timestamp interval [6441,6457]
-LockManager: Write interval[6441,6457]
-LockManager: Create Write Lock interval[6441,6457]
-Scheduler: Commit Operation, tid:1,timestamp:6441
-1
-VersionManager: Persist Key:s,Timestamp:6441
-Scheduler: Write Operation, tid:2,key:s,interval:[6461,6477]
-VersionManager: Write Key:s,Timestamp interval [6461,6477]
-LockManager: Write interval[6461,6477]
-LockManager: Create Write Lock interval[6461,6477]
-Scheduler: Commit Operation, tid:2,timestamp:6461
-VersionManager: Persist Key:s,Timestamp:6461
-Scheduler: Write Operation, tid:3,key:l,interval:[6468,6484]
-VersionManager: Write Key:l,Timestamp interval [6468,6484]
-LockManager: Write interval[6468,6484]
-LockManager: Create Write Lock interval[6468,6484]
-Scheduler: Write Operation, tid:3,key:t,interval:[6468,6484]
-VersionManager: Write Key:t,Timestamp interval [6468,6484]
-LockManager: Write interval[6468,6484]
-LockManager: Create Write Lock interval[6468,6484]
-Scheduler: Commit Operation, tid:3,timestamp:6477
-VersionManager: Persist Key:t,Timestamp:6477
-VersionManager: Persist Key:l,Timestamp:6477
-Scheduler: Read Operation, tid:4,key:l,interval:[6487,6503]
-VersionManager: Read Key:l,Timestamp interval[6487,6503]
-LockManager: Read interval[6477,6503]
-LockManager: Create Read Lock interval[6477,6503]
-Scheduler: Write Operation, tid:4,key:l,interval:[6487,6503]
-VersionManager: Write Key:l,Timestamp interval [6487,6503]
-LockManager: Write interval[6487,6503]
-LockManager: Create Write Lock interval[6487,6503]
-Scheduler: Commit Operation, tid:4,timestamp:6487
-VersionManager: Persist Key:l,Timestamp:6487
-Scheduler: Write Operation, tid:5,key:l,interval:[6503,6513]
-VersionManager: Write Key:l,Timestamp interval [6503,6513]
-LockManager: Write interval[6503,6513]
-LockManager: Create Write Lock interval[6503,6513]
-Scheduler: Commit Operation, tid:5,timestamp:6503
-VersionManager: Persist Key:l,Timestamp:6503
+
+Scheduler: Read Operation, tid:1025,key:A,interval:[10,26]
+VersionManager: Read Key:A,Timestamp interval[10,26]
+LockManager: Read interval[0,26]
+LockManager: Create Read Lock interval[0,26]
+
+Scheduler: Read Operation, tid:1026,key:A,interval:[11,27]
+VersionManager: Read Key:A,Timestamp interval[11,27]
+LockManager: Read interval[0,27]
+LockManager: Create Read Lock interval[0,27]
+
+Scheduler: Write Operation, tid:1026,key:A,interval:[11,27]
+VersionManager: Write Key:A,Timestamp interval [11,27]
+LockManager: Write interval[11,27]
+LockManager: Create Write Lock interval[26,27]
+
+Scheduler: Commit Operation, tid:1026,timestamp:26
+VersionManager: Persist Key:A,Timestamp:26
+
+Scheduler: Write Operation, tid:1025,key:A,interval:[10,26]
+VersionManager: Write Key:A,Timestamp interval [10,26]
+LockManager: Write interval[10,26]
+Write conflict happens!
+
+Scheduler: Read Operation, tid:1027,key:A,interval:[12,28]
+VersionManager: Read Key:A,Timestamp interval[12,28]
+LockManager: Read interval[26,28]
+LockManager: Create Read Lock interval[26,28]
+
+Scheduler: Write Operation, tid:1027,key:A,interval:[12,28]
+VersionManager: Write Key:A,Timestamp interval [12,28]
+LockManager: Write interval[26,28]
+LockManager: Create Write Lock interval[27,28]
+
+Scheduler: Commit Operation, tid:1027,timestamp:27
+VersionManager: Persist Key:A,Timestamp:27
+
+Scheduler: Write Operation, tid:1025,key:s,interval:[2,18]
+VersionManager: Write Key:s,Timestamp interval [2,18]
+LockManager: Write interval[2,18]
+LockManager: Create Write Lock interval[2,18]
+
+Scheduler: Commit Operation, tid:1025,timestamp:2
+VersionManager: Persist Key:s,Timestamp:2
+
+Scheduler: Write Operation, tid:1025,key:s,interval:[10,26]
+VersionManager: Write Key:s,Timestamp interval [10,26]
+LockManager: Write interval[10,26]
+LockManager: Create Write Lock interval[10,26]
+
+Scheduler: Commit Operation, tid:1025,timestamp:10
+VersionManager: Persist Key:s,Timestamp:10
+
+Scheduler: Write Operation, tid:1025,key:l,interval:[2,18]
+VersionManager: Write Key:l,Timestamp interval [2,18]
+LockManager: Write interval[2,18]
+LockManager: Create Write Lock interval[2,18]
+
+Scheduler: Write Operation, tid:1025,key:t,interval:[2,18]
+VersionManager: Write Key:t,Timestamp interval [2,18]
+LockManager: Write interval[2,18]
+LockManager: Create Write Lock interval[2,18]
+
+Scheduler: Commit Operation, tid:1025,timestamp:10
+VersionManager: Persist Key:t,Timestamp:10
+VersionManager: Persist Key:l,Timestamp:10
+
+Scheduler: Read Operation, tid:1025,key:l,interval:[2,18]
+VersionManager: Read Key:l,Timestamp interval[2,18]
+LockManager: Read interval[10,18]
+LockManager: Create Read Lock interval[10,18]
+
+Scheduler: Write Operation, tid:1025,key:l,interval:[10,18]
+VersionManager: Write Key:l,Timestamp interval [10,18]
+LockManager: Write interval[10,18]
+LockManager: Create Write Lock interval[10,18]
+
+Scheduler: Commit Operation, tid:1025,timestamp:10
+VersionManager: Persist Key:l,Timestamp:10
+
+Scheduler: Write Operation, tid:1025,key:l,interval:[18,34]
+VersionManager: Write Key:l,Timestamp interval [18,34]
+LockManager: Write interval[18,34]
+LockManager: Create Write Lock interval[18,34]
+
+Scheduler: Commit Operation, tid:1025,timestamp:18
+VersionManager: Persist Key:l,Timestamp:18

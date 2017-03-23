@@ -11,7 +11,7 @@
 #include <libcuckoo/city_hasher.hh>
 
 
-#define DEFAULT_TIMEOUT 100 //in milliseconds
+#define DEFAULT_TIMEOUT 10 //in milliseconds
 #define MIN_NUM_RETRIES 5
 
 class Scheduler : virtual public DataServiceIf {

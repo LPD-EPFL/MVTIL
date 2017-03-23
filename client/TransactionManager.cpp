@@ -10,10 +10,10 @@ TransactionManager::~TransactionManager(){
 }
 
 Transaction* TransactionManager::StartTransaction(){
-	//TransactionId tid = oracle.GetTransactionId();
-	//Timestamp ts = oracle.GetTimestamp();
-    TransactionId tid = oracle.GetGlobalTransactionId();
-    Timestamp ts = oracle.GetGlobalTimestamp();
+	TransactionId tid = oracle.GetTransactionId();
+	Timestamp ts = oracle.GetTimestamp();
+    //TransactionId tid = oracle.GetGlobalTransactionId();
+    //Timestamp ts = oracle.GetGlobalTimestamp();
 	Transaction *t = new Transaction(tid,ts);
 	return t;
 }
@@ -45,6 +45,7 @@ bool TransactionManager::ReadData(Transaction* transaction, Key key, Value& valu
     }
     if(reply.state == OperationState::R_LOCK_SUCCESS){
         transaction->AddToReadSet(key, LockEntry(reply.value, reply.interval));
+        transaction->committed_interval.finish = reply.interval.finish;
         value = reply.value;
         return true;
     }
@@ -77,6 +78,7 @@ bool TransactionManager::WriteData(Transaction* transaction, Key key, Value valu
             //     std::cout<<"WriteData: Key "<<key<<", Value "<<value<<endl;
             // #endif
 
+            //Some problem
             transaction->committed_interval = reply.interval; 
             transaction->AddToWriteSet(key, LockEntry(value, reply.interval));
             transaction->writeSetServers.insert(server);

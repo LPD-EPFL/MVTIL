@@ -5,6 +5,7 @@
 #include <thrift/server/TSimpleServer.h>
 #include <thrift/transport/TServerSocket.h>
 #include <thrift/transport/TBufferTransports.h>
+#include <iostream>
 
 using namespace ::apache::thrift;
 using namespace ::apache::thrift::protocol;
@@ -25,14 +26,14 @@ class OracleHandler : virtual public OracleServiceIf {
   OracleHandler() {
     // Your initialization goes here
     initialTime = std::chrono::system_clock::now();
-    printf("%d\n", (std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now() - initialTime).count()));
+    //printf("%d\n", (std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now() - initialTime).count()));
     unique_id = 0;
   }
 
   Timestamp GetTimestamp() {
     // Your implementation goes here
     printf("GetTimestamp\n");
-    Timestamp duration = (std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now() - initialTime).count()) + unique_id;
+    Timestamp duration = (std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now() - initialTime)).count() + unique_id;
     printf("%d\n", duration);
     return duration;
   }
@@ -48,6 +49,13 @@ class OracleHandler : virtual public OracleServiceIf {
 };
 
 int main(int argc, char **argv) {
+
+  if(argc < 2) 
+  {
+    std::cout<<"Please specify the oracle's port!"<<std::endl;
+    return 0;
+  }
+
   int port = atoi(argv[1]);
   shared_ptr<OracleHandler> handler(new OracleHandler());
   shared_ptr<TProcessor> processor(new OracleServiceProcessor(handler));

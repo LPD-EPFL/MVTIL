@@ -58,6 +58,10 @@ TimestampInterval::~TimestampInterval() throw() {
 }
 
 
+void TimestampInterval::__set_lock_start(const Timestamp val) {
+  this->lock_start = val;
+}
+
 void TimestampInterval::__set_start(const Timestamp val) {
   this->start = val;
 }
@@ -89,13 +93,21 @@ uint32_t TimestampInterval::read(::apache::thrift::protocol::TProtocol* iprot) {
     {
       case 1:
         if (ftype == ::apache::thrift::protocol::T_I64) {
+          xfer += iprot->readI64(this->lock_start);
+          this->__isset.lock_start = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 2:
+        if (ftype == ::apache::thrift::protocol::T_I64) {
           xfer += iprot->readI64(this->start);
           this->__isset.start = true;
         } else {
           xfer += iprot->skip(ftype);
         }
         break;
-      case 2:
+      case 3:
         if (ftype == ::apache::thrift::protocol::T_I64) {
           xfer += iprot->readI64(this->finish);
           this->__isset.finish = true;
@@ -120,11 +132,15 @@ uint32_t TimestampInterval::write(::apache::thrift::protocol::TProtocol* oprot) 
   apache::thrift::protocol::TOutputRecursionTracker tracker(*oprot);
   xfer += oprot->writeStructBegin("TimestampInterval");
 
-  xfer += oprot->writeFieldBegin("start", ::apache::thrift::protocol::T_I64, 1);
+  xfer += oprot->writeFieldBegin("lock_start", ::apache::thrift::protocol::T_I64, 1);
+  xfer += oprot->writeI64(this->lock_start);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("start", ::apache::thrift::protocol::T_I64, 2);
   xfer += oprot->writeI64(this->start);
   xfer += oprot->writeFieldEnd();
 
-  xfer += oprot->writeFieldBegin("finish", ::apache::thrift::protocol::T_I64, 2);
+  xfer += oprot->writeFieldBegin("finish", ::apache::thrift::protocol::T_I64, 3);
   xfer += oprot->writeI64(this->finish);
   xfer += oprot->writeFieldEnd();
 
@@ -135,17 +151,20 @@ uint32_t TimestampInterval::write(::apache::thrift::protocol::TProtocol* oprot) 
 
 void swap(TimestampInterval &a, TimestampInterval &b) {
   using ::std::swap;
+  swap(a.lock_start, b.lock_start);
   swap(a.start, b.start);
   swap(a.finish, b.finish);
   swap(a.__isset, b.__isset);
 }
 
 TimestampInterval::TimestampInterval(const TimestampInterval& other0) {
+  lock_start = other0.lock_start;
   start = other0.start;
   finish = other0.finish;
   __isset = other0.__isset;
 }
 TimestampInterval& TimestampInterval::operator=(const TimestampInterval& other1) {
+  lock_start = other1.lock_start;
   start = other1.start;
   finish = other1.finish;
   __isset = other1.__isset;
@@ -154,7 +173,8 @@ TimestampInterval& TimestampInterval::operator=(const TimestampInterval& other1)
 void TimestampInterval::printTo(std::ostream& out) const {
   using ::apache::thrift::to_string;
   out << "TimestampInterval(";
-  out << "start=" << to_string(start);
+  out << "lock_start=" << to_string(lock_start);
+  out << ", " << "start=" << to_string(start);
   out << ", " << "finish=" << to_string(finish);
   out << ")";
 }

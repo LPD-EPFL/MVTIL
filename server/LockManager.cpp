@@ -23,9 +23,9 @@ LockManager::LockManager(Key k) : key(k){
 
 bool LockManager::LockReadInterval(TransactionId tid, TimestampInterval& candidate_interval){
     #ifdef DEBUG
-        std::cout<<"LockManager: Read interval["<<candidate_interval.start<<","<<candidate_interval.finish<<"]"<<endl;
+        std::cout<<"LockManager: Read interval["<<candidate_interval.lock_start<<","<<candidate_interval.finish<<"]"<<endl;
     #endif
-	Timestamp searchTimestamp = candidate_interval.start;
+	Timestamp searchTimestamp = candidate_interval.lock_start;
 	IntervalLock* node = head;
 	for(int level=node->top_level-1; level >=0; level--) {
         while (node->next[level] != NULL && (node->next[level]->interval).start <= searchTimestamp ) {
@@ -49,7 +49,15 @@ bool LockManager::LockReadInterval(TransactionId tid, TimestampInterval& candida
     //One policy
     candidate_interval.finish = min(candidate_interval.finish, curr->interval.start);
 
-    IntervalLock* lock = CreateReadLock(candidate_interval);
+    if(candidate_interval.start >= candidate_interval.finish){
+        return false;
+    }
+
+    TimestampInterval lock_interval;
+    lock_interval.start = candidate_interval.lock_start;
+    lock_interval.finish = candidate_interval.finish;
+
+    IntervalLock* lock = CreateReadLock(lock_interval);
     lock->transaction_id = tid;
     for(int i=0;i<prev->top_level;i++)
         prev->next[i] = lock;
@@ -120,6 +128,9 @@ bool LockManager::LockWriteInterval(TransactionId tid, TimestampInterval& candid
     candidate_interval.start = searchTimestamp;
     candidate_interval.finish = min(curr->interval.start,candidate_interval.finish);
     if(candidate_interval.start >= candidate_interval.finish){
+        #ifdef DEBUG
+            std::cout<<"Write conflict happens!"<<endl;
+        #endif
         return false;
     }
 

@@ -71,7 +71,8 @@ class CommitReply;
 class AbortReply;
 
 typedef struct _TimestampInterval__isset {
-  _TimestampInterval__isset() : start(false), finish(false) {}
+  _TimestampInterval__isset() : lock_start(false), start(false), finish(false) {}
+  bool lock_start :1;
   bool start :1;
   bool finish :1;
 } _TimestampInterval__isset;
@@ -81,14 +82,17 @@ class TimestampInterval : public virtual ::apache::thrift::TBase {
 
   TimestampInterval(const TimestampInterval&);
   TimestampInterval& operator=(const TimestampInterval&);
-  TimestampInterval() : start(0), finish(0) {
+  TimestampInterval() : lock_start(0), start(0), finish(0) {
   }
 
   virtual ~TimestampInterval() throw();
+  Timestamp lock_start;
   Timestamp start;
   Timestamp finish;
 
   _TimestampInterval__isset __isset;
+
+  void __set_lock_start(const Timestamp val);
 
   void __set_start(const Timestamp val);
 
@@ -96,6 +100,8 @@ class TimestampInterval : public virtual ::apache::thrift::TBase {
 
   bool operator == (const TimestampInterval & rhs) const
   {
+    if (!(lock_start == rhs.lock_start))
+      return false;
     if (!(start == rhs.start))
       return false;
     if (!(finish == rhs.finish))

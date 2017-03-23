@@ -38,6 +38,9 @@ int main(int argc, char **argv) {
   manager->ReadData(tx1,"t",value);
   cout<<value<<endl;
   manager->WriteData(tx1,"t","456");
+  manager->ReadData(tx2,"k",value);
+  cout<<value<<endl;
+  manager->WriteData(tx2,"k","23");
   manager->CommitTransaction(tx1);
   manager->CommitTransaction(tx2);
   return 0;

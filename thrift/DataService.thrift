@@ -7,8 +7,9 @@ typedef string Key
 typedef string Value
 
 struct TimestampInterval {
-    1: Timestamp start,
-    2: Timestamp finish,
+    1: Timestamp lock_start,
+    2: Timestamp start,
+    3: Timestamp finish,
 }
 
 enum Operation {

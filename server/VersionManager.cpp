@@ -52,7 +52,8 @@ void VersionManager::TryReadLock(TransactionId tid, Key key, TimestampInterval i
     /*Policy two*/
     curr = ve->versions.find(interval.finish, prev);
     TimestampInterval candidateInterval;
-    candidateInterval.start = prev->key;
+    candidateInterval.start = interval.start;
+    candidateInterval.lock_start = prev->key;
     candidateInterval.finish = min(interval.finish,curr->key);
 
     bool is_success = locks_manager[key]->LockReadInterval(tid, candidateInterval);

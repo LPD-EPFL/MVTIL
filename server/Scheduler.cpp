@@ -10,7 +10,7 @@ void Scheduler::HandleReadRequest(ReadReply& _return, const TransactionId tid,
 	while(true){
 
 		#ifdef DEBUG
-        	std::cout<<"Scheduler: Read Operation, tid:"<< tid <<",key:" << k << ",interval:["<<interval.start<<","<<interval.finish<<"]"<<endl;
+        	std::cout<<endl<<"Scheduler: Read Operation, tid:"<< tid <<",key:" << k << ",interval:["<<interval.start<<","<<interval.finish<<"]"<<endl;
     	#endif
 
 		version_manager.TryReadLock(tid, k,interval,lockInfo);
@@ -59,7 +59,7 @@ void Scheduler::HandleWriteRequest(WriteReply& _return, const TransactionId tid,
 	const TimestampInterval& interval, const Key& k, const Value& value){
 
 	#ifdef DEBUG
-    	std::cout<<"Scheduler: Write Operation, tid:"<< tid <<",key:" << k << ",interval:["<<interval.start<<","<<interval.finish<<"]"<<endl;
+    	std::cout<<endl<<"Scheduler: Write Operation, tid:"<< tid <<",key:" << k << ",interval:["<<interval.start<<","<<interval.finish<<"]"<<endl;
 	#endif
 
 	//????
@@ -130,7 +130,7 @@ void Scheduler::HandleAbort(AbortReply& _return, const TransactionId tid){
 	// }
 
 	#ifdef DEBUG
-    	std::cout<<"Scheduler: Abort Operation, tid:"<< tid <<endl;
+    	std::cout<<endl<<"Scheduler: Abort Operation, tid:"<< tid <<endl;
 	#endif
 
 	std::unordered_map<Key, std::pair<Value,TimestampInterval>> write_set;
@@ -168,7 +168,7 @@ void Scheduler::HandleCommit(CommitReply& _return, const TransactionId tid, cons
 	//Not sure
 	//write_set.clear();
 	#ifdef DEBUG
-    	std::cout<<"Scheduler: Commit Operation, tid:"<< tid <<",timestamp:"<< ts <<endl;
+    	std::cout<<endl<<"Scheduler: Commit Operation, tid:"<< tid <<",timestamp:"<< ts <<endl;
 	#endif
 
 	std::unordered_map<Key, std::pair<Value,TimestampInterval>> write_set;
