@@ -48,9 +48,9 @@ struct OperationState {
 
 extern const std::map<int, const char*> _OperationState_VALUES_TO_NAMES;
 
-typedef int64_t TransactionId;
+//typedef int64_t TransactionId;
 
-typedef int64_t Timestamp;
+//typedef int64_t Timestamp;
 
 typedef std::string Key;
 

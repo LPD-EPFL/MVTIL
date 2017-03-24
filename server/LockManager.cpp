@@ -3,8 +3,8 @@
 LockManager::LockManager(Key k) : key(k){
     head = new IntervalLock;
     head->top_level = MAX_LEVEL;
-    head->interval.start = MIN_TIMESTAMP - 1;
-    head->interval.finish = MIN_TIMESTAMP - 1;
+    head->interval.start = MIN_TIMESTAMP;
+    head->interval.finish = MIN_TIMESTAMP;
     head->lock_operation = LockOperation::WRITE;
     head->transaction_id = 0;
     head->is_committed = true;

@@ -1,0 +1,6 @@
+1 Read A 3 5
+2 Read A 4 6
+1 Write A 3 5 10
+2 Write A 4 5 20
+1 Commit 5
+2 Commit 11

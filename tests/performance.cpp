@@ -137,6 +137,7 @@ void execute_transaction(TransactionType type) {
 void execute_test(int threadId) {
     uint64_t myThroughput = 0;
 
+    cout<<"Thread Id:"<<threadId <<"start!"<<endl;
     while (start == false) {
         //wait
     }
@@ -147,7 +148,8 @@ void execute_test(int threadId) {
        myThroughput++; 
     }
 
-    thr[threadId] = myThroughput; 
+    thr[threadId] = myThroughput;
+    cout<<"Thread Id:"<<threadId <<" finish!"<<endl; 
 }
 
 int main(int argc, char **argv) {
@@ -184,6 +186,8 @@ int main(int argc, char **argv) {
     for  (i = 0; i < NUM_THREADS; i++) {
         total_throughput+=thr[i]; 
     }
+
+    cout<<"Totoal throughput:"<<total_throughput<<" in "<< TEST_DURATION_MS <<"ms"<<endl;
     
     return 0;
 }

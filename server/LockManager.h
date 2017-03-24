@@ -3,7 +3,7 @@
 
 #include "server.h"
 
-#define MAX_LEVEL 4
+//#define MAX_LEVEL 4
 
 typedef struct IL{
 	TransactionId transaction_id; 
