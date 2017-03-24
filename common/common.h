@@ -7,7 +7,7 @@
 #include <string>
 
 #define MIN_TIMESTAMP 0
-#define MAX_TIMESTAMP 0xFFFF
+#define MAX_TIMESTAMP 0xFFFFFFFFFFFFFFFF
 
 typedef int64_t Timestamp;
 typedef int64_t TransactionId;

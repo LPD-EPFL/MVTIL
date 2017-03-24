@@ -217,6 +217,15 @@ bool LockManager::RemoveLock(TimestampInterval write_interval){
     return false;
 }
 
-void LockManager::GarbageCollection(){
-
+bool LockManager::GarbageCollection(Timestamp time){
+    IntervalLock* node = head->next[0];
+    while (node->next[0] != NULL && (node->next[0]->interval).start <= time) {
+        IntervalLock* cur = node;
+        node = node->next[0];
+        delete cur;
+    }
+    for(int i=0;i<MAX_LEVEL;i++){
+        head->next[i] = node;
+    }
+    return true;
 }

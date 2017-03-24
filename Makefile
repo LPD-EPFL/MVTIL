@@ -56,7 +56,7 @@ endef
 
 .PHONY: all checkdirs thrift clean
 
-all: checkdirs thrift build/server_exec build/client_exec build/test_single_client build/test_multi_client build/oracle_exec
+all: checkdirs thrift build/server_exec build/client_exec build/test_single_client build/test_multi_client build/oracle_exec build/performance
 
 #server
 build/server_exec: $(OBJ_SERVER) build/server_exec.o
@@ -93,8 +93,12 @@ build/oracle_exec: $(OBJ_CLIENT) build/oracle_exec.o
 build/oracle_exec.o: tests/oracle_exec.cpp
 	$(CC) $(INCLUDES_CLIENT) $(CFLAGS) $(DEBUG_FLAGS) -c $< -o $@
 
-# build/performance.o: tests/performance.cpp
-#	$(CC) $(INCLUDES_CLIENT) $(CFLAGS) $(DEBUG_FLAGS) -c $< -o $@
+build/performance: $(OBJ_CLIENT) build/performance.o
+	$(LD) $(CFLAGS) $(DEBUG_FLAGS) $^ -o $@ -L/usr/local/lib $(LIBS)
+
+build/performance.o: tests/performance.cpp
+	$(CC) $(INCLUDES_CLIENT) $(CFLAGS) $(DEBUG_FLAGS) -c $< -o $@
+
 checkdirs: $(BUILD_DIR_ALL)
 
 $(BUILD_DIR_ALL):

@@ -141,3 +141,17 @@ bool VersionManager::RemoveVersion(Key key, TimestampInterval interval){
     bool suss = locks_manager[key]->RemoveLock(interval);
     return suss;
 }
+
+bool VersionManager::GarbageCollection(Timestamp time){
+    #ifdef DEBUG
+        std::cout<<"VersionManager: Garbage Collection:"<<time<<endl;
+    #endif
+    for(auto v:committed_version){
+        v.second->versions.erase(time);
+    }
+    bool suss = true;
+    for(auto lock:locks_manager){
+        suss &= lock.second->GarbageCollection(time);
+    }
+    return suss;
+}

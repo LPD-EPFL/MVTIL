@@ -69,6 +69,8 @@ class VersionManager{
         bool UpdateAndPersistVersion(TransactionId tid, Key k, Value value, Timestamp new_ts);
         //Remove a lock
         bool RemoveVersion(Key k, TimestampInterval interval);
+        //Remove eariler versions and locks
+        bool GarbageCollection(Timestamp time);
 
 };
 

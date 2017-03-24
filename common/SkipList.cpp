@@ -6,14 +6,14 @@
 // 	list.insert(2,3);
 // 	list.insert(3,4);
 // 	list.insert(4,5);
-// 	list.insert(5,6);
-// 	list.insert(5,4);
+// 	list.insert(6,6);
+// 	list.insert(6,4);
 // 	list.printList();
 // 	cout<<""<<endl;
 // 	list.remove(4);
 // 	list.printList();
 // 	cout<<""<<endl;
-// 	list.erase(3);
+// 	list.erase(5);
 // 	list.printList();
 // 	cout<<""<<endl;
 // 	skiplist_node<int,int,SKIP_LIST_MAXLEVEL> *node1;

@@ -29,7 +29,7 @@ void Scheduler::HandleReadRequest(ReadReply& _return, const TransactionId tid,
 
 		//If read operation wait a pending write.
 		auto now = std::chrono::high_resolution_clock::now();
-		if ((numRetries > MIN_NUM_RETRIES) || (timeout(tStart, now))) {
+		if ((numRetries > MIN_NUM_RETRIES) && (timeout(tStart, now))) {
             _return.tid = tid;
             _return.state = lockInfo.state; //should be FAIL_PENDING_VERSION
             _return.key = k;
@@ -85,12 +85,13 @@ void Scheduler::HandleWriteRequest(WriteReply& _return, const TransactionId tid,
 	LockInfo lockInfo;
     version_manager.TryWriteLock(tid, k, interval, lockInfo);
 
+    //????????
     if (lockInfo.state != OperationState::W_LOCK_SUCCESS) {
         //Todo Abort Transacrion
         //AbortTransaction(tid);
         _return.tid = tid;
         _return.state = lockInfo.state;
-        _return.interval = lockInfo.locked;
+        //_return.interval = lockInfo.locked;
         //_return.potential = lockInfo.potential;
         _return.key = k;
         return;

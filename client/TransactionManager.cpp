@@ -36,7 +36,9 @@ bool TransactionManager::ReadData(Transaction* transaction, Key key, Value& valu
     TimestampInterval current_interval = transaction->committed_interval;
     ServerConnection* server  = service.GetServer(key);
     ReadReply reply;
+    server->lock();
     server->client->HandleReadRequest(reply, transaction->transaction_id, current_interval, key);
+    server->unlock();
     //Should we abort the transaction????
     if(reply.state == OperationState::FAIL_NO_VERSION){
         transaction->AddToReadSet(key, LockEntry(NULL_VALUE, current_interval));
@@ -45,7 +47,7 @@ bool TransactionManager::ReadData(Transaction* transaction, Key key, Value& valu
     }
     if(reply.state == OperationState::R_LOCK_SUCCESS){
         transaction->AddToReadSet(key, LockEntry(reply.value, reply.interval));
-        transaction->committed_interval.finish = reply.interval.finish;
+        transaction->committed_interval = reply.interval;
         value = reply.value;
         return true;
     }
@@ -70,8 +72,10 @@ bool TransactionManager::WriteData(Transaction* transaction, Key key, Value valu
     //while (1) {
         TimestampInterval interval = transaction->committed_interval;
         auto server = service.GetServer(key);
+        server->lock();
         server->client->HandleWriteRequest(reply, transaction->transaction_id, 
             transaction->committed_interval, key, value);
+        server->unlock();
         if (reply.state == OperationState::W_LOCK_SUCCESS) {
 
             // #ifdef DEBUG
@@ -131,8 +135,10 @@ bool TransactionManager::CommitTransaction(Transaction* transaction){
     #endif
 
     CommitReply reply;
-    for (auto& c: transaction->writeSetServers) {
-        c->client->HandleCommit(reply, transaction->transaction_id, committed_timestamp);
+    for (auto& server: transaction->writeSetServers) {
+        server->lock();
+        server->client->HandleCommit(reply, transaction->transaction_id, committed_timestamp);
+        server->unlock();
     }
 
     transaction->read_set.clear(); 
@@ -155,8 +161,10 @@ bool TransactionManager::AbortTransaction(Transaction* transaction){
     #endif
 
     AbortReply reply;
-    for (auto& c: transaction->writeSetServers) {
-        c->client->HandleAbort(reply,transaction->transaction_id);
+    for (auto& server: transaction->writeSetServers) {
+        server->lock();
+        server->client->HandleAbort(reply,transaction->transaction_id);
+        server->unlock();
     }
     
     transaction->read_set.clear(); 

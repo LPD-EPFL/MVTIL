@@ -37,7 +37,7 @@ public:
 	IntervalLock* CreateReadLock(TimestampInterval read_interval);
 	IntervalLock* CreateWriteLock(TimestampInterval write_interval);
 	bool RemoveLock(TimestampInterval write_interval);
-	void GarbageCollection();
+	bool GarbageCollection(Timestamp time);
 };
 
 #endif

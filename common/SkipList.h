@@ -158,7 +158,7 @@ public:
 
     void erase(K searchKey){
         NodeType* node = head->next[0];
-        while (node->next[0] != NULL && node->key <= searchKey ) {
+        while (node->next[0] != NULL && node->next[0]->key <= searchKey ) {
             NodeType* cur = node;
             node = node->next[0];
             delete cur;

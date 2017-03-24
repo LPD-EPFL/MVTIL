@@ -1,84 +1,24 @@
-
-Scheduler: Read Operation, tid:1025,key:k,interval:[2,18]
-VersionManager: Read Key:k,Timestamp interval[2,18]
-LockManager: Read interval[0,18]
-LockManager: Create Read Lock interval[0,18]
-
-Scheduler: Write Operation, tid:1025,key:k,interval:[2,18]
-VersionManager: Write Key:k,Timestamp interval [2,18]
-LockManager: Write interval[2,18]
-LockManager: Create Write Lock interval[2,18]
-
-Scheduler: Write Operation, tid:1025,key:m,interval:[2,18]
-VersionManager: Write Key:m,Timestamp interval [2,18]
-LockManager: Write interval[2,18]
-LockManager: Create Write Lock interval[2,18]
-
-Scheduler: Commit Operation, tid:1025,timestamp:2
-VersionManager: Persist Key:m,Timestamp:2
-VersionManager: Persist Key:k,Timestamp:2
-
-Scheduler: Read Operation, tid:1025,key:k,interval:[10,26]
-VersionManager: Read Key:k,Timestamp interval[10,26]
-LockManager: Read interval[2,26]
-LockManager: Create Read Lock interval[2,26]
-
-Scheduler: Write Operation, tid:1025,key:m,interval:[10,26]
-VersionManager: Write Key:m,Timestamp interval [10,26]
-LockManager: Write interval[10,26]
-LockManager: Create Write Lock interval[10,26]
-
-Scheduler: Write Operation, tid:1025,key:k,interval:[10,26]
-VersionManager: Write Key:k,Timestamp interval [10,26]
-LockManager: Write interval[10,26]
-LockManager: Create Write Lock interval[10,26]
-
-Scheduler: Commit Operation, tid:1025,timestamp:10
-VersionManager: Persist Key:k,Timestamp:10
-VersionManager: Persist Key:m,Timestamp:10
-
-Scheduler: Read Operation, tid:1025,key:k,interval:[2,18]
-VersionManager: Read Key:k,Timestamp interval[2,18]
-LockManager: Read interval[10,18]
-LockManager: Create Read Lock interval[10,18]
-
-Scheduler: Write Operation, tid:1025,key:k,interval:[2,18]
-VersionManager: Write Key:k,Timestamp interval [2,18]
-LockManager: Write interval[10,18]
-LockManager: Create Write Lock interval[10,18]
-
-Scheduler: Commit Operation, tid:1025,timestamp:10
-VersionManager: Persist Key:k,Timestamp:10
-
-Scheduler: Write Operation, tid:1025,key:k,interval:[2,18]
-VersionManager: Write Key:k,Timestamp interval [2,18]
-LockManager: Write interval[10,18]
-LockManager: Create Write Lock interval[10,18]
-
-Scheduler: Write Operation, tid:1025,key:m,interval:[10,18]
-VersionManager: Write Key:m,Timestamp interval [10,18]
-LockManager: Write interval[10,18]
-LockManager: Create Write Lock interval[10,18]
-
-Scheduler: Commit Operation, tid:1025,timestamp:10
-VersionManager: Persist Key:m,Timestamp:10
-VersionManager: Persist Key:k,Timestamp:10
-
-Scheduler: Read Operation, tid:1025,key:m,interval:[18,34]
-VersionManager: Read Key:m,Timestamp interval[18,34]
-LockManager: Read interval[10,34]
-LockManager: Create Read Lock interval[10,34]
-
-Scheduler: Write Operation, tid:1025,key:k,interval:[18,34]
-VersionManager: Write Key:k,Timestamp interval [18,34]
-LockManager: Write interval[18,34]
-LockManager: Create Write Lock interval[18,34]
-
-Scheduler: Write Operation, tid:1025,key:m,interval:[18,34]
-VersionManager: Write Key:m,Timestamp interval [18,34]
-LockManager: Write interval[18,34]
-LockManager: Create Write Lock interval[18,34]
-
-Scheduler: Commit Operation, tid:1025,timestamp:18
-VersionManager: Persist Key:m,Timestamp:18
-VersionManager: Persist Key:k,Timestamp:18
+VersionManager: Read Key:Dsbzayy4cB,Timestamp interval[1618,1634]
+LockManager: Read interval[0,1634]
+LockManager: Create Read Lock interval[0,1634]
+VersionManager: Read Key:iRrV41mtzx,Timestamp interval[1636,1652]
+LockManager: Read interval[0,1652]
+LockManager: Create Read Lock interval[0,1652]
+VersionManager: Read Key:LK0e1zLOZ2,Timestamp interval[1646,1662]
+LockManager: Read interval[0,1662]
+LockManager: Create Read Lock interval[0,1662]
+VersionManager: Read Key:kP07U20o0J,Timestamp interval[1656,1672]
+LockManager: Read interval[0,1672]
+LockManager: Create Read Lock interval[0,1672]
+VersionManager: Read Key:JncCHryDsb,Timestamp interval[1363,1379]
+LockManager: Read interval[0,1379]
+LockManager: Create Read Lock interval[0,1379]
+VersionManager: Read Key:0GWXIIwo7J,Timestamp interval[1365,1381]
+LockManager: Read interval[0,1381]
+LockManager: Create Read Lock interval[0,1381]
+VersionManager: Read Key:4ogHFZQxwQ,Timestamp interval[1365,1381]
+LockManager: Read interval[0,1381]
+LockManager: Create Read Lock interval[0,1381]
+VersionManager: Read Key:DiZSkZfoED,Timestamp interval[1368,1384]
+LockManager: Read interval[0,1384]
+LockManager: Create Read Lock interval[0,1384]

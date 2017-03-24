@@ -13,6 +13,7 @@
 #include <thrift/protocol/TBinaryProtocol.h>
 #include <thrift/transport/TSocket.h>
 #include <thrift/transport/TBufferTransports.h>
+#include <mutex>
 
 using namespace apache::thrift;
 using namespace apache::thrift::protocol;
@@ -24,6 +25,7 @@ private:
     boost::shared_ptr<TSocket> socket;
     boost::shared_ptr<TTransport> transport;
     boost::shared_ptr<TProtocol> protocol;
+    std::mutex mutex;
 
 public:
 	std::string host;
@@ -31,6 +33,12 @@ public:
 	DataServiceClient *client;
     ServerConnection(std::string host,int port);
 	virtual ~ServerConnection();
+    inline void lock(){
+        mutex.lock();
+    }
+    inline void unlock(){
+        mutex.unlock();
+    }
 };
 
 

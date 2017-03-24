@@ -6,6 +6,44 @@
 #include "LocalOracle.h"
 #include "CommunicationService.h"
 
+
+#define TX_START_RO \
+    { \
+    Transaction* t; \
+    while (1) { \
+        t = transactionManager->StartTransaction();
+
+#define TX_START \
+    { \
+    Transaction* t; \
+    while (1) { \
+        t = transactionManager->StartTransaction();
+
+#define TX_COMMIT \
+        transactionManager->CommitTransaction(t); \
+        break ; \
+    } \
+    delete t; \
+    }
+
+#define TX_READ(key, val) \
+    if (transactionManager->ReadData(t, key, val) == 0) { \
+        continue; \
+    }
+
+#define TX_WRITE(key, val) \
+    if (transactionManager->WriteData(t, key, val) == 0) { \
+        continue; \
+    }
+
+#define TX_ABORT \
+        transactionManager->AbortTransaction(t); \
+        break ; \
+    } \
+    delete t; \
+    }
+
+
 class TransactionManager
 {
 	private:
