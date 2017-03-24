@@ -1,4 +1,5 @@
-#include "ProtocolScheduler.h"
+#include "Scheduler.h"
+#include "DataService.h"
 
 #include <thrift/protocol/TBinaryProtocol.h>
 #include <thrift/server/TSimpleServer.h>
@@ -11,17 +12,22 @@ using namespace ::apache::thrift::transport;
 using namespace ::apache::thrift::server;
 
 using boost::shared_ptr;
-
 using namespace  ::TxProtocol;
 
-
 int main(int argc, char **argv) {
-  int port = 9090;
-  shared_ptr<ProtocolScheduler> handler(new ProtocolScheduler());
-  shared_ptr<TProcessor> processor(new DataServerProcessor(handler));
-  shared_ptr<TServerTransport> serverTransport(new TServerSocket(port));
-  shared_ptr<TTransportFactory> transportFactory(new TBufferedTransportFactory());
-  shared_ptr<TProtocolFactory> protocolFactory(new TBinaryProtocolFactory());
+
+  if(argc < 2) 
+  {
+  	cout<<"Please specify the server's port!"<<endl;
+  	return 0;
+  }
+
+  int port = atoi(argv[1]);
+  boost::shared_ptr<Scheduler> handler(new Scheduler());
+  boost::shared_ptr<TProcessor> processor(new DataServiceProcessor(handler));
+  boost::shared_ptr<TServerTransport> serverTransport(new TServerSocket(port));
+  boost::shared_ptr<TTransportFactory> transportFactory(new TBufferedTransportFactory());
+  boost::shared_ptr<TProtocolFactory> protocolFactory(new TBinaryProtocolFactory());
 
   TSimpleServer server(processor, serverTransport, transportFactory, protocolFactory);
   server.serve();

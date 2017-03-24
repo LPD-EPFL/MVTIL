@@ -1,43 +1,89 @@
-/* 
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- * 
- *     http://www.apache.org/licenses/LICENSE-2.0
- * 
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
 
-#ifndef _COMMON_H_
-#define _COMMON_H_
+#ifndef _COMMON_H
+#define _COMMON_H
 
-#define INITIAL_TESTING 1
-
-#include <cstdint>
+// #include <cstdint>
+// #include <vector>
 #include <string>
-#include "DataServer_types.h"
 
-using namespace TxProtocol;
+#define MIN_TIMESTAMP 0
+#define MAX_TIMESTAMP 0xFFFFFFFFFFFFFFFF
 
-//typedef uint64_t Timestamp;
-typedef int64_t Timespan;
-//typedef uint64_t TransactionId;
+typedef int64_t Timestamp;
+typedef int64_t TransactionId;
 
-const std::string NULL_VALUE = "_";
+typedef std::string Key;
+typedef std::string Value;
 
-#define MIN_TIMESTAMP INT64_MIN
-#define MAX_TIMESTAMP (INT64_MAX-1)
+// typedef struct TI{
+// 	Timestamp start;
+// 	Timestamp end;
+// 	bool operator==(const struct TI &hs) const{
+// 	    return (start == hs.start)&&(end == hs.end);
+// 	}
+// 	bool operator != (const struct TI &hs) const {
+// 	    return (start != hs.start)||(end != hs.end);
+// 	}
+// 	bool operator < (const struct TI & ) const;
+// 	virtual void printTo(std::ostream& out) const;
+// }TimestampInterval;
 
-//typedef struct TI{
-    //Timestamp start;
-    //Timestamp end;
-//} TimestampInterval;
 
-//typedef std::string Key;
-//typedef std::string Value;
+// typedef struct _TimestampInterval__isset {
+//   _TimestampInterval__isset() : start(false), finish(false) {}
+//   bool start :1;
+//   bool finish :1;
+// } _TimestampInterval__isset;
+
+
+// class TimestampInterval : public virtual ::apache::thrift::TBase {
+//  public:
+
+//   TimestampInterval(const TimestampInterval&);
+//   TimestampInterval& operator=(const TimestampInterval&);
+//   TimestampInterval() : start(0), finish(0) {}
+
+//   virtual ~TimestampInterval() throw();
+//   Timestamp start;
+//   Timestamp finish;
+
+//   _TimestampInterval__isset __isset;
+
+//   void __set_start(const Timestamp val);
+
+//   void __set_finish(const Timestamp val);
+
+//   bool operator == (const TimestampInterval & rhs) const
+//   {
+//     if (!(start == rhs.start))
+//       return false;
+//     if (!(finish == rhs.finish))
+//       return false;
+//     return true;
+//   }
+//   bool operator != (const TimestampInterval &rhs) const {
+//     return !(*this == rhs);
+//   }
+
+//   bool operator < (const TimestampInterval & ) const;
+
+//   uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+//   uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+//   virtual void printTo(std::ostream& out) const;
+// };
+
+
+// typedef struct LE 
+// {
+// 	Value value;
+// 	TimestampInterval interval;
+// }LockEntry;
+
+
+// typedef struct DS{
+//     std::string host;
+//     int port;
+// }DataServerInfo;
 
 #endif

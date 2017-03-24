@@ -12,11 +12,11 @@
  * limitations under the License.
  */
 
+#include "TransactionManager.h"
 #include <string>
 #include <thread>
 #include <chrono>
 #include <iostream>
-#include "TransactionManager.h"
 
 #define NUM_THREADS 10
 #define RO_SIZE 100
@@ -66,7 +66,7 @@ inline TransactionType get_random_transaction_type() {
 void execute_transaction(TransactionType type) {
 
     int i;
-    Value* val;
+    Value val;
     Value generated;
     Key key;
     switch(type) {
@@ -76,19 +76,18 @@ void execute_transaction(TransactionType type) {
                 key = generate_random_key();
                 TX_READ(key, val);
             }
-            TX_END;
+            TX_COMMIT;
             break;
         case MANY_READS_ONE_WRITE:
             TX_START;
             Key w = generate_random_key();
-            TX_DECLARE_WRITE(w);
             for (i=0; i<RO_SIZE; i++) {
                 key = generate_random_key();
                 TX_READ(key, val);
             }
             generated = generate_random_value();
             TX_WRITE(w, generated);
-            TX_END;
+            TX_COMMIT;
             break;
         case WRITE_INTENSIVE:
             TX_START;
@@ -96,9 +95,9 @@ void execute_transaction(TransactionType type) {
                 key = generate_random_key();
                 TX_READ(key, val);
                 key = generate_random_key();
-                TX_WRITE(key, *val);
+                TX_WRITE(key, val);
             }
-            TX_END;
+            TX_COMMIT;
             break;
         case RW_ONE_KEY:
             TX_START;
@@ -106,13 +105,13 @@ void execute_transaction(TransactionType type) {
             TX_READ(key, val);
             generated = generate_random_value();
             TX_WRITE(key, generated);
-            TX_END;
+            TX_COMMIT;
             break;
         case R_ONE_KEY:
             TX_START_RO;
             key = generate_random_key();
             TX_READ(key, val);
-            TX_END;
+            TX_COMMIT;
             break;
         case RW_SHORT:
             TX_START;
@@ -126,7 +125,7 @@ void execute_transaction(TransactionType type) {
             TX_READ(key, val);
             generated = generate_random_value();
             TX_WRITE(key, generated);
-            TX_END;
+            TX_COMMIT;
             break;
         default:
             std::cout<<"Unknown transaction type"<<std::endl;

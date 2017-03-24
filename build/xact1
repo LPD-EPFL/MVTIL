@@ -1,0 +1,6 @@
+T1 Create
+T1 Read k
+T1 Write k 1
+T1 Write s 3
+T1 Write m 2
+T1 Commit
