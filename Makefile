@@ -56,13 +56,19 @@ endef
 
 .PHONY: all checkdirs thrift clean
 
-all: checkdirs thrift build/server_exec build/client_exec build/test_single_client build/test_multi_client build/oracle_exec build/performance
+all: checkdirs thrift build/server_exec build/client_exec build/test_single_client build/test_multi_client build/oracle_exec build/performance build/test_server
 
 #server
 build/server_exec: $(OBJ_SERVER) build/server_exec.o
 	$(LD) $(CFLAGS) $(DEBUG_FLAGS) $^ -o $@ -L/usr/local/lib $(LIBS)
 
 build/server_exec.o: tests/server_exec.cpp
+	$(CC) $(INCLUDES_SERVER) $(CFLAGS) $(DEBUG_FLAGS) -c $< -o $@
+
+build/test_server: $(OBJ_SERVER) build/test_server.o
+	$(LD) $(CFLAGS) $(DEBUG_FLAGS) $^ -o $@ -L/usr/local/lib $(LIBS)
+
+build/test_server.o: tests/test_server.cpp
 	$(CC) $(INCLUDES_SERVER) $(CFLAGS) $(DEBUG_FLAGS) -c $< -o $@
 
 #client

@@ -10,7 +10,6 @@
 #include <libcuckoo/cuckoohash_map.hh>
 #include <libcuckoo/city_hasher.hh>
 
-
 #define DEFAULT_TIMEOUT 10 //in milliseconds
 #define MIN_NUM_RETRIES 5
 
@@ -19,7 +18,8 @@ class Scheduler : virtual public DataServiceIf {
     Scheduler() {
       // Your initialization goes here
     }
-
+    ~Scheduler(){}
+    
     void HandleAbort(AbortReply& _return, const TransactionId tid);
     void HandleCommit(CommitReply& _return, const TransactionId tid, const Timestamp ts);
     void HandleReadRequest(ReadReply& _return, const TransactionId tid, const TimestampInterval& interval, const Key& k);

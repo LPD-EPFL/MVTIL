@@ -1,45 +1,48 @@
-VersionManager: Read Key:DxS22JjzhM,Timestamp interval[1627,1643]
-LockManager: Read interval[0,1643]
-LockManager: Create Read Lock interval[0,1643]
-VersionManager: Read Key:YvKWrO72tK,Timestamp interval[1645,1661]
-LockManager: Read interval[0,1661]
-LockManager: Create Read Lock interval[0,1661]
-VersionManager: Read Key:OXpPIhMFSv,Timestamp interval[1655,1671]
-LockManager: Read interval[0,1671]
-LockManager: Create Read Lock interval[0,1671]
-VersionManager: Read Key:41mtzxlYvK,Timestamp interval[1362,1378]
-LockManager: Read interval[0,1378]
-LockManager: Create Read Lock interval[0,1378]
-VersionManager: Read Key:WrO72tK0LK,Timestamp interval[1366,1382]
-LockManager: Read interval[0,1382]
-LockManager: Create Read Lock interval[0,1382]
-VersionManager: Read Key:WrO72tK0LK,Timestamp interval[1366,1382]
-LockManager: Read interval[0,1382]
-LockManager: Create Read Lock interval[0,1382]
-VersionManager: Read Key:WrO72tK0LK,Timestamp interval[1366,1382]
-LockManager: Read interval[0,1382]
-LockManager: Create Read Lock interval[0,1382]
-VersionManager: Read Key:WrO72tK0LK,Timestamp interval[1366,1382]
-LockManager: Read interval[0,1382]
-LockManager: Create Read Lock interval[0,1382]
-VersionManager: Write Key:y4cBWDxS2j,Timestamp interval [1364,1380]
-LockManager: Write interval[1364,1380]
-LockManager: Create Write Lock interval[1364,1380]
-VersionManager: Read Key:2RQ0DRJKRE,Timestamp interval[1365,1381]
-LockManager: Read interval[0,1381]
-LockManager: Create Read Lock interval[0,1381]
-VersionManager: Read Key:AmGTXXqqvk,Timestamp interval[1368,1384]
-LockManager: Read interval[0,1384]
-LockManager: Create Read Lock interval[0,1384]
-VersionManager: Read Key:VXa2zKae6o,Timestamp interval[1379,1395]
-LockManager: Read interval[0,1395]
-LockManager: Create Read Lock interval[0,1395]
-VersionManager: Read Key:pGY4i6bYuU,Timestamp interval[1378,1394]
-LockManager: Read interval[0,1394]
-LockManager: Create Read Lock interval[0,1394]
-VersionManager: Read Key:G67LaSXd5t,Timestamp interval[1369,1385]
-LockManager: Read interval[0,1385]
-LockManager: Create Read Lock interval[0,1385]
-VersionManager: Write Key:LOZ2nOXpPI,Timestamp interval [1366,1382]
-LockManager: Write interval[1366,1382]
-LockManager: Create Write Lock interval[1366,1382]
+
+Scheduler: Read Operation, tid:1,key:A,interval:[1962,1978]
+VersionManager: Read Key:A,Timestamp interval[1962,1978]
+LockManager: Read interval[0,1978]
+LockManager: Create Read Lock interval[0,1978]
+
+Scheduler: Read Operation, tid:2,key:A,interval:[1964,1980]
+VersionManager: Read Key:A,Timestamp interval[1964,1980]
+LockManager: Read interval[0,1980]
+LockManager: Create Read Lock interval[0,1980]
+
+Scheduler: Write Operation, tid:2,key:A,interval:[1964,1980]
+VersionManager: Write Key:A,Timestamp interval [1964,1980]
+LockManager: Write interval[1964,1980]
+LockManager: Create Write Lock interval[1978,1980]
+
+Scheduler: Write Operation, tid:2,key:B,interval:[1978,1980]
+VersionManager: Write Key:B,Timestamp interval [1978,1980]
+LockManager: Write interval[1978,1980]
+LockManager: Create Write Lock interval[1978,1980]
+
+Scheduler: Write Operation, tid:2,key:C,interval:[1978,1980]
+VersionManager: Write Key:C,Timestamp interval [1978,1980]
+LockManager: Write interval[1978,1980]
+LockManager: Create Write Lock interval[1978,1980]
+
+Scheduler: Commit Operation, tid:2,timestamp:1978
+VersionManager: Persist Key:C,Timestamp:1978
+VersionManager: Persist Key:B,Timestamp:1978
+VersionManager: Persist Key:A,Timestamp:1978
+
+Scheduler: Write Operation, tid:1,key:A,interval:[1962,1978]
+VersionManager: Write Key:A,Timestamp interval [1962,1978]
+LockManager: Write interval[1962,1978]
+Write conflict happens!
+
+Scheduler: Read Operation, tid:3,key:A,interval:[1966,1982]
+VersionManager: Read Key:A,Timestamp interval[1966,1982]
+LockManager: Read interval[1978,1982]
+LockManager: Create Read Lock interval[1978,1982]
+
+Scheduler: Write Operation, tid:3,key:A,interval:[1966,1982]
+VersionManager: Write Key:A,Timestamp interval [1966,1982]
+LockManager: Write interval[1978,1982]
+LockManager: Create Write Lock interval[1980,1982]
+
+Scheduler: Commit Operation, tid:3,timestamp:1980
+VersionManager: Persist Key:A,Timestamp:1980
