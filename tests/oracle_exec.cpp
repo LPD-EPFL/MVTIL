@@ -5,7 +5,6 @@
 #include <thrift/server/TSimpleServer.h>
 #include <thrift/transport/TServerSocket.h>
 #include <thrift/transport/TBufferTransports.h>
-#include <iostream>
 
 using namespace ::apache::thrift;
 using namespace ::apache::thrift::protocol;
@@ -26,15 +25,14 @@ class OracleHandler : virtual public OracleServiceIf {
   OracleHandler() {
     // Your initialization goes here
     initialTime = std::chrono::system_clock::now();
-    //printf("%d\n", (std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now() - initialTime).count()));
+    printf("%ld\n", (std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now() - initialTime).count()));
     unique_id = 0;
   }
 
   Timestamp GetTimestamp() {
     // Your implementation goes here
     printf("GetTimestamp\n");
-    Timestamp duration = (std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now() - initialTime)).count() + unique_id;
-    printf("%d\n", duration);
+    Timestamp duration = ((std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now() -initialTime).count()) << 5) + crt;
     return duration;
   }
 
@@ -42,7 +40,7 @@ class OracleHandler : virtual public OracleServiceIf {
     // Your implementation goes here
     printf("GetTransactionId\n");
     unique_id++;
-    printf("%d\n", unique_id);
+    printf("%ld\n", unique_id);
     return unique_id;
   }
 
@@ -52,7 +50,7 @@ int main(int argc, char **argv) {
 
   if(argc < 2) 
   {
-    std::cout<<"Please specify the oracle's port!"<<std::endl;
+    printf("Please specify the oracle's port!");
     return 0;
   }
 
