@@ -24,7 +24,7 @@
 #define KEY_SIZE 10
 #define VALUE_SIZE 100
 
-#define TEST_DURATION_MS 10000
+#define TEST_DURATION_MS 1000
 
 volatile bool start;
 volatile bool stop;
@@ -137,7 +137,7 @@ void execute_transaction(TransactionType type) {
 void execute_test(int threadId) {
     uint64_t myThroughput = 0;
 
-    cout<<"Thread Id:"<<threadId <<"start!"<<endl;
+    //cout<<"Thread Id:"<<threadId <<"start!"<<endl;
     while (start == false) {
         //wait
     }
@@ -149,7 +149,7 @@ void execute_test(int threadId) {
     }
 
     thr[threadId] = myThroughput;
-    cout<<"Thread Id:"<<threadId <<" finish!"<<endl; 
+    //cout<<"Thread Id:"<<threadId <<" finish!"<<endl; 
 }
 
 int main(int argc, char **argv) {

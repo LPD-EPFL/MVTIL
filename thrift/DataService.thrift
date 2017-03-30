@@ -84,9 +84,7 @@ service DataService {
 
     ReadReply HandleReadRequest(TransactionId tid, TimestampInterval interval, Key k),
 
-    WriteReply HandleWriteRequest(TransactionId tid, TimestampInterval interval, Key k, Value v)
+    WriteReply HandleWriteRequest(TransactionId tid, TimestampInterval interval, Key k, Value v),
 
     ReadReply HandleFreezeReadRequest(TransactionId tid, TimestampInterval interval, Key k),
-
-   
 }
