@@ -18,17 +18,18 @@
 #include <chrono>
 #include <iostream>
 
-#define NUM_THREADS 10
+#define NUM_THREADS 50
 #define RO_SIZE 100
 #define RW_SIZE 50
-#define KEY_SIZE 10
+#define KEY_SIZE 4
 #define VALUE_SIZE 100
 
-#define TEST_DURATION_MS 1000
+#define TEST_DURATION_MS 10000
 
 volatile bool start;
 volatile bool stop;
 volatile uint64_t thr[NUM_THREADS];
+volatile uint64_t commit[NUM_THREADS];
 
 TransactionManager* transactionManager;
 
@@ -63,13 +64,13 @@ inline TransactionType get_random_transaction_type() {
   return static_cast<TransactionType>(rand() % NUM_TTYPES);   //TODO change rand function
 }
 
-void execute_transaction(TransactionType type) {
-
+int execute_transaction(TransactionType type) {
+    int suss = 0;
     int i;
     Value val;
     Value generated;
     Key key;
-    switch(type) {
+    switch(type) { 
         case READ_ONLY:
             TX_START_RO;
             for (i=0; i<RO_SIZE; i++) {
@@ -131,11 +132,12 @@ void execute_transaction(TransactionType type) {
             std::cout<<"Unknown transaction type"<<std::endl;
             break;
     }
-
+    return suss;
 }
 
 void execute_test(int threadId) {
     uint64_t myThroughput = 0;
+    uint64_t nu_commit = 0;
 
     //cout<<"Thread Id:"<<threadId <<"start!"<<endl;
     while (start == false) {
@@ -144,11 +146,12 @@ void execute_test(int threadId) {
 
     while (stop == false) {
        TransactionType t = get_random_transaction_type();
-       execute_transaction(t);
+       nu_commit += execute_transaction(t);
        myThroughput++; 
     }
 
     thr[threadId] = myThroughput;
+    commit[threadId] = nu_commit;
     //cout<<"Thread Id:"<<threadId <<" finish!"<<endl; 
 }
 
@@ -182,12 +185,15 @@ int main(int argc, char **argv) {
 
     //gather statistics
     uint64_t total_throughput = 0;
+    uint64_t total_commit = 0;
     
     for  (i = 0; i < NUM_THREADS; i++) {
         total_throughput+=thr[i]; 
+        total_commit+=commit[i];
     }
 
-    cout<<"Totoal throughput:"<<total_throughput<<" in "<< TEST_DURATION_MS <<"ms"<<endl;
-    
+    cout<<"Total throughput:"<<total_throughput<<" in "<< TEST_DURATION_MS <<"ms"<<endl;
+    cout<<"Total commit:"<<total_commit<<endl;
+
     return 0;
 }

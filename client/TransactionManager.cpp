@@ -18,6 +18,9 @@ Transaction* TransactionManager::StartTransaction(){
 
 bool TransactionManager::ReadData(Transaction* transaction, Key key, Value& value){
 
+    if(transaction->is_abort)
+        return false;
+
     #ifdef DEBUG
         std::cout<<"HandleRead: Xact_id "<<transaction->transaction_id<<endl;
     #endif
@@ -56,6 +59,9 @@ bool TransactionManager::ReadData(Transaction* transaction, Key key, Value& valu
 }
 
 bool TransactionManager::WriteData(Transaction* transaction, Key key, Value value){
+
+    if(transaction->is_abort)
+        return false;
 
     #ifdef DEBUG
         std::cout<<"HandleWrite: Xact_id "<<transaction->transaction_id<<endl;
@@ -133,16 +139,18 @@ bool TransactionManager::CommitTransaction(Transaction* transaction){
     #endif
 
     CommitReply reply;
+    bool suss = true;
     for (auto& server: transaction->writeSetServers) {
         server->lock();
         server->client->HandleCommit(reply, transaction->transaction_id, committed_timestamp);
+        suss &= (reply.state == OperationState::COMMIT_OK);
         server->unlock();
     }
 
     transaction->read_set.clear(); 
     transaction->write_set.clear();
     transaction->writeSetServers.clear();
-    return true;
+    return suss;
 }
 
 bool TransactionManager::AbortTransaction(Transaction* transaction){
@@ -151,7 +159,7 @@ bool TransactionManager::AbortTransaction(Transaction* transaction){
         #ifdef DEBUG
             std::cout<<"Transaction has already be aborted!"<<endl;
         #endif
-        return true;
+        return false;
     }
 
     #ifdef DEBUG
@@ -159,9 +167,11 @@ bool TransactionManager::AbortTransaction(Transaction* transaction){
     #endif
 
     AbortReply reply;
+    bool suss = true;
     for (auto& server: transaction->writeSetServers) {
         server->lock();
         server->client->HandleAbort(reply,transaction->transaction_id);
+        suss &= (reply.state == OperationState::ABORT_OK);
         server->unlock();
     }
     
@@ -169,6 +179,7 @@ bool TransactionManager::AbortTransaction(Transaction* transaction){
     transaction->write_set.clear();
     transaction->writeSetServers.clear();
     transaction->is_abort = true;
+    
 
     // Timespan duration = transaction->initialInterval.finish  transaction->initialInterval.start;
     //TODO when I abort, should I restart with the minimum duration or not?
@@ -182,6 +193,5 @@ bool TransactionManager::AbortTransaction(Transaction* transaction){
     // transaction->initialInterval = oracle.getInterval(transaction->isReadOnly, duration);
     // transaction->currentInterval = transaction->initialInterval; 
     // transaction->numRestarts = 0;
-
-    return true;
+    return suss;
 }

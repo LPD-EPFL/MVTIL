@@ -68,9 +68,9 @@ void Scheduler::HandleWriteRequest(WriteReply& _return, const TransactionId tid,
 	bool tid_exists = pendingWriteSets.find(tid, write_set);
 	if(tid_exists){
 		//std::pair<Value,TimestampInterval> value_set;
-		if(write_set.count(k) > 0){
-			auto& value_time = write_set[k];
-			value_time.first = value;
+		auto it = write_set.find(k);
+		if(it != write_set.end()){
+			it -> second.first = value;
 			_return.tid = tid;
     		_return.state = OperationState::W_LOCK_SUCCESS;
     		_return.interval = interval;
@@ -185,7 +185,7 @@ void Scheduler::HandleCommit(CommitReply& _return, const TransactionId tid, cons
 
 	pendingWriteSets.erase(tid);
 	if(suss){
-		_return.state = OperationState::ABORT_OK;
+		_return.state = OperationState::COMMIT_OK;
 	}
 	else{
 		_return.state = OperationState::ERROR;
