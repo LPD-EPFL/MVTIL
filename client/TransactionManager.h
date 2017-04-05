@@ -20,7 +20,9 @@
         t = transactionManager->StartTransaction();
 
 #define TX_COMMIT \
-        transactionManager->CommitTransaction(t); \
+        if(transactionManager->CommitTransaction(t) == 1){ \
+            suss++; \
+        } \
         break ; \
     } \
     delete t; \
@@ -28,12 +30,12 @@
 
 #define TX_READ(key, val) \
     if (transactionManager->ReadData(t, key, val) == 0) { \
-        continue; \
+        break; \
     }
 
 #define TX_WRITE(key, val) \
     if (transactionManager->WriteData(t, key, val) == 0) { \
-        continue; \
+        break; \
     }
 
 #define TX_ABORT \

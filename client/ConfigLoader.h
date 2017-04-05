@@ -24,9 +24,7 @@ private:
     static DataServerInfo oracle_info;
 public:
     ConfigLoader(){
-        //const std::string file("servers.xml");
         boost::property_tree::ptree pt;
-        //boost::property_tree::read_xml(file, pt);
         boost::property_tree::read_xml("servers.xml", pt);
         BOOST_FOREACH(ptree::value_type const& v, pt.get_child("DataServers") ) {
             if( v.first == "DataServer" ) {
@@ -55,8 +53,5 @@ public:
         return oracle_info;
     }
 };
-
-//std::vector<DataServerInfo> ConfigLoader::data_server_info;
-//DataServerInfo ConfigLoader::oracle_info;
 
 #endif /* ConfigLoader_h */

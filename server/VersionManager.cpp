@@ -18,8 +18,9 @@ VersionManager::VersionEntry* VersionManager::CreateNewEntry(Key k) {
 }
 
 VersionManager::VersionEntry* VersionManager::GetVersionList(Key key){
-	if(committed_version.count(key) > 0){
-		return committed_version[key];
+    auto it = committed_version.find(key);
+	if(it != committed_version.end()){
+		return it->second;
 	}
 	return NULL;
 }
