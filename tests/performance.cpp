@@ -21,7 +21,7 @@
 #define NUM_THREADS 50
 #define RO_SIZE 100
 #define RW_SIZE 50
-#define KEY_SIZE 4
+#define KEY_SIZE 2
 #define VALUE_SIZE 100
 
 #define TEST_DURATION_MS 10000

@@ -6,7 +6,7 @@
 #include <unordered_map>
 #include <unordered_set>
 
-#define TRANSACTION_MAX_DURATION 10
+#define TRANSACTION_MAX_DURATION 100
 
 class Transaction{
 

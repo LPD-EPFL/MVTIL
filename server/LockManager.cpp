@@ -106,7 +106,8 @@ bool LockManager::LockWriteInterval(TransactionId tid, TimestampInterval& candid
     #endif
 	Timestamp searchTimestamp = candidate_interval.start;
 	IntervalLock* node = head;
-	for(int level=node->top_level-1; level >=0; level--) {
+    int level = 0;
+	//for(int level=node->top_level-1; level >=0; level--) {
         while (node->next[level] != NULL && (node->next[level]->interval).start <= searchTimestamp ) {
             // #ifdef DEBUG
             //     std::cout<<(node->next[level]->interval).start<<" "<<(node->next[level]->interval).finish<<endl;
@@ -122,7 +123,7 @@ bool LockManager::LockWriteInterval(TransactionId tid, TimestampInterval& candid
             }
             node = node->next[level];
         }
-    }
+    //}
     IntervalLock* prev = node;
     IntervalLock* curr = node->next[0];
     candidate_interval.start = searchTimestamp;
@@ -159,6 +160,21 @@ void LockManager::CommitInterval(TransactionId tid, const Timestamp& committed_t
         while (node->next[level] != NULL && (node->next[level]->interval).start <= committed_time ) {
             if(node->next[level]->transaction_id == tid){
                 node->next[level]->is_committed = true;
+                if(node->next[level]->lock_operation == LockOperation::WRITE)
+                {
+                    #ifdef DEBUG
+                        std::cout<<"LockManager: Modify Write Lock interval["<<committed_time<<","<<committed_time<<"]"<<std::endl;
+                    #endif
+                    node->next[level]->interval.start = committed_time;
+                    node->next[level]->interval.finish = committed_time;
+                }
+                else
+                {
+                    #ifdef DEBUG
+                        std::cout<<"LockManager: Modify Read Lock interval to ["<<committed_time<<"]"<<std::endl;
+                    #endif
+                    node->next[level]->interval.finish = committed_time;
+                }
             }
             node = node->next[level];
         }
@@ -168,7 +184,7 @@ void LockManager::CommitInterval(TransactionId tid, const Timestamp& committed_t
 
 IntervalLock* LockManager::CreateReadLock(TimestampInterval read_interval){
     #ifdef DEBUG
-        std::cout<<"LockManager: Create Read Lock interval["<<read_interval.start<<","<<read_interval.finish<<"]"<<endl;
+        std::cout<<"LockManager: Create Read Lock interval["<<read_interval.start<<","<<read_interval.finish<<"]"<<std::endl;
     #endif
 	IntervalLock *lock = new IntervalLock;
 	lock->interval = read_interval;
@@ -207,12 +223,16 @@ bool LockManager::RemoveLock(TimestampInterval write_interval){
     }
 
     IntervalLock* nextNode = node->next[0];
-    if((nextNode->interval).start == write_interval.start && (nextNode->interval).finish == write_interval.finish){
-        for(int i=0;i<node->top_level;i++){
-            node->next[i] = nextNode->next[0];
+    while((nextNode->interval).start == write_interval.start)
+    {
+        if((nextNode->interval).start == write_interval.start && (nextNode->interval).finish == write_interval.finish){
+            for(int i=0;i<node->top_level;i++){
+                node->next[i] = nextNode->next[0];
+            }
+            delete nextNode;
+            return true;
         }
-        delete nextNode;
-        return true;
+        nextNode = nextNode->next[0];
     }
     return false;
 }
