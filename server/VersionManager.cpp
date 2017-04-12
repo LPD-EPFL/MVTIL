@@ -34,7 +34,7 @@ void VersionManager::TryReadLock(TransactionId tid, Key key, TimestampInterval i
 	VersionEntry* ve = GetVersionList(key);
 	if(ve == NULL){
         ve = CreateNewEntry(key);
-        interval.start = 0;
+        interval.lock_start = 0;
         locks_manager[key]->LockReadInterval(tid, interval);
 		lockInfo.state = OperationState::FAIL_NO_VERSION;
 		return;
