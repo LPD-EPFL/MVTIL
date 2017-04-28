@@ -51,6 +51,7 @@ void VersionManager::TryReadLock(TransactionId tid, Key key, TimestampInterval i
     // candidateInterval.finish = min(interval.finish,curr->key);
 
     /*Policy two*/
+    ve->lockEntry();
     curr = ve->versions.find(interval.finish, prev);
     TimestampInterval candidateInterval;
     candidateInterval.start = interval.start;
@@ -58,6 +59,7 @@ void VersionManager::TryReadLock(TransactionId tid, Key key, TimestampInterval i
     candidateInterval.finish = min(interval.finish,curr->key);
 
     bool is_success = locks_manager[key]->LockReadInterval(tid, candidateInterval);
+    ve->unlockEntry();
     if(!is_success){
     	lockInfo.state = OperationState::FAIL_PENDING_VERSION;
     	return;
@@ -92,6 +94,7 @@ void VersionManager::TryWriteLock(TransactionId tid, Key key, TimestampInterval 
     // candidateInterval.finish = min(curr->key,interval.finish);
 
     /* Policy 2*/
+    ve->lockEntry();
     curr = ve->versions.find(interval.finish, prev);
     TimestampInterval candidateInterval;
     candidateInterval.start = max(prev->key,interval.start);
@@ -110,6 +113,7 @@ void VersionManager::TryWriteLock(TransactionId tid, Key key, TimestampInterval 
     // }
 
     bool is_success = locks_manager[key]->LockWriteInterval(tid, candidateInterval);
+    ve->unlockEntry();
     if(!is_success){
     	lockInfo.state = OperationState::FAIL_PENDING_VERSION;
     	return;
@@ -129,17 +133,24 @@ bool VersionManager::UpdateAndPersistVersion(TransactionId tid, Key key, Value v
     #endif
 
     VersionEntry* ve = GetVersionList(key);
+    ve->lockEntry();
     ve->versions.insert(new_ts,value);
+    ve->unlockEntry();
+    #ifdef DEBUG
+        ve->versions.printList();
+    #endif
     locks_manager[key]->CommitInterval(tid,new_ts);
     return true;
 }
 
 bool VersionManager::RemoveVersion(Key key, TimestampInterval interval){
-    //VersionEntry* ve = GetVersionList(key);
+    VersionEntry* ve = GetVersionList(key);
     #ifdef DEBUG
         std::cout<<"VersionManager: Remove Key:"<<key<<",Timestamp interval["<<interval.start<<","<<interval.finish<<"]"<<endl;
     #endif
+    ve->lockEntry();
     bool suss = locks_manager[key]->RemoveLock(interval);
+    ve->unlockEntry();
     return suss;
 }
 
@@ -148,7 +159,9 @@ bool VersionManager::GarbageCollection(Timestamp time){
         std::cout<<"VersionManager: Garbage Collection:"<<time<<endl;
     #endif
     for(auto v:committed_version){
+        v.second->lockEntry();
         v.second->versions.erase(time);
+        v.second->unlockEntry();
     }
     bool suss = true;
     for(auto lock:locks_manager){

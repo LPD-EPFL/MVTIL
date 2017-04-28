@@ -65,12 +65,15 @@ void Scheduler::HandleWriteRequest(WriteReply& _return, const TransactionId tid,
 
 	//????
 	//cuckoohash_map<Key, std::pair<Value,TimestampInterval>, CityHasher<Key>> write_set;
+	
+	/*
 	std::unordered_map<Key, std::pair<Value,TimestampInterval>> write_set;
 	bool tid_exists = pendingWriteSets.find(tid, write_set);
 	if(tid_exists){
 		//std::pair<Value,TimestampInterval> value_set;
 		auto it = write_set.find(k);
 		if(it != write_set.end()){
+			//This transaction wrote the key before.
 			it -> second.first = value;
 			_return.tid = tid;
 			_return.state = OperationState::W_LOCK_SUCCESS;
@@ -82,6 +85,25 @@ void Scheduler::HandleWriteRequest(WriteReply& _return, const TransactionId tid,
 		// 	value_set.first = value;
 		// }
 	}
+	*/
+
+	bool key_exists = false;
+	bool tid_exists = pendingWriteSets.update_fn(tid,[&key_flag = key_exists, k, value](std::unordered_map<Key, std::pair<Value,TimestampInterval>>& write_set){
+		auto it = write_set.find(k);
+		if(it != write_set.end()){
+			it -> second.first = value;
+			key_flag = true;
+		}
+	});
+
+	if(key_exists){
+		_return.tid = tid;
+		_return.state = OperationState::W_LOCK_SUCCESS;
+		_return.interval = interval;
+		_return.key = k;
+		return;
+	}
+
 
 	LockInfo lockInfo;
 	version_manager.TryWriteLock(tid, k, interval, lockInfo);
@@ -107,15 +129,27 @@ void Scheduler::HandleWriteRequest(WriteReply& _return, const TransactionId tid,
 	auto value_pair = make_pair(value,lockInfo.locked);
 
 	if(tid_exists){
-		write_set[k] = value_pair;
-		pendingWriteSets.update(tid,write_set);
+		//write_set[k] = value_pair;
+		//pendingWriteSets.update(tid,write_set);
+		pendingWriteSets.update_fn(tid,[k,value_pair](std::unordered_map<Key, std::pair<Value,TimestampInterval>>& write_set){
+			write_set[k] = value_pair;
+		});
 	}
 	else{
-		std::unordered_map<Key, std::pair<Value,TimestampInterval>> valueEntry; 
-		//valueEntry.insert(k, value_pair);
+		std::unordered_map<Key, std::pair<Value,TimestampInterval>> valueEntry;
 		valueEntry[k] = value_pair;
 		pendingWriteSets.insert(tid, valueEntry);
 	}
+	
+	/*
+	if(!tid_exists){
+		pendingWriteSets.insert(tid, std::unordered_map<Key, std::pair<Value,TimestampInterval>>());
+	}
+
+	pendingWriteSets.update_fn(tid,[k,value_pair](std::unordered_map<Key, std::pair<Value,TimestampInterval>>& write_set){
+		write_set[k] = value_pair;
+	});
+	*/
 	return;
 }
 

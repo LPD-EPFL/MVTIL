@@ -3,6 +3,7 @@
 #define _VERSION_MANAGER_H_
 
 #include "LockManager.h"
+#include "LockSet.h"
 //#include "server.h"
 
 //#define MIN_TIMESTAMP 0
@@ -23,9 +24,9 @@ class VersionManager{
 
         class VersionEntry{
             //friend class VersionManager;
-            //private:
+            private:
                 //Timestamp readMark;
-                //std::recursive_mutex lock;
+                std::recursive_mutex lock;
             public:
                 Key key;
                 VersionList versions;
@@ -38,18 +39,23 @@ class VersionManager{
                     return false;
                 }
 
-                // inline void lockEntry() {
-                //     lock.lock();
-                // }
+                inline void lockEntry() {
+                     lock.lock();
+                }
 
-                // inline void unlockEntry() {
-                //     lock.unlock();
-                // }
+                inline void unlockEntry() {
+                    lock.unlock();
+                }
 
         };
 
         unordered_map<Key,VersionEntry*> committed_version;
         unordered_map<Key,LockManager*> locks_manager;
+        //LockSet storeLocks;
+
+        //cuckoohash_map<Key, VersionEntry*, CityHasher<Key>> committed_version;
+        //cuckoohash_map<Key, LockManager*, CityHasher<Key>> locks_manager;
+
         //unordered_map<Key,VersionEntry*> pending_version;
         //LockManager lock_manager;
 	

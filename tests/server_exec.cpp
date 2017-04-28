@@ -5,6 +5,7 @@
 #include <thrift/server/TServer.h>
 #include <thrift/server/TThreadPoolServer.h>
 #include <thrift/server/TThreadedServer.h>
+#include <thrift/server/TNonblockingServer.h>
 #include <thrift/transport/TServerSocket.h>
 #include <thrift/transport/TBufferTransports.h>
 #include <thrift/concurrency/ThreadManager.h>
@@ -34,12 +35,17 @@ int main(int argc, char **argv) {
   boost::shared_ptr<TServerTransport> serverTransport(new TServerSocket(port));
   boost::shared_ptr<TTransportFactory> transportFactory(new TBufferedTransportFactory());
   boost::shared_ptr<TProtocolFactory> protocolFactory(new TBinaryProtocolFactory());
+
   boost::shared_ptr<ThreadManager> threadManager = ThreadManager::newSimpleThreadManager(numThreads);
   boost::shared_ptr<ThreadFactory> threadFactory(new PosixThreadFactory());
   threadManager->threadFactory(threadFactory);
   threadManager->start();
-  boost::shared_ptr<TServer> server(new TThreadPoolServer(processor, serverTransport, transportFactory, protocolFactory,threadManager));
-  server->serve();
+  // boost::shared_ptr<TServer> server(new TThreadPoolServer(processor, serverTransport, transportFactory, protocolFactory,threadManager));
+  // server->serve();
+
+  //Non-blocking Server
+  TNonblockingServer server(processor, protocolFactory, port, threadManager);
+  server.serve();
   return 0;
 }
 

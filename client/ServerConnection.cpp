@@ -10,7 +10,7 @@
 ServerConnection::ServerConnection(std::string h,int prt):host(h),port(prt) {
 	// TODO Auto-generated constructor stub
     boost::shared_ptr<TSocket> s(new TSocket(host, port));
-    boost::shared_ptr<TTransport> t(new TBufferedTransport(s));
+    boost::shared_ptr<TTransport> t(new TFramedTransport(s));
     boost::shared_ptr<TProtocol> p(new TBinaryProtocol(t));
     
     socket = s;
