@@ -1,28 +1,31 @@
 #include "VersionManager.h"
 
-VersionManager::VersionEntry* VersionManager::CreateNewEntry(Key k) {
-    VersionEntry* entry = new VersionEntry(k);
-    std::pair<std::unordered_map<Key,VersionEntry*>::iterator,bool> ret 
-        = committed_version.insert(std::pair<Key,VersionEntry*>(k,entry));
+std::shared_ptr<VersionManager::VersionEntry> VersionManager::CreateNewEntry(Key k) {
+    std::shared_ptr<VersionEntry> entry(new VersionEntry(k));
+    std::pair<std::unordered_map<Key,std::shared_ptr<VersionEntry>>::iterator,bool> ret 
+        = all_versions.insert(std::pair<Key,std::shared_ptr<VersionEntry>>(k,entry));
     if (ret.second == false) {
-        delete entry;
-        entry = ret.first->second;
+        //delete entry;
+        //entry = ret.first->second;
+        entry = NULL;
     }
 
-    LockManager* lock = new LockManager(k);
-    std::pair<std::unordered_map<Key,LockManager*>::iterator,bool> suss 
-        = locks_manager.insert(std::pair<Key,LockManager*>(k,lock));
-    if (suss.second == false)
-        delete lock;
+    std::shared_ptr<LockManager> lock(new LockManager(k));
+    std::pair<std::unordered_map<Key,std::shared_ptr<LockManager>>::iterator,bool> suss 
+        = locks_manager.insert(std::pair<Key,std::shared_ptr<LockManager>>(k,lock));
+    if (suss.second == false){
+        //delete lock;
+        lock = NULL;
+    }
     return entry;
 }
 
-VersionManager::VersionEntry* VersionManager::GetVersionList(Key key){
-    auto it = committed_version.find(key);
-	if(it != committed_version.end()){
-		return it->second;
-	}
-	return NULL;
+std::shared_ptr<VersionManager::VersionEntry> VersionManager::GetVersionList(Key key){
+    auto it = all_versions.find(key);
+    if(it != all_versions.end()){
+        return it->second;
+    }
+    return NULL;
 }
 
 void VersionManager::TryReadLock(TransactionId tid, Key key, TimestampInterval interval, LockInfo& lockInfo)
@@ -31,16 +34,16 @@ void VersionManager::TryReadLock(TransactionId tid, Key key, TimestampInterval i
         std::cout<<"VersionManager: Read Key:"<<key<<",Timestamp interval["<<interval.start<<","<<interval.finish<<"]"<<endl;
     #endif
 
-	VersionEntry* ve = GetVersionList(key);
-	if(ve == NULL){
+    std::shared_ptr<VersionEntry> ve = GetVersionList(key);
+    if(ve == NULL){
         ve = CreateNewEntry(key);
         interval.lock_start = 0;
         locks_manager[key]->LockReadInterval(tid, interval);
-		lockInfo.state = OperationState::FAIL_NO_VERSION;
-		return;
-	}
+        lockInfo.state = OperationState::FAIL_NO_VERSION;
+        return;
+    }
 
-	Version* prev;
+    Version* prev;
     Version* curr;
 
     /*Policy one */
@@ -57,19 +60,18 @@ void VersionManager::TryReadLock(TransactionId tid, Key key, TimestampInterval i
     candidateInterval.start = interval.start;
     candidateInterval.lock_start = prev->key;
     candidateInterval.finish = min(interval.finish,curr->key);
-
     bool is_success = locks_manager[key]->LockReadInterval(tid, candidateInterval);
     ve->unlockEntry();
     if(!is_success){
-    	lockInfo.state = OperationState::FAIL_PENDING_VERSION;
-    	return;
+        lockInfo.state = OperationState::FAIL_PENDING_VERSION;
+        return;
     }
 
     //lockInfo.locked.start = prev->key;
-	//lockInfo.locked.finish = min(interval.finish,curr->key);
-	lockInfo.version = prev;
-	lockInfo.locked = candidateInterval;
-	lockInfo.state = OperationState::R_LOCK_SUCCESS;
+    //lockInfo.locked.finish = min(interval.finish,curr->key);
+    lockInfo.version = prev;
+    lockInfo.locked = candidateInterval;
+    lockInfo.state = OperationState::R_LOCK_SUCCESS;
 }
 
 
@@ -80,12 +82,12 @@ void VersionManager::TryWriteLock(TransactionId tid, Key key, TimestampInterval 
         std::cout<<"VersionManager: Write Key:"<<key<<",Timestamp interval ["<<interval.start<<","<<interval.finish<<"]"<<endl;
     #endif
 
-	VersionEntry* ve = GetVersionList(key);
-	if (ve == NULL) {
+    std::shared_ptr<VersionEntry> ve = GetVersionList(key);
+    if (ve == NULL) {
         ve = CreateNewEntry(key);
     }
 
-	Version* prev;
+    Version* prev;
     Version* curr;
     /* Policy 1*/
     // curr = ve->versions.find(interval.start, prev);
@@ -103,27 +105,27 @@ void VersionManager::TryWriteLock(TransactionId tid, Key key, TimestampInterval 
     //One Policy
     // if(interval.finish > curr->key)
     // {
-    // 	candidateInterval.start = curr->key;
-    // 	candidateInterval.finish =  interval.finish;
+    //  candidateInterval.start = curr->key;
+    //  candidateInterval.finish =  interval.finish;
     // }
     // else
     // {
-    // 	candidateInterval.start = prev->key;
-    // 	candidateInterval.finish = min(interval.finish,curr->key);
+    //  candidateInterval.start = prev->key;
+    //  candidateInterval.finish = min(interval.finish,curr->key);
     // }
 
     bool is_success = locks_manager[key]->LockWriteInterval(tid, candidateInterval);
     ve->unlockEntry();
     if(!is_success){
-    	lockInfo.state = OperationState::FAIL_PENDING_VERSION;
-    	return;
+        lockInfo.state = OperationState::FAIL_PENDING_VERSION;
+        return;
     }
 
     //lockInfo.locked.start = prev->key;
-	//lockInfo.locked.finish = min(interval.finish,curr->key);
-	lockInfo.version = prev;
-	lockInfo.locked = candidateInterval;
-	lockInfo.state = OperationState::W_LOCK_SUCCESS;
+    //lockInfo.locked.finish = min(interval.finish,curr->key);
+    lockInfo.version = prev;
+    lockInfo.locked = candidateInterval;
+    lockInfo.state = OperationState::W_LOCK_SUCCESS;
 }
 
 bool VersionManager::UpdateAndPersistVersion(TransactionId tid, Key key, Value value, Timestamp new_ts) {
@@ -132,19 +134,16 @@ bool VersionManager::UpdateAndPersistVersion(TransactionId tid, Key key, Value v
         std::cout<<"VersionManager: Persist Key:"<<key<<",Timestamp:"<<new_ts<<endl;
     #endif
 
-    VersionEntry* ve = GetVersionList(key);
+    std::shared_ptr<VersionEntry> ve = GetVersionList(key);
     ve->lockEntry();
     ve->versions.insert(new_ts,value);
-    ve->unlockEntry();
-    #ifdef DEBUG
-        ve->versions.printList();
-    #endif
     locks_manager[key]->CommitInterval(tid,new_ts);
+    ve->unlockEntry();
     return true;
 }
 
 bool VersionManager::RemoveVersion(Key key, TimestampInterval interval){
-    VersionEntry* ve = GetVersionList(key);
+    std::shared_ptr<VersionEntry> ve = GetVersionList(key);
     #ifdef DEBUG
         std::cout<<"VersionManager: Remove Key:"<<key<<",Timestamp interval["<<interval.start<<","<<interval.finish<<"]"<<endl;
     #endif
@@ -158,14 +157,12 @@ bool VersionManager::GarbageCollection(Timestamp time){
     #ifdef DEBUG
         std::cout<<"VersionManager: Garbage Collection:"<<time<<endl;
     #endif
-    for(auto v:committed_version){
+    bool suss = true;
+    for(auto v:all_versions){
         v.second->lockEntry();
         v.second->versions.erase(time);
+        suss &= locks_manager[v.first]->GarbageCollection(time);
         v.second->unlockEntry();
-    }
-    bool suss = true;
-    for(auto lock:locks_manager){
-        suss &= lock.second->GarbageCollection(time);
     }
     return suss;
 }
