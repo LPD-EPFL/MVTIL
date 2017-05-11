@@ -57,12 +57,14 @@ bool LockManager::LockReadInterval(TransactionId tid, TimestampInterval& candida
     lock_interval.start = candidate_interval.lock_start;
     lock_interval.finish = candidate_interval.finish;
 
+    //mutex.lock();
     IntervalLock* lock = CreateReadLock(lock_interval);
     lock->transaction_id = tid;
     for(int i=0;i<prev->top_level;i++)
         prev->next[i] = lock;
     for(int i=0;i<lock->top_level;i++)
         lock->next[i] = curr;
+    //mutex.unlock();
     return true;
 
     //Two policy largest interval first
@@ -143,12 +145,14 @@ bool LockManager::LockWriteInterval(TransactionId tid, TimestampInterval& candid
 
     //if(candidate_interval.start >= (prev->interval).finish && candidate_interval.finish <= (curr->interval).start){
     	//create new write lock for candidate interval
-    	IntervalLock* lock = CreateWriteLock(candidate_interval);
+    	//mutex.lock();
+        IntervalLock* lock = CreateWriteLock(candidate_interval);
         lock->transaction_id = tid;
     	for(int i=0;i<prev->top_level;i++)
     		prev->next[i] = lock;
     	for(int i=0;i<lock->top_level;i++)
     		lock->next[i] = curr;
+        //mutex.unlock();
     	return true;
     //}
     //return false;
@@ -179,6 +183,17 @@ void LockManager::CommitInterval(TransactionId tid, const Timestamp& committed_t
             node = node->next[level];
         }
     }
+
+
+    #ifdef DEBUG
+        node = head;
+        while (node->next[0] != NULL) {
+            std::cout<<"["<<node->interval.start<<","<<node->interval.finish<<"]"<<" ";          
+            node = node->next[0];
+        }
+        std::cout<<std::endl;
+    #endif
+
 }
 
 
@@ -226,9 +241,11 @@ bool LockManager::RemoveLock(TimestampInterval write_interval){
     while((nextNode->interval).start == write_interval.start)
     {
         if((nextNode->interval).start == write_interval.start && (nextNode->interval).finish == write_interval.finish){
+            //mutex.lock();
             for(int i=0;i<node->top_level;i++){
                 node->next[i] = nextNode->next[0];
             }
+            //mutex.unlock();
             delete nextNode;
             return true;
         }
@@ -239,6 +256,7 @@ bool LockManager::RemoveLock(TimestampInterval write_interval){
 
 bool LockManager::GarbageCollection(Timestamp time){
     IntervalLock* node = head->next[0];
+    //mutex.lock();
     while (node->next[0] != NULL && (node->next[0]->interval).start <= time) {
         IntervalLock* cur = node;
         node = node->next[0];
@@ -247,5 +265,6 @@ bool LockManager::GarbageCollection(Timestamp time){
     for(int i=0;i<MAX_LEVEL;i++){
         head->next[i] = node;
     }
+    //smutex.lock();
     return true;
 }

@@ -2,6 +2,7 @@
 #define _INTERVAL_LOCK_H_
 
 #include "server.h"
+#include <mutex>
 
 //#define MAX_LEVEL 4
 
@@ -21,6 +22,7 @@ private:
 	Key key;
 	IntervalLock *head;
 	double prob = 0.5;
+	//std::mutex mutex;
 	
 	int GetRandomLevel() {
         int level = 1;        

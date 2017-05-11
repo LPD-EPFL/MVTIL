@@ -1,14 +1,15 @@
-
 #ifndef _VERSION_MANAGER_H_
 #define _VERSION_MANAGER_H_
 
 #include "LockManager.h"
+#include "LockSet.h"
 //#include "server.h"
+
+#include <libcuckoo/cuckoohash_map.hh>
+#include <libcuckoo/city_hasher.hh>
 
 //#define MIN_TIMESTAMP 0
 //#define MAX_TIMESTAMP 0xFFFF
-
-using namespace std;
 
 // typedef struct LockInfo {
 //     LockState state; //the status the operation finished with
@@ -23,46 +24,49 @@ class VersionManager{
 
         class VersionEntry{
             //friend class VersionManager;
-            //private:
-                //Timestamp readMark;
-                //std::recursive_mutex lock;
+            private:
+                std::mutex lock;
             public:
                 Key key;
                 VersionList versions;
+                LockManager manager;
 
                 //VersionEntry();
-                VersionEntry(Key k) : key(k), versions(MIN_TIMESTAMP,MAX_TIMESTAMP){}
+                VersionEntry(Key k) : key(k), versions(MIN_TIMESTAMP,MAX_TIMESTAMP), manager(k){}
+                ~VersionEntry(){}
 
                 inline bool isEmpty() {
                     if (versions.size() == 0) return true;
                     return false;
                 }
 
-                // inline void lockEntry() {
-                //     lock.lock();
-                // }
+                inline void lockEntry() {
+                    lock.lock();
+                }
 
-                // inline void unlockEntry() {
-                //     lock.unlock();
-                // }
+                inline void unlockEntry() {
+                    lock.unlock();
+                }
 
         };
 
-        unordered_map<Key,VersionEntry*> committed_version;
-        unordered_map<Key,LockManager*> locks_manager;
-        //unordered_map<Key,VersionEntry*> pending_version;
-        //LockManager lock_manager;
-	
-	public:
+        std::unordered_map<Key, std::shared_ptr<VersionEntry>> all_versions;
+        LockSet lockSet;
 
-		VersionEntry* AddEntry(Key k, VersionManager* ve);
-        VersionEntry* CreateNewEntry(Key k);
-        VersionEntry* GetVersionList(Key k);
+        //cuckoohash_map<Key, std::shared_ptr<VersionEntry>, CityHasher<Key>> all_versions;
+
+        ///std::unordered_map<Key, std::shared_ptr<LockManager>> locks_manager;
+        
+    public:
+
+        std::shared_ptr<VersionEntry> AddEntry(Key k, VersionManager* ve);
+        std::shared_ptr<VersionEntry> CreateNewEntry(Key k);
+        std::shared_ptr<VersionEntry> GetVersionList(Key k);
 
         //int RemoveVersion(Key k, Version* v);
 
         //Acquire a read lock
-		void TryReadLock(TransactionId tid, Key k, TimestampInterval interval, LockInfo& lockInfo);
+        void TryReadLock(TransactionId tid, Key k, TimestampInterval interval, LockInfo& lockInfo);
         //Acquire a write lock
         void TryWriteLock(TransactionId tid, Key k, TimestampInterval interval, LockInfo& lockInfo);
         //Persist a version

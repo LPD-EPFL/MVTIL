@@ -18,10 +18,10 @@
 #include <chrono>
 #include <iostream>
 
-#define NUM_THREADS 50
+#define NUM_THREADS 6000
 #define RO_SIZE 100
 #define RW_SIZE 50
-#define KEY_SIZE 2
+#define KEY_SIZE 4
 #define VALUE_SIZE 100
 
 #define TEST_DURATION_MS 10000
@@ -102,10 +102,12 @@ int execute_transaction(TransactionType type) {
             break;
         case RW_ONE_KEY:
             TX_START;
-            key = generate_random_key();
-            TX_READ(key, val);
-            generated = generate_random_value();
-            TX_WRITE(key, generated);
+            for (i=0; i<RW_SIZE; i++){
+                key = generate_random_key();
+                TX_READ(key, val);
+                //generated = generate_random_value();
+                TX_WRITE(key, generated);
+            }
             TX_COMMIT;
             break;
         case R_ONE_KEY:
