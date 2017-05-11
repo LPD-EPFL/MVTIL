@@ -2,7 +2,11 @@
 #define _VERSION_MANAGER_H_
 
 #include "LockManager.h"
+#include "LockSet.h"
 //#include "server.h"
+
+#include <libcuckoo/cuckoohash_map.hh>
+#include <libcuckoo/city_hasher.hh>
 
 //#define MIN_TIMESTAMP 0
 //#define MAX_TIMESTAMP 0xFFFF
@@ -21,13 +25,14 @@ class VersionManager{
         class VersionEntry{
             //friend class VersionManager;
             private:
-                std::recursive_mutex lock;
+                std::mutex lock;
             public:
                 Key key;
                 VersionList versions;
+                LockManager manager;
 
                 //VersionEntry();
-                VersionEntry(Key k) : key(k), versions(MIN_TIMESTAMP,MAX_TIMESTAMP){}
+                VersionEntry(Key k) : key(k), versions(MIN_TIMESTAMP,MAX_TIMESTAMP), manager(k){}
                 ~VersionEntry(){}
 
                 inline bool isEmpty() {
@@ -46,7 +51,11 @@ class VersionManager{
         };
 
         std::unordered_map<Key, std::shared_ptr<VersionEntry>> all_versions;
-        std::unordered_map<Key, std::shared_ptr<LockManager>> locks_manager;
+        LockSet lockSet;
+
+        //cuckoohash_map<Key, std::shared_ptr<VersionEntry>, CityHasher<Key>> all_versions;
+
+        ///std::unordered_map<Key, std::shared_ptr<LockManager>> locks_manager;
         
     public:
 

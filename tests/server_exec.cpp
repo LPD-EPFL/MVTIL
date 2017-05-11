@@ -40,8 +40,8 @@ int main(int argc, char **argv) {
   boost::shared_ptr<ThreadFactory> threadFactory(new PosixThreadFactory());
   threadManager->threadFactory(threadFactory);
   threadManager->start();
-  // boost::shared_ptr<TServer> server(new TThreadPoolServer(processor, serverTransport, transportFactory, protocolFactory,threadManager));
-  // server->serve();
+  //TThreadPoolServer server(processor, serverTransport, transportFactory, protocolFactory,threadManager);
+  //server.serve();
 
   //Non-blocking Server
   TNonblockingServer server(processor, protocolFactory, port, threadManager);

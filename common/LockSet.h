@@ -22,7 +22,7 @@
 
 #include "common.h"
 
-#define NUM_LOCKS 32
+#define NUM_LOCKS 1000
 
 class LockSet {
     public:

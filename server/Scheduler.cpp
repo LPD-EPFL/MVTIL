@@ -25,7 +25,7 @@ void Scheduler::HandleReadRequest(ReadReply& _return, const TransactionId tid,
 		else if(lockInfo.state == OperationState::FAIL_NO_VERSION){
 			_return.state = lockInfo.state;
 			_return.value = "";
-			_return.interval = interval;
+			_return.interval = lockInfo.locked;
 			break;
 		}
 
