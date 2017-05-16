@@ -22,16 +22,16 @@
 
 #include "common.h"
 
-#define NUM_LOCKS 1000
+#define NUM_LOCKS 1024
 
 class LockSet {
-    public:
-        void lock(Key k);
-        void unlock(Key k);
-    private:
-        std::array<std::mutex, NUM_LOCKS> theLocks;
-        std::hash<std::string> hasher;
-        size_t hashKey(Key k);
+	public:
+		void lock(Key k);
+		void unlock(Key k);
+	private:
+		std::array<std::mutex, NUM_LOCKS> theLocks;
+		std::hash<std::string> hasher;
+		size_t hashKey(Key k);
 };
 
 #endif

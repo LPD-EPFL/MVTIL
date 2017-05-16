@@ -20,8 +20,8 @@ void LockSet::lock(Key k) {
 }
 
 void LockSet::unlock(Key k) {
-    size_t index = hashKey(k);
-    theLocks.at(index).unlock();
+	size_t index = hashKey(k);
+	theLocks.at(index).unlock();
 }
 
 size_t LockSet::hashKey(Key k) {

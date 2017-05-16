@@ -24,8 +24,8 @@ int main(int argc, char **argv) {
 
   if(argc < 3) 
   {
-    cout<<"Please specify the server's port and number of threads!"<<endl;
-    return 0;
+	cout<<"Please specify the server's port and number of threads!"<<endl;
+	return 0;
   }
 
   int port = atoi(argv[1]);

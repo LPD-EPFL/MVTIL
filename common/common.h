@@ -8,7 +8,7 @@
 #include <cstdint>
 
 #define MIN_TIMESTAMP 0
-#define MAX_TIMESTAMP INT_MAX
+#define MAX_TIMESTAMP INT64_MAX
 
 typedef int64_t Timestamp;
 typedef int64_t TransactionId;

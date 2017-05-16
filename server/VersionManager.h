@@ -20,61 +20,61 @@
 
 class VersionManager{
 
-    private:
+	private:
 
-        class VersionEntry{
-            //friend class VersionManager;
-            private:
-                std::mutex lock;
-            public:
-                Key key;
-                VersionList versions;
-                LockManager manager;
+		class VersionEntry{
+			//friend class VersionManager;
+			private:
+				std::mutex lock;
+			public:
+				Key key;
+				VersionList versions;
+				LockManager manager;
 
-                //VersionEntry();
-                VersionEntry(Key k) : key(k), versions(MIN_TIMESTAMP,MAX_TIMESTAMP), manager(k){}
-                ~VersionEntry(){}
+				//VersionEntry();
+				VersionEntry(Key k) : key(k), versions(MIN_TIMESTAMP,MAX_TIMESTAMP), manager(k){}
+				~VersionEntry(){}
 
-                inline bool isEmpty() {
-                    if (versions.size() == 0) return true;
-                    return false;
-                }
+				inline bool isEmpty() {
+					if (versions.size() == 0) return true;
+					return false;
+				}
 
-                inline void lockEntry() {
-                    lock.lock();
-                }
+				inline void lockEntry() {
+					lock.lock();
+				}
 
-                inline void unlockEntry() {
-                    lock.unlock();
-                }
+				inline void unlockEntry() {
+					lock.unlock();
+				}
 
-        };
+		};
 
-        std::unordered_map<Key, std::shared_ptr<VersionEntry>> all_versions;
-        LockSet lockSet;
+		std::unordered_map<Key, std::shared_ptr<VersionEntry>> all_versions;
+		LockSet lockSet;
 
-        //cuckoohash_map<Key, std::shared_ptr<VersionEntry>, CityHasher<Key>> all_versions;
+		//cuckoohash_map<Key, std::shared_ptr<VersionEntry>, CityHasher<Key>> all_versions;
 
-        ///std::unordered_map<Key, std::shared_ptr<LockManager>> locks_manager;
-        
-    public:
+		///std::unordered_map<Key, std::shared_ptr<LockManager>> locks_manager;
+		
+	public:
 
-        std::shared_ptr<VersionEntry> AddEntry(Key k, VersionManager* ve);
-        std::shared_ptr<VersionEntry> CreateNewEntry(Key k);
-        std::shared_ptr<VersionEntry> GetVersionList(Key k);
+		std::shared_ptr<VersionEntry> AddEntry(Key k, VersionManager* ve);
+		std::shared_ptr<VersionEntry> CreateNewEntry(Key k);
+		std::shared_ptr<VersionEntry> GetVersionList(Key k);
 
-        //int RemoveVersion(Key k, Version* v);
+		//int RemoveVersion(Key k, Version* v);
 
-        //Acquire a read lock
-        void TryReadLock(TransactionId tid, Key k, TimestampInterval interval, LockInfo& lockInfo);
-        //Acquire a write lock
-        void TryWriteLock(TransactionId tid, Key k, TimestampInterval interval, LockInfo& lockInfo);
-        //Persist a version
-        bool UpdateAndPersistVersion(TransactionId tid, Key k, Value value, Timestamp new_ts);
-        //Remove a lock
-        bool RemoveVersion(Key k, TimestampInterval interval);
-        //Remove eariler versions and locks
-        bool GarbageCollection(Timestamp time);
+		//Acquire a read lock
+		void TryReadLock(TransactionId tid, Key k, TimestampInterval interval, LockInfo& lockInfo);
+		//Acquire a write lock
+		void TryWriteLock(TransactionId tid, Key k, TimestampInterval interval, LockInfo& lockInfo);
+		//Persist a version
+		bool UpdateAndPersistVersion(TransactionId tid, Key k, Value value, Timestamp new_ts);
+		//Remove a lock
+		bool RemoveVersion(Key k, TimestampInterval interval);
+		//Remove eariler versions and locks
+		bool GarbageCollection(Timestamp time);
 
 };
 

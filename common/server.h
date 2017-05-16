@@ -16,9 +16,9 @@ typedef skiplist<Timestamp,Value,MAX_LEVEL> VersionList;
 typedef skiplist_node<Timestamp,Value,MAX_LEVEL> Version;
 
 typedef struct LockInfo {
-    LockState state; //the status the operation finished with
-    TimestampInterval locked; //the interval that was successfully locked
-    Version* version; //the version that was locked or created
+	LockState state; //the status the operation finished with
+	TimestampInterval locked; //the interval that was successfully locked
+	Version* version; //the version that was locked or created
 } LockInfo;
 
 #endif

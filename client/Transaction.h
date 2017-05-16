@@ -35,13 +35,13 @@ class Transaction{
 		const Value* FindInReadSet(Key key);
 		const Value* FindInWriteSet(Key key);
 		inline void AddToReadSet(Key k, LockEntry e) { 
-	        read_set.insert(std::pair<Key, LockEntry>(k,e)); 
-	    }
+			read_set.insert(std::pair<Key, LockEntry>(k,e)); 
+		}
 
-	    inline void AddToWriteSet(Key k, LockEntry e) {
-	        write_set.insert(std::pair<Key, LockEntry>(k,e)); 
-	    }
-	    void UpdateValue(Key key, Value update);
+		inline void AddToWriteSet(Key k, LockEntry e) {
+			write_set.insert(std::pair<Key, LockEntry>(k,e)); 
+		}
+		void UpdateValue(Key key, Value update);
 };
 
 
