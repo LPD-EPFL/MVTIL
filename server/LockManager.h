@@ -10,7 +10,7 @@ typedef struct IL{
 	TransactionId transaction_id; 
 	TimestampInterval interval;
 	LockOperation lock_operation;
-	Value value;
+	//Value value;
 	int top_level;
 	struct IL *next[MAX_LEVEL];
 	bool is_committed;
@@ -25,11 +25,11 @@ private:
 	//std::mutex mutex;
 	
 	int GetRandomLevel() {
-		int level = 1;        
-		while ( rand_range(101) < 100*prob && level < MAX_LEVEL )
-			level++;
-		return level;
-	}
+        int level = 1;        
+        while ( rand_range(101) < 100*prob && level < MAX_LEVEL )
+            level++;
+        return level;
+    }
 
 public:
 	LockManager(Key k);

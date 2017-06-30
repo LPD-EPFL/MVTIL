@@ -95,9 +95,9 @@ rand_range(long r)
   long d, v = 0;
 	
   do {
-	d = (m > r ? r : m);
-	v += 1 + (long)(d * ((double)rand()/((double)(m)+1.0)));
-	r -= m;
+    d = (m > r ? r : m);
+    v += 1 + (long)(d * ((double)rand()/((double)(m)+1.0)));
+    r -= m;
   } while (r > 0);
 #endif
   /* PF_STOP(0); */
@@ -117,9 +117,9 @@ rand_range_re(unsigned int *seed, long r)
   long d, v = 0;
 	
   do {
-	d = (m > r ? r : m);		
-	v += 1 + (long)(d * ((double)rand_r(seed)/((double)(m)+1.0)));
-	r -= m;
+    d = (m > r ? r : m);		
+    v += 1 + (long)(d * ((double)rand_r(seed)/((double)(m)+1.0)));
+    r -= m;
   } while (r > 0);
 #endif
   /* PF_STOP(0); */

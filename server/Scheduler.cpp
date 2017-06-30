@@ -88,11 +88,11 @@ void Scheduler::HandleWriteRequest(WriteReply& _return, const TransactionId tid,
 	*/
 
 	bool key_exists = false;
-	bool tid_exists = pendingWriteSets.update_fn(tid,[&key_flag = key_exists, k, value](std::unordered_map<Key, std::pair<Value,TimestampInterval>>& write_set){
+	bool tid_exists = pendingWriteSets.update_fn(tid,[&key_exists, k, value](std::unordered_map<Key, std::pair<Value,TimestampInterval>>& write_set){
 		auto it = write_set.find(k);
 		if(it != write_set.end()){
 			it -> second.first = value;
-			key_flag = true;
+			key_exists = true;
 		}
 	});
 

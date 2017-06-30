@@ -1,3 +1,4 @@
+
 #ifndef _CAPABILITY_OPERATION_H_
 #define _CAPABILITY_OPERATION_H_
 

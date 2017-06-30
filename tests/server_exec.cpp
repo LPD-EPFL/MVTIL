@@ -4,8 +4,8 @@
 #include <thrift/protocol/TBinaryProtocol.h>
 #include <thrift/server/TServer.h>
 #include <thrift/server/TThreadPoolServer.h>
-#include <thrift/server/TThreadedServer.h>
 #include <thrift/server/TNonblockingServer.h>
+#include <thrift/server/TThreadedServer.h>
 #include <thrift/transport/TServerSocket.h>
 #include <thrift/transport/TBufferTransports.h>
 #include <thrift/concurrency/ThreadManager.h>
@@ -24,8 +24,8 @@ int main(int argc, char **argv) {
 
   if(argc < 3) 
   {
-	cout<<"Please specify the server's port and number of threads!"<<endl;
-	return 0;
+    cout<<"Please specify the server's port and number of threads!"<<endl;
+    return 0;
   }
 
   int port = atoi(argv[1]);
@@ -46,6 +46,7 @@ int main(int argc, char **argv) {
   //Non-blocking Server
   TNonblockingServer server(processor, protocolFactory, port, threadManager);
   server.serve();
+  
   return 0;
 }
 
