@@ -3,7 +3,6 @@
 
 #include "SkipList.h"
 #include "DataService_types.h"
-#include "CapabilityOperation.h"
 #include "config.h"
 
 #include <unordered_map>
