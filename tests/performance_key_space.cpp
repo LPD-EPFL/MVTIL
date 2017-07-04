@@ -63,7 +63,7 @@ inline TransactionType get_random_transaction_type(int type) {
 int execute_transaction(int threadId, TransactionType type) {
     TransactionManager* transactionManager = managers[threadId];
     int suss = 0;
-    uint32_t i;
+    int i;
     Value val;
     Value generated;
     Key key;
@@ -155,7 +155,7 @@ int main(int argc, char **argv) {
     start = false;
     stop = false;
     std::vector<std::thread> threads;
-    int i;
+    uint32_t i;
 
     for  (i = 0; i < c_thread_cnt; i++) {
         thr[i] = 0;
