@@ -49,14 +49,14 @@ inline std::string generate_random_value() {
     return random_string(VALUE_SIZE);
 }
 
-typedef enum {READ_ONLY, MANY_READS_ONE_WRITE, WRITE_INTENSIVE, RW_ONE_KEY, R_ONE_KEY, RW_SHORT, NUM_TTYPES} TransactionType;
+//typedef enum {READ_ONLY, MANY_READS_ONE_WRITE, WRITE_INTENSIVE, RW_ONE_KEY, R_ONE_KEY, RW_SHORT, NUM_TTYPES} TransactionType;
 
 inline TransactionType get_random_transaction_type(int type) {
-    if(type < NUM_TTYPES){
+    if(type < MIX){
         return static_cast<TransactionType>(type);
     }
     else{
-        return static_cast<TransactionType>(rand() % NUM_TTYPES);   //TODO change rand function
+        return static_cast<TransactionType>(rand() % MIX);   //TODO change rand function
     }
 }
 

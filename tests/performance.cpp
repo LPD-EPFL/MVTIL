@@ -18,13 +18,8 @@
 #include <chrono>
 #include <iostream>
 
-#define NUM_THREADS 6000
-#define RO_SIZE 100
-#define RW_SIZE 50
 #define KEY_SIZE 4
 #define VALUE_SIZE 100
-
-#define TEST_DURATION_MS 10000
 
 volatile bool start;
 volatile bool stop;
@@ -58,10 +53,10 @@ inline std::string generate_random_value() {
     return random_string(VALUE_SIZE);
 }
 
-typedef enum {READ_ONLY, MANY_READS_ONE_WRITE, WRITE_INTENSIVE, RW_ONE_KEY, R_ONE_KEY, RW_SHORT, NUM_TTYPES} TransactionType;
+//typedef enum {READ_ONLY, MANY_READS_ONE_WRITE, WRITE_INTENSIVE, RW_ONE_KEY, R_ONE_KEY, RW_SHORT, NUM_TTYPES} TransactionType;
 
 inline TransactionType get_random_transaction_type() {
-  return static_cast<TransactionType>(rand() % NUM_TTYPES);   //TODO change rand function
+  return static_cast<TransactionType>(rand() % MIX);   //TODO change rand function
 }
 
 int execute_transaction(TransactionType type) {
@@ -108,12 +103,6 @@ int execute_transaction(TransactionType type) {
                 //generated = generate_random_value();
                 TX_WRITE(key, generated);
             }
-            TX_COMMIT;
-            break;
-        case R_ONE_KEY:
-            TX_START_RO;
-            key = generate_random_key();
-            TX_READ(key, val);
             TX_COMMIT;
             break;
         case RW_SHORT:
@@ -194,8 +183,6 @@ int main(int argc, char **argv) {
         total_commit+=commit[i];
     }
 
-    cout<<"Total throughput:"<<total_throughput<<" in "<< TEST_DURATION_MS <<"ms"<<endl;
-    cout<<"Total commit:"<<total_commit<<endl;
-
+    cout<<total_commit<<" "<<total_throughput<<endl;
     return 0;
 }
