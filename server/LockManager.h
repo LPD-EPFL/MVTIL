@@ -2,6 +2,7 @@
 #define _INTERVAL_LOCK_H_
 
 #include "server.h"
+#include "CapabilityOperation.h"
 #include <mutex>
 
 //#define MAX_LEVEL 4
