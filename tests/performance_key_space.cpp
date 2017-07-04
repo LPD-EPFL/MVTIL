@@ -63,7 +63,7 @@ inline TransactionType get_random_transaction_type(int type) {
 int execute_transaction(int threadId, TransactionType type) {
     TransactionManager* transactionManager = managers[threadId];
     int suss = 0;
-    int i;
+    uint32_t i;
     Value val;
     Value generated;
     Key key;
