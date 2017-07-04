@@ -51,7 +51,7 @@ void parser_server(int argc, char * argv[]) {
 				s_type = NON_BLOCKING_SERVER;
 		}
 		else{
-			print_usage();
+			print_server_usage();
 			exit(0);
 		}
 	}
@@ -71,7 +71,7 @@ void parser_client(int argc, char * argv[]) {
 		else if (argv[i][1] == 't') {
 			c_test_type = atoi( &argv[i][2] );
 		else{
-			print_usage();
+			print_client_usage();
 			exit(0);
 		}
 	}
