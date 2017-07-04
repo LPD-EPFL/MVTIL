@@ -63,7 +63,7 @@ all: checkdirs thrift build/server_exec build/client_exec build/test_single_clie
 #build/performance_scale_key_space build/server_exec2 
 
 #server
-build/server_exec: $(OBJ_SERVER) build/parse.o build/server_exec.o
+build/server_exec: $(OBJ_SERVER) build/server_exec.o
 	$(LD) $(CFLAGS) $(DEBUG_FLAGS) $^ -o $@ $(LIB_DIR) $(LIBS)
 
 build/server_exec.o: tests/server_exec.cpp
@@ -109,7 +109,7 @@ build/test_multi_client.o: tests/test_multi_client.cpp
 #build/performance_multi.o: tests/performance_multi.cpp
 #	$(CC) $(INCLUDES_CLIENT) $(CFLAGS) $(DEBUG_FLAGS) -c $< -o $@
 
-build/performance_key_space: $(OBJ_CLIENT) build/parse.o build/performance_key_space.o
+build/performance_key_space: $(OBJ_CLIENT) build/performance_key_space.o
 	$(LD) $(CFLAGS) $(DEBUG_FLAGS) $^ -o $@ $(LIB_DIR) $(LIBS)
 
 build/performance_key_space.o: tests/performance_key_space.cpp
