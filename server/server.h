@@ -4,6 +4,7 @@
 #include "SkipList.h"
 #include "DataService_types.h"
 #include "CapabilityOperation.h"
+#include "config.h"
 
 #include <unordered_map>
 
@@ -20,5 +21,13 @@ typedef struct LockInfo {
     TimestampInterval locked; //the interval that was successfully locked
     Version* version; //the version that was locked or created
 } LockInfo;
+
+//Gobal Parameter for Servers
+extern uint32_t s_thread_cnt;
+extern uint32_t s_port;
+extern uint32_t s_timeout;
+extern uint32_t s_retry;
+extern uint32_t s_policy;
+extern uint32_t s_type;
 
 #endif

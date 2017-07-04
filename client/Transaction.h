@@ -6,8 +6,6 @@
 #include <unordered_map>
 #include <unordered_set>
 
-#define TRANSACTION_MAX_DURATION 50
-
 class Transaction{
 
 	friend class TransactionManager;
@@ -28,7 +26,7 @@ class Transaction{
 		}
 		Transaction(TransactionId tid, Timestamp start):transaction_id(tid),start_time(start){
 			committed_interval.start = start;
-			committed_interval.finish = start + TRANSACTION_MAX_DURATION;
+			committed_interval.finish = start + c_interval_duration;
 			is_abort = false;
 		}
 		~Transaction();

@@ -31,7 +31,7 @@ void Scheduler::HandleReadRequest(ReadReply& _return, const TransactionId tid,
 
 		//If read operation wait a pending write.
 		auto now = std::chrono::high_resolution_clock::now();
-		if ((numRetries > MIN_NUM_RETRIES) && (timeout(tStart, now))) {
+		if ((numRetries > read_retry) && (timeout(tStart, now))) {
 			_return.state = lockInfo.state; //should be FAIL_PENDING_VERSION
 			_return.value = "";
 			_return.interval.start = 0;

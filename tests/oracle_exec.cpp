@@ -25,22 +25,18 @@ class OracleHandler : virtual public OracleServiceIf {
   OracleHandler() {
     // Your initialization goes here
     initialTime = std::chrono::system_clock::now();
-    printf("%ld\n", (std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now() - initialTime).count()));
     unique_id = 0;
   }
 
   Timestamp GetTimestamp() {
     // Your implementation goes here
-    printf("GetTimestamp\n");
     Timestamp duration = ((std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now() -initialTime).count()) << 5) + unique_id;
     return duration;
   }
 
   TransactionId GetTransactionId() {
     // Your implementation goes here
-    printf("GetTransactionId\n");
     unique_id++;
-    printf("%ld\n", unique_id);
     return unique_id;
   }
 

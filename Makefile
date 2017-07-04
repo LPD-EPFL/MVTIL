@@ -132,7 +132,7 @@ $(foreach bdir,$(BUILD_DIR_CLIENT),$(eval $(call make-goal-client,$(bdir))))
 
 DATA_SERVICE:=DataService
 
-thrift: gen-cpp/$(DATA_SERVICE)_types.cpp
+#thrift: gen-cpp/$(DATA_SERVICE)_types.cpp
 
-gen-cpp/$(DATA_SERVICE)_types.cpp: thrift/$(DATA_SERVICE).thrift
-	thrift -r --gen cpp $<
+#gen-cpp/$(DATA_SERVICE)_types.cpp: thrift/$(DATA_SERVICE).thrift
+#	thrift -r --gen cpp $<

@@ -72,7 +72,7 @@ int execute_transaction(TransactionType type) {
     Key key;
     switch(type) { 
         case READ_ONLY:
-            TX_START_RO;
+            TX_START;
             for (i=0; i<RO_SIZE; i++) {
                 key = generate_random_key();
                 TX_READ(key, val);

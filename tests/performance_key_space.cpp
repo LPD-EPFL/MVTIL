@@ -12,6 +12,7 @@
  * limitations under the License.
  */
 
+#include "client.h"
 #include "TransactionManager.h"
 #include <string>
 #include <thread>
@@ -20,13 +21,8 @@
 
 using namespace std;
 
-#define MAX_NUM_THREADS 1000
-#define RO_SIZE 20
-#define RW_SIZE 10
 //#define KEY_SIZE 5
 #define VALUE_SIZE 100
-
-#define TEST_DURATION_MS 10000
 
 volatile int key_size;
 volatile bool start;
@@ -36,22 +32,11 @@ volatile uint64_t commit[MAX_NUM_THREADS];
 
 TransactionManager* managers[MAX_NUM_THREADS];
 
-//TransactionManager* transactionManager;
+// defined in parser.cpp
+void parser_client(int argc, char * argv[]);
 
-//function from https://stackoverflow.com/a/12468109
 std::string random_string(int num)
 {
-    //auto randchar = []() -> char
-    //{
-        //const char charset[] =
-        //"0123456789"
-        //"ABCDEFGHIJKLMNOPQRSTUVWXYZ"
-        //"abcdefghijklmnopqrstuvwxyz";
-        //const size_t max_index = (sizeof(charset) - 1);
-        //return charset[ rand() % max_index ]; //TODO change rand function
-    //};
-    //std::string str(length,0);
-    //std::generate_n( str.begin(), length, randchar );
     std::string str = std::to_string(rand() % num);
     return str;
 }
@@ -84,7 +69,7 @@ int execute_transaction(int threadId, TransactionType type) {
     Key key;
     switch(type) { 
         case READ_ONLY:
-            TX_START_RO;
+            TX_START;
             for (i=0; i<RO_SIZE; i++) {
                 key = generate_random_key();
                 TX_READ(key, val);
@@ -171,41 +156,28 @@ void execute_test(int threadId, int type) {
 
 int main(int argc, char **argv) {
 
-    if(argc < 3) 
-    {
-        cout<<"Please specify the number of client thread, the testing type of transactions and the test key size!"<<endl;
-        return 0;
-    }
+    parser_client(argc, argv);
 
     start = false;
     stop = false;
     std::vector<std::thread> threads;
     int i;
-    int number_threads = atoi(argv[1]);  
-    int type = atoi(argv[2]);
-    key_size = atoi(argv[3]);
-    //transactionManager=new TransactionManager(atoi(argv[1]));
 
-    for  (i = 0; i < number_threads; i++) {
+    for  (i = 0; i < c_thread_cnt; i++) {
         thr[i] = 0;
         managers[i] = new TransactionManager(i);
     }
 
-    for  (i = 0; i < number_threads; i++) {
-       threads.push_back(std::thread(&execute_test, i, type)); 
+    for  (i = 0; i < c_thread_cnt; i++) {
+       threads.push_back(std::thread(&execute_test, i, c_test_type)); 
     }
 
-    //allow threads to start 
-    //std::chrono::time_point<std::chrono::system_clock> startTime, endTime;
-
     start = true;
-    //startTime = std::chrono::system_clock::now();
 
     //sleep
     std::this_thread::sleep_for(std::chrono::milliseconds(TEST_DURATION_MS));
 
     stop = true; 
-    //endTime = std::chrono::system_clock::now();
 
     for (auto& th: threads) {
         th.join();
@@ -215,7 +187,7 @@ int main(int argc, char **argv) {
     uint64_t total_throughput = 0;
     uint64_t total_commit = 0;
     
-    for  (i = 0; i < number_threads; i++) {
+    for  (i = 0; i < c_thread_cnt; i++) {
         total_throughput+=thr[i]; 
         total_commit+=commit[i];
     }

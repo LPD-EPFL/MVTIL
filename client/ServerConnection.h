@@ -53,4 +53,5 @@ struct ServerConnectionHasher
         return (hash<string>()(sc->host+std::to_string(sc->port)));
     }
 };
+
 #endif /* CLIENT_SERVERCONNECTION_H_ */
