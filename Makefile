@@ -57,10 +57,15 @@ endef
 
 .PHONY: all checkdirs thrift clean
 
-all: checkdirs thrift build/server_exec build/server_exec2 build/client_exec build/test_single_client build/test_multi_client build/performance_key_space 
+all: checkdirs thrift build/parse build/server_exec build/server_exec2 build/client_exec build/test_single_client build/test_multi_client build/performance_key_space 
 
 #build/performance_single build/performance_multi 
 #build/performance_scale_key_space
+build/parse: $(OBJ_SERVER) build/parse.o
+	$(LD) $(CFLAGS) $(DEBUG_FLAGS) $^ -o $@ $(LIB_DIR) $(LIBS)
+
+build/parse.o: tests/parse.cpp
+	$(CC) $(INCLUDES_SERVER) $(INCLUDES_CLIENT) $(CFLAGS) $(DEBUG_FLAGS) -c $< -o $@
 
 #server
 build/server_exec: $(OBJ_SERVER) build/server_exec.o

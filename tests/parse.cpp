@@ -50,8 +50,10 @@ void parser_server(int argc, char * argv[]) {
 			if (argv[i][2] == 'n')
 				s_type = NON_BLOCKING_SERVER;
 		}
-		else
-			assert(false);
+		else{
+			print_usage();
+			exit(0);
+		}
 	}
 	
 }
@@ -68,8 +70,10 @@ void parser_client(int argc, char * argv[]) {
 			c_interval_duration = atoi( &argv[i][2] );
 		else if (argv[i][1] == 't') {
 			c_test_type = atoi( &argv[i][2] );
-		else
-			assert(false);
+		else{
+			print_usage();
+			exit(0);
+		}
 	}
 	
 }
