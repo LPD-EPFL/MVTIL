@@ -150,7 +150,7 @@ int main(int argc, char **argv) {
     start = false;
     stop = false;
     std::vector<std::thread> threads;
-    int i;
+    uint32_t i;
 
     transactionManager=new TransactionManager(0);
 

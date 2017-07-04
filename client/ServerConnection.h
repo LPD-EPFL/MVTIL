@@ -13,6 +13,7 @@
 #include <thrift/protocol/TBinaryProtocol.h>
 #include <thrift/transport/TSocket.h>
 #include <thrift/transport/TBufferTransports.h>
+#include <boost/make_shared.hpp>
 #include <mutex>
 
 using namespace apache::thrift;

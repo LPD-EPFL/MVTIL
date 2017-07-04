@@ -13,10 +13,10 @@ ServerConnection::ServerConnection(std::string h,int prt):host(h),port(prt) {
     boost::shared_ptr<TTransport> t;
     if(c_stype == NON_BLOCKING_SERVER)
     {
-        t = boost::make_shared(new TFramedTransport(s));  
+        t = boost::make_shared<TTransport>(new TFramedTransport(s));  
     }
     else if(c_stype == BLOCKING_SERVER){
-        t = boost::make_shared(new TBufferedTransport(s));
+        t = boost::make_shared<TTransport>(new TBufferedTransport(s));
     }
     boost::shared_ptr<TProtocol> p(new TBinaryProtocol(t));
     
