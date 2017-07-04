@@ -1,3 +1,4 @@
+
 #ifndef _CONFIG_H_
 #define _CONFIG_H_
 
@@ -42,3 +43,5 @@
 #define RW_SIZE						10
 
 //#define WORKLOAD 					YCSB
+
+#endif
