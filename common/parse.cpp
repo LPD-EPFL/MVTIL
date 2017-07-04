@@ -21,7 +21,7 @@ void print_client_usage() {
 	printf("\t-kINT       ; KEY_SPACE\n");
 	printf("\t-dINT       ; INTERVAL_DURATION (in ms)\n");
 	printf("\t-tINT       ; TEST_TRANSACTIONS_TYPE\n");
-	printf("\t-lNT        ; TEST_DURATION (in ms)\n");
+	printf("\t-lINT        ; TEST_DURATION (in ms)\n");
 	printf("\t-rINT       ; READ_TIMES\n");
 	printf("\t-wINT       ; WRITE_TIMES\n");
 }
