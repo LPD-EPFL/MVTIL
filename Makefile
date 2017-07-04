@@ -62,12 +62,6 @@ all: checkdirs thrift build/server_exec build/client_exec build/test_single_clie
 #build/performance_single build/performance_multi 
 #build/performance_scale_key_space build/server_exec2 
 
-#build/parse: $(OBJ_SERVER) $(OBJ_CLIENT) build/parse.o
-#	$(LD) $(CFLAGS) $(DEBUG_FLAGS) $^ -o $@ $(LIB_DIR) $(LIBS)
-
-build/parse.o: tests/parse.cpp
-	$(CC) $(INCLUDES_SERVER) $(INCLUDES_CLIENT) $(CFLAGS) $(DEBUG_FLAGS) -c $< -o $@
-
 #server
 build/server_exec: $(OBJ_SERVER) build/parse.o build/server_exec.o
 	$(LD) $(CFLAGS) $(DEBUG_FLAGS) $^ -o $@ $(LIB_DIR) $(LIBS)
