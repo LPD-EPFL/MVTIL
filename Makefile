@@ -57,10 +57,11 @@ endef
 
 .PHONY: all checkdirs thrift clean
 
-all: checkdirs thrift build/parse build/server_exec build/server_exec2 build/client_exec build/test_single_client build/test_multi_client build/performance_key_space 
+all: checkdirs thrift build/parse build/server_exec build/client_exec build/test_single_client build/test_multi_client build/performance_key_space 
 
 #build/performance_single build/performance_multi 
-#build/performance_scale_key_space
+#build/performance_scale_key_space build/server_exec2 
+
 build/parse: $(OBJ_SERVER) $(OBJ_CLIENT) build/parse.o
 	$(LD) $(CFLAGS) $(DEBUG_FLAGS) $^ -o $@ $(LIB_DIR) $(LIBS)
 
@@ -68,17 +69,17 @@ build/parse.o: tests/parse.cpp
 	$(CC) $(INCLUDES_SERVER) $(INCLUDES_CLIENT) $(CFLAGS) $(DEBUG_FLAGS) -c $< -o $@
 
 #server
-build/server_exec: $(OBJ_SERVER) build/server_exec.o
+build/server_exec: $(OBJ_SERVER) build/parse.o build/server_exec.o
 	$(LD) $(CFLAGS) $(DEBUG_FLAGS) $^ -o $@ $(LIB_DIR) $(LIBS)
 
 build/server_exec.o: tests/server_exec.cpp
 	$(CC) $(INCLUDES_SERVER) $(CFLAGS) $(DEBUG_FLAGS) -c $< -o $@
 
-build/server_exec2: $(OBJ_SERVER) build/server_exec2.o
-	$(LD) $(CFLAGS) $(DEBUG_FLAGS) $^ -o $@ $(LIB_DIR) $(LIBS)
+#build/server_exec2: $(OBJ_SERVER) build/server_exec2.o
+#	$(LD) $(CFLAGS) $(DEBUG_FLAGS) $^ -o $@ $(LIB_DIR) $(LIBS)
 
-build/server_exec2.o: tests/server_exec2.cpp
-	$(CC) $(INCLUDES_SERVER) $(CFLAGS) $(DEBUG_FLAGS) -c $< -o $@
+#build/server_exec2.o: tests/server_exec2.cpp
+#	$(CC) $(INCLUDES_SERVER) $(CFLAGS) $(DEBUG_FLAGS) -c $< -o $@
 
 #client
 # build/client_exec: $(OBJ_CLIENT) build/performance.o
@@ -114,7 +115,7 @@ build/test_multi_client.o: tests/test_multi_client.cpp
 #build/performance_multi.o: tests/performance_multi.cpp
 #	$(CC) $(INCLUDES_CLIENT) $(CFLAGS) $(DEBUG_FLAGS) -c $< -o $@
 
-build/performance_key_space: $(OBJ_CLIENT) build/performance_key_space.o
+build/performance_key_space: $(OBJ_CLIENT) build/parse.o build/performance_key_space.o
 	$(LD) $(CFLAGS) $(DEBUG_FLAGS) $^ -o $@ $(LIB_DIR) $(LIBS)
 
 build/performance_key_space.o: tests/performance_key_space.cpp
