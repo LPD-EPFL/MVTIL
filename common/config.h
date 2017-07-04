@@ -10,7 +10,7 @@
 #define S_THREAD_CNT				50
 #define PORT						6060
 
-#define POLICY						LOCK_FIRST_INTERVAL
+#define MVTL_POLICY					LOCK_FIRST_INTERVAL
 #define LOCK_FIRST_INTERVAL			1
 #define LOCK_LAST_INTERVAL			2
 

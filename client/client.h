@@ -26,5 +26,6 @@ extern uint32_t c_thread_cnt;
 extern uint32_t c_key_space;
 extern uint32_t c_interval_duration;
 extern uint32_t c_test_type;
+extern uint32_t c_stype;
 
 #endif

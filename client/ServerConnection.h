@@ -9,7 +9,6 @@
 #define _SERVER_CONNECTION_H_
 
 #include "client.h"
-#include "server.h"
 #include "DataService.h"
 #include <thrift/protocol/TBinaryProtocol.h>
 #include <thrift/transport/TSocket.h>
