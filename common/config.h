@@ -29,12 +29,12 @@
 #define INTERVAL_DURATION			10
 #define TEST_TYPE					MIX
 
-#define READ_ONLY					0
-#define MANY_READS_ONE_WRITE		1
-#define WRITE_INTENSIVE				2
-#define RW_ONE_KEY					3
-#define RW_SHORT					4
-#define MIX							5
+// #define READ_ONLY					0
+// #define MANY_READS_ONE_WRITE		1
+// #define WRITE_INTENSIVE				2
+// #define RW_ONE_KEY					3
+// #define RW_SHORT					4
+// #define MIX							5
 
 //Test
 #define TEST_DURATION_MS			10000
@@ -42,6 +42,7 @@
 #define RO_SIZE						20
 #define RW_SIZE						10
 
-//#define WORKLOAD 					YCSB
+typedef enum {READ_ONLY, MANY_READS_ONE_WRITE, WRITE_INTENSIVE, RW_ONE_KEY, RW_SHORT, MIX} TransactionType;
 
+//#define WORKLOAD 					YCSB
 #endif

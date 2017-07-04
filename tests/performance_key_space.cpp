@@ -107,12 +107,6 @@ int execute_transaction(int threadId, TransactionType type) {
             }
             TX_COMMIT;
             break;
-        case R_ONE_KEY:
-            TX_START_RO;
-            key = generate_random_key();
-            TX_READ(key, val);
-            TX_COMMIT;
-            break;
         case RW_SHORT:
             TX_START;
             key = generate_random_key();
