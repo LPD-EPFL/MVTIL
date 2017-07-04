@@ -57,7 +57,10 @@ endef
 
 .PHONY: all checkdirs thrift clean
 
-all: checkdirs thrift build/server_exec build/server_exec2 build/client_exec build/test_single_client build/test_multi_client build/performance_single build/performance_multi build/performance_key_space build/performance_scale_key_space
+all: checkdirs thrift build/server_exec build/server_exec2 build/client_exec build/test_single_client build/test_multi_client build/performance_key_space 
+
+#build/performance_single build/performance_multi 
+#build/performance_scale_key_space
 
 #server
 build/server_exec: $(OBJ_SERVER) build/server_exec.o
@@ -94,17 +97,17 @@ build/test_multi_client: $(OBJ_CLIENT) build/test_multi_client.o
 build/test_multi_client.o: tests/test_multi_client.cpp
 	$(CC) $(INCLUDES_CLIENT) $(CFLAGS) $(DEBUG_FLAGS) -c $< -o $@
 
-build/performance_single: $(OBJ_CLIENT) build/performance_single.o
-	$(LD) $(CFLAGS) $(DEBUG_FLAGS) $^ -o $@ $(LIB_DIR) $(LIBS)
+#build/performance_single: $(OBJ_CLIENT) build/performance_single.o
+#	$(LD) $(CFLAGS) $(DEBUG_FLAGS) $^ -o $@ $(LIB_DIR) $(LIBS)
 
-build/performance_single.o: tests/performance_single.cpp
-	$(CC) $(INCLUDES_CLIENT) $(CFLAGS) $(DEBUG_FLAGS) -c $< -o $@
+#build/performance_single.o: tests/performance_single.cpp
+#	$(CC) $(INCLUDES_CLIENT) $(CFLAGS) $(DEBUG_FLAGS) -c $< -o $@
 
-build/performance_multi: $(OBJ_CLIENT) build/performance_multi.o
-	$(LD) $(CFLAGS) $(DEBUG_FLAGS) $^ -o $@ $(LIB_DIR) $(LIBS)
+#build/performance_multi: $(OBJ_CLIENT) build/performance_multi.o
+#	$(LD) $(CFLAGS) $(DEBUG_FLAGS) $^ -o $@ $(LIB_DIR) $(LIBS)
 
-build/performance_multi.o: tests/performance_multi.cpp
-	$(CC) $(INCLUDES_CLIENT) $(CFLAGS) $(DEBUG_FLAGS) -c $< -o $@
+#build/performance_multi.o: tests/performance_multi.cpp
+#	$(CC) $(INCLUDES_CLIENT) $(CFLAGS) $(DEBUG_FLAGS) -c $< -o $@
 
 build/performance_key_space: $(OBJ_CLIENT) build/performance_key_space.o
 	$(LD) $(CFLAGS) $(DEBUG_FLAGS) $^ -o $@ $(LIB_DIR) $(LIBS)
@@ -112,11 +115,11 @@ build/performance_key_space: $(OBJ_CLIENT) build/performance_key_space.o
 build/performance_key_space.o: tests/performance_key_space.cpp
 	$(CC) $(INCLUDES_CLIENT) $(CFLAGS) $(DEBUG_FLAGS) -c $< -o $@
 
-build/performance_scale_key_space: $(OBJ_CLIENT) build/performance_scale_key_space.o
-	$(LD) $(CFLAGS) $(DEBUG_FLAGS) $^ -o $@ $(LIB_DIR) $(LIBS)
+#build/performance_scale_key_space: $(OBJ_CLIENT) build/performance_scale_key_space.o
+#	$(LD) $(CFLAGS) $(DEBUG_FLAGS) $^ -o $@ $(LIB_DIR) $(LIBS)
 
-build/performance_scale_key_space.o: tests/performance_scale_key_space.cpp
-	$(CC) $(INCLUDES_CLIENT) $(CFLAGS) $(DEBUG_FLAGS) -c $< -o $@
+#build/performance_scale_key_space.o: tests/performance_scale_key_space.cpp
+#	$(CC) $(INCLUDES_CLIENT) $(CFLAGS) $(DEBUG_FLAGS) -c $< -o $@
 
 checkdirs: $(BUILD_DIR_ALL)
 

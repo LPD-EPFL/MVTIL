@@ -1,3 +1,4 @@
+#include "server.h"
 #include "Scheduler.h"
 #include "DataService.h"
 
@@ -20,33 +21,32 @@ using namespace ::apache::thrift::concurrency;
 using boost::shared_ptr;
 using namespace  ::TxProtocol;
 
+void parser_server(int argc, char * argv[]);
+
 int main(int argc, char **argv) {
 
-  if(argc < 3) 
-  {
-    cout<<"Please specify the server's port and number of threads!"<<endl;
-    return 0;
-  }
+	parser_server(argc,argv);
 
-  int port = atoi(argv[1]);
-  int numThreads = atoi(argv[2]);
-  boost::shared_ptr<Scheduler> handler(new Scheduler());
-  boost::shared_ptr<TProcessor> processor(new DataServiceProcessor(handler));
-  boost::shared_ptr<TServerTransport> serverTransport(new TServerSocket(port));
-  boost::shared_ptr<TTransportFactory> transportFactory(new TBufferedTransportFactory());
-  boost::shared_ptr<TProtocolFactory> protocolFactory(new TBinaryProtocolFactory());
-
-  boost::shared_ptr<ThreadManager> threadManager = ThreadManager::newSimpleThreadManager(numThreads);
-  boost::shared_ptr<ThreadFactory> threadFactory(new PosixThreadFactory());
-  threadManager->threadFactory(threadFactory);
-  threadManager->start();
-  //TThreadPoolServer server(processor, serverTransport, transportFactory, protocolFactory,threadManager);
-  //server.serve();
-
-  //Non-blocking Server
-  TNonblockingServer server(processor, protocolFactory, port, threadManager);
-  server.serve();
-  
-  return 0;
+	boost::shared_ptr<Scheduler> handler(new Scheduler());
+	boost::shared_ptr<TProcessor> processor(new DataServiceProcessor(handler));
+	boost::shared_ptr<TProtocolFactory> protocolFactory(new TBinaryProtocolFactory());
+	boost::shared_ptr<ThreadManager> threadManager = ThreadManager::newSimpleThreadManager(s_thread_cnt);
+	boost::shared_ptr<ThreadFactory> threadFactory(new PosixThreadFactory());
+	threadManager->threadFactory(threadFactory);
+	threadManager->start();
+	if(s_type == NON_BLOCKING_SERVER)
+	{
+		//Non-blocking Server
+		TNonblockingServer server(processor, protocolFactory, s_port, threadManager);
+		server.serve();
+	}
+	else if(s_type == BLOCKING_SERVER)
+	{
+		boost::shared_ptr<TServerTransport> serverTransport(new TServerSocket(s_port));
+		boost::shared_ptr<TTransportFactory> transportFactory(new TBufferedTransportFactory());
+		TThreadPoolServer server(processor, serverTransport, transportFactory, protocolFactory,threadManager);
+		server.serve();
+	}
+	return 0;
 }
 
