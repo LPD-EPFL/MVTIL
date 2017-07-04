@@ -61,7 +61,7 @@ all: checkdirs thrift build/parse build/server_exec build/server_exec2 build/cli
 
 #build/performance_single build/performance_multi 
 #build/performance_scale_key_space
-build/parse: $(OBJ_SERVER) build/parse.o
+build/parse: $(OBJ_SERVER) $(OBJ_CLIENT) build/parse.o
 	$(LD) $(CFLAGS) $(DEBUG_FLAGS) $^ -o $@ $(LIB_DIR) $(LIBS)
 
 build/parse.o: tests/parse.cpp
