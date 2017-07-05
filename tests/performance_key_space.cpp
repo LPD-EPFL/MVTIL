@@ -24,7 +24,6 @@ using namespace std;
 //#define KEY_SIZE 5
 #define VALUE_SIZE 100
 
-volatile int key_size;
 volatile bool start;
 volatile bool stop;
 volatile uint64_t thr[MAX_NUM_THREADS];
@@ -42,7 +41,7 @@ std::string random_string(int num)
 }
 
 inline std::string generate_random_key() {
-    return random_string(key_size);
+    return random_string(c_key_space);
 }
 
 inline std::string generate_random_value() {
