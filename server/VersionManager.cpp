@@ -150,6 +150,8 @@ bool VersionManager::UpdateAndPersistVersion(TransactionId tid, Key key, Value v
 	ve->versions.insert(new_ts,value);
 	ve->manager.CommitInterval(tid,new_ts);
 	ve->unlockEntry();
+	//GC
+	//GarbageCollection(new_ts - (100 << 8));
 	return true;
 }
 
