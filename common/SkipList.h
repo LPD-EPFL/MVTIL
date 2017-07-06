@@ -97,14 +97,14 @@ public:
         NodeType* node = head;
         for(int level=node->top_level-1; level >=0; level--) {
             /*Policy 1*/
-            // while (node->next[level] != NULL && node->next[level]->key <= searchKey ) {
-            //     node = node->next[level];
-            // }
-
-            /*Policy 2*/
-            while (node->next[level] != NULL && node->next[level]->key < searchKey ) {
+            while (node->next[level] != NULL && node->next[level]->key <= searchKey ) {
                 node = node->next[level];
             }
+
+            /*Policy 2*/
+            //while (node->next[level] != NULL && node->next[level]->key < searchKey ) {
+            //    node = node->next[level];
+            //}
         }
         prev = node;
         return node->next[0];

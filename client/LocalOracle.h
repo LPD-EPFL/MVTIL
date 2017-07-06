@@ -12,13 +12,13 @@
 #include <thrift/transport/TSocket.h>
 #include <thrift/transport/TBufferTransports.h>
 
+#define MAX_FACTOR 32768
+
 using namespace apache::thrift;
 using namespace apache::thrift::protocol;
 using namespace apache::thrift::transport;
 
 using namespace ::Oracle;
-
-#define MAX_FACTOR 1024
 
 class LocalOracle
 {

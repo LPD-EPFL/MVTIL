@@ -6,18 +6,17 @@
 #include "LocalOracle.h"
 #include "CommunicationService.h"
 
-
-#define TX_START_RO \
-    { \
-    Transaction* t; \
-    while (1) { \
-        t = transactionManager->StartTransaction();
-
 #define TX_START \
     { \
     Transaction* t; \
     while (1) { \
         t = transactionManager->StartTransaction();
+
+#define TX_START_D \
+    { \
+    Transaction* t; \
+    while (1) { \
+        t = transactionManager->StartTransactionWithDuration(duration);
 
 #define TX_COMMIT \
         if(transactionManager->CommitTransaction(t) == 1){ \
@@ -52,10 +51,12 @@ class TransactionManager
         int64_t id; 
 		LocalOracle oracle;
 	    CommunicationService service;
+        
 	public:
 		TransactionManager(int64_t cid);
 		~TransactionManager();
 		Transaction* StartTransaction();
+		Transaction* StartTransactionWithDuration(int duration);
 		bool CommitTransaction(Transaction* transaction);
 		bool AbortTransaction(Transaction* transaction);
 		bool ReadData(Transaction* transaction, Key key, Value& value);

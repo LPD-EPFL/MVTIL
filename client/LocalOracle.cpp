@@ -3,15 +3,21 @@
 
 LocalOracle::LocalOracle(int64_t cid):client_id(cid){
     crt = 1;
-    initialTime = std::chrono::system_clock::now();
+    std::tm tm = {};
+    strptime("Sun Jan 1 2017 00:00:00", "%a %b %d %Y %H:%M:%S", &tm);
+    initialTime = std::chrono::system_clock::from_time_t(std::mktime(&tm));
+    //initialTime = std::chrono::system_clock::now();
 }
 
 LocalOracle::~LocalOracle(){
 }
 
 Timestamp LocalOracle::GetTimestamp(){
-    Timestamp duration = ((std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now() - initialTime).count()) << 5) + crt;
-    return duration;
+    //auto now = std::chrono::high_resolution_clock::now();
+    //Timestamp duration = (std::chrono::duration_cast<std::chrono::milliseconds>(now.time_since_epoch()).count() << 5) + crt; 
+    // << 5 + crt;
+    Timestamp start_ts = ((std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now() - initialTime).count()) << 8) + (client_id << 5) + crt % 512;
+    return start_ts;
 }
 
 TransactionId LocalOracle::GetTransactionId(){

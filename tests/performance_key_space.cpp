@@ -12,41 +12,36 @@
  * limitations under the License.
  */
 
+#include "client.h"
 #include "TransactionManager.h"
 #include <string>
 #include <thread>
 #include <chrono>
 #include <iostream>
 
-#define KEY_SIZE 4
+using namespace std;
+
+//#define KEY_SIZE 5
 #define VALUE_SIZE 100
 
 volatile bool start;
 volatile bool stop;
-volatile uint64_t thr[NUM_THREADS];
-volatile uint64_t commit[NUM_THREADS];
+volatile uint64_t thr[MAX_NUM_THREADS];
+volatile uint64_t commit[MAX_NUM_THREADS];
 
-TransactionManager* transactionManager;
+TransactionManager* managers[MAX_NUM_THREADS];
 
-//function from https://stackoverflow.com/a/12468109
-std::string random_string( size_t length )
+// defined in parser.cpp
+void parser_client(int argc, char * argv[]);
+
+std::string random_string(int num)
 {
-    auto randchar = []() -> char
-    {
-        const char charset[] =
-        "0123456789"
-        "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
-        "abcdefghijklmnopqrstuvwxyz";
-        const size_t max_index = (sizeof(charset) - 1);
-        return charset[ rand() % max_index ]; //TODO change rand function
-    };
-    std::string str(length,0);
-    std::generate_n( str.begin(), length, randchar );
+    std::string str = std::to_string(rand() % num);
     return str;
 }
 
 inline std::string generate_random_key() {
-    return random_string(KEY_SIZE);
+    return random_string(c_key_space);
 }
 
 inline std::string generate_random_value() {
@@ -55,11 +50,17 @@ inline std::string generate_random_value() {
 
 //typedef enum {READ_ONLY, MANY_READS_ONE_WRITE, WRITE_INTENSIVE, RW_ONE_KEY, R_ONE_KEY, RW_SHORT, NUM_TTYPES} TransactionType;
 
-inline TransactionType get_random_transaction_type() {
-  return static_cast<TransactionType>(rand() % MIX);   //TODO change rand function
+inline TransactionType get_random_transaction_type(int type) {
+    if(type < MIX){
+        return static_cast<TransactionType>(type);
+    }
+    else{
+        return static_cast<TransactionType>(rand() % MIX);   //TODO change rand function
+    }
 }
 
-int execute_transaction(TransactionType type) {
+int execute_transaction(int threadId, TransactionType type) {
+    TransactionManager* transactionManager = managers[threadId];
     int suss = 0;
     int i;
     Value val;
@@ -100,7 +101,7 @@ int execute_transaction(TransactionType type) {
             for (i=0; i<RW_SIZE; i++){
                 key = generate_random_key();
                 TX_READ(key, val);
-                //generated = generate_random_value();
+                generated = generate_random_value();
                 TX_WRITE(key, generated);
             }
             TX_COMMIT;
@@ -126,7 +127,7 @@ int execute_transaction(TransactionType type) {
     return suss;
 }
 
-void execute_test(int threadId) {
+void execute_test(int threadId, int type) {
     uint64_t myThroughput = 0;
     uint64_t nu_commit = 0;
 
@@ -136,8 +137,8 @@ void execute_test(int threadId) {
     }
 
     while (stop == false) {
-       TransactionType t = get_random_transaction_type();
-       nu_commit += execute_transaction(t);
+       TransactionType t = get_random_transaction_type(type);
+       nu_commit += execute_transaction(threadId, t);
        myThroughput++; 
     }
 
@@ -147,22 +148,23 @@ void execute_test(int threadId) {
 }
 
 int main(int argc, char **argv) {
+
+    parser_client(argc, argv);
+
     start = false;
     stop = false;
     std::vector<std::thread> threads;
     uint32_t i;
 
-    transactionManager=new TransactionManager(0);
-
-    for  (i = 0; i < NUM_THREADS; i++) {
+    for  (i = 0; i < c_thread_cnt; i++) {
         thr[i] = 0;
+        managers[i] = new TransactionManager(i);
     }
 
-    for  (i = 0; i < NUM_THREADS; i++) {
-       threads.push_back(std::thread(&execute_test, i)); 
+    for  (i = 0; i < c_thread_cnt; i++) {
+       threads.push_back(std::thread(&execute_test, i, c_test_type)); 
     }
 
-    //allow threads to start 
     start = true;
 
     //sleep
@@ -178,11 +180,20 @@ int main(int argc, char **argv) {
     uint64_t total_throughput = 0;
     uint64_t total_commit = 0;
     
-    for  (i = 0; i < NUM_THREADS; i++) {
+    for  (i = 0; i < c_thread_cnt; i++) {
         total_throughput+=thr[i]; 
         total_commit+=commit[i];
     }
 
+    //auto print_start = std::chrono::system_clock::to_time_t(startTime);
+    //auto print_end = std::chrono::system_clock::to_time_t(endTime);
+
+    //cout<<"Total Threads:"<<argv[1]<<endl;
+    //cout<<"Start time:"<<std::ctime(&print_start);
+    //cout<<"End time:"<<std::ctime(&print_end);
+
+    //cout<<"Total throughput:"<<total_throughput<<" in "<< TEST_DURATION_MS <<"ms"<<endl;
+    //cout<<"Total commit:"<<total_commit<<endl;
     cout<<total_commit<<" "<<total_throughput<<endl;
     return 0;
 }

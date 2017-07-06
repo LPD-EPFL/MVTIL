@@ -15,12 +15,13 @@
 #include "LockSet.h"
 
 void LockSet::lock(Key k) {
-   size_t index = hashKey(k);
+   size_t index = 0;
    theLocks.at(index).lock();
+   threadId = std::this_thread::get_id();
 }
 
 void LockSet::unlock(Key k) {
-    size_t index = hashKey(k);
+    size_t index = 0;
     theLocks.at(index).unlock();
 }
 

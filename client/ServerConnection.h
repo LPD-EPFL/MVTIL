@@ -13,6 +13,7 @@
 #include <thrift/protocol/TBinaryProtocol.h>
 #include <thrift/transport/TSocket.h>
 #include <thrift/transport/TBufferTransports.h>
+#include <boost/make_shared.hpp>
 #include <mutex>
 
 using namespace apache::thrift;
@@ -53,4 +54,5 @@ struct ServerConnectionHasher
         return (hash<string>()(sc->host+std::to_string(sc->port)));
     }
 };
+
 #endif /* CLIENT_SERVERCONNECTION_H_ */

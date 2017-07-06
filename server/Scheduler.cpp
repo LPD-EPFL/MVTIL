@@ -31,7 +31,7 @@ void Scheduler::HandleReadRequest(ReadReply& _return, const TransactionId tid,
 
 		//If read operation wait a pending write.
 		auto now = std::chrono::high_resolution_clock::now();
-		if ((numRetries > MIN_NUM_RETRIES) && (timeout(tStart, now))) {
+		if ((numRetries > read_retry) && (timeout(tStart, now))) {
 			_return.state = lockInfo.state; //should be FAIL_PENDING_VERSION
 			_return.value = "";
 			_return.interval.start = 0;
@@ -88,11 +88,11 @@ void Scheduler::HandleWriteRequest(WriteReply& _return, const TransactionId tid,
 	*/
 
 	bool key_exists = false;
-	bool tid_exists = pendingWriteSets.update_fn(tid,[&key_flag = key_exists, k, value](std::unordered_map<Key, std::pair<Value,TimestampInterval>>& write_set){
+	bool tid_exists = pendingWriteSets.update_fn(tid,[&key_exists, k, value](std::unordered_map<Key, std::pair<Value,TimestampInterval>>& write_set){
 		auto it = write_set.find(k);
 		if(it != write_set.end()){
 			it -> second.first = value;
-			key_flag = true;
+			key_exists = true;
 		}
 	});
 

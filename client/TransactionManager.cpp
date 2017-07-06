@@ -16,6 +16,13 @@ Transaction* TransactionManager::StartTransaction(){
 	return t;
 }
 
+Transaction* TransactionManager::StartTransactionWithDuration(int duration){
+    TransactionId tid = oracle.GetTransactionId();
+    Timestamp ts = oracle.GetTimestamp();
+    Transaction *t = new Transaction(tid,ts,duration);
+    return t;
+}
+
 bool TransactionManager::ReadData(Transaction* transaction, Key key, Value& value){
 
     if(transaction->is_abort)
@@ -69,7 +76,7 @@ bool TransactionManager::WriteData(Transaction* transaction, Key key, Value valu
     const Value* contains = transaction->FindInWriteSet(key);
     if(contains != NULL){
         transaction->UpdateValue(key, value);
-        return true;
+        //return true;
     }
 
     WriteReply reply;
@@ -179,10 +186,9 @@ bool TransactionManager::AbortTransaction(Transaction* transaction){
     transaction->write_set.clear();
     transaction->writeSetServers.clear();
     transaction->is_abort = true;
-    
 
     // Timespan duration = transaction->initialInterval.finish  transaction->initialInterval.start;
-    //TODO when I abort, should I restart with the minimum duration or not?
+    // TODO when I abort, should I restart with the minimum duration or not?
     // if ((duration * INTERVAL_MULTIPLICATION_FACTOR) < INTERVAL_MAX_DURATION) {
     //     duration *= INTERVAL_MULTIPLICATION_FACTOR;        
     // } else {

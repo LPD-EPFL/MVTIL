@@ -2,6 +2,7 @@
 #define _INTERVAL_LOCK_H_
 
 #include "server.h"
+#include "CapabilityOperation.h"
 #include <mutex>
 
 //#define MAX_LEVEL 4
@@ -10,7 +11,7 @@ typedef struct IL{
 	TransactionId transaction_id; 
 	TimestampInterval interval;
 	LockOperation lock_operation;
-	Value value;
+	//Value value;
 	int top_level;
 	struct IL *next[MAX_LEVEL];
 	bool is_committed;

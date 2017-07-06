@@ -3,6 +3,7 @@
 #define _CLIENT_H_
 
 #include "DataService_types.h"
+#include "config.h"
 
 using namespace ::TxProtocol;
 
@@ -19,5 +20,12 @@ typedef struct DS{
 }DataServerInfo;
 
 const std::string NULL_VALUE = "_";
+
+//Gobal Parameter for Clients
+extern uint32_t c_thread_cnt;
+extern uint32_t c_key_space;
+extern uint32_t c_interval_duration;
+extern uint32_t c_test_type;
+extern uint32_t c_stype;
 
 #endif
