@@ -177,7 +177,7 @@ void Scheduler::HandleAbort(AbortReply& _return, const TransactionId tid){
 	}
 	bool suss = true;
 	for(const auto& item:write_set){
-		suss &= version_manager.RemoveVersion(item.first,item.second.second);
+		suss &= version_manager.RemoveVersion(tid, item.first, item.second.second);
 	}
 	
 	//Not sure

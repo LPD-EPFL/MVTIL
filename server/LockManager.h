@@ -36,10 +36,10 @@ public:
 	LockManager(Key k);
 	bool LockReadInterval(TransactionId tid, TimestampInterval& candidate_interval);
 	bool LockWriteInterval(TransactionId tid, TimestampInterval& candidate_interval);
-	void CommitInterval(TransactionId tid,const Timestamp& committed_time);
+	void CommitInterval(TransactionId tid, const Timestamp& committed_time);
 	IntervalLock* CreateReadLock(TimestampInterval read_interval);
 	IntervalLock* CreateWriteLock(TimestampInterval write_interval);
-	bool RemoveLock(TimestampInterval write_interval);
+	bool RemoveLock(TransactionId tid, TimestampInterval interval);
 	bool GarbageCollection(Timestamp time);
 };
 

@@ -155,13 +155,13 @@ bool VersionManager::UpdateAndPersistVersion(TransactionId tid, Key key, Value v
 	return true;
 }
 
-bool VersionManager::RemoveVersion(Key key, TimestampInterval interval){
+bool VersionManager::RemoveVersion(TransactionId tid, Key key, TimestampInterval interval){
 	std::shared_ptr<VersionEntry> ve = GetVersionList(key);
 	#ifdef DEBUG
 		std::cout<<"VersionManager: Remove Key:"<<key<<",Timestamp interval["<<interval.start<<","<<interval.finish<<"]"<<endl;
 	#endif
 	ve->lockEntry();
-	bool suss = ve->manager.RemoveLock(interval);
+	bool suss = ve->manager.RemoveLock(tid, interval);
 	ve->unlockEntry();
 	return suss;
 }

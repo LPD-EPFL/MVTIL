@@ -156,7 +156,8 @@ bool LockManager::LockWriteInterval(TransactionId tid, TimestampInterval& candid
 
 void LockManager::CommitInterval(TransactionId tid, const Timestamp& committed_time){
 	IntervalLock* node = head;
-	for(int level=node->top_level-1; level >=0; level--) {
+	int level = 0;
+	//for(int level=node->top_level-1; level >=0; level--) {
 		while (node->next[level] != NULL && (node->next[level]->interval).start <= committed_time ) {
 			if(node->next[level]->transaction_id == tid){
 				node->next[level]->is_committed = true;
@@ -178,7 +179,7 @@ void LockManager::CommitInterval(TransactionId tid, const Timestamp& committed_t
 			}
 			node = node->next[level];
 		}
-	}
+	//}
 
 
 	#ifdef DEBUG
@@ -221,11 +222,13 @@ IntervalLock* LockManager::CreateWriteLock(TimestampInterval write_interval){
 	return lock;
 }
 
-bool LockManager::RemoveLock(TimestampInterval write_interval){
+bool LockManager::RemoveLock(TransactionId tid, TimestampInterval interval){
 	#ifdef DEBUG
-		std::cout<<"LockManager: Remove Lock interval["<<write_interval.start<<","<<write_interval.finish<<"]"<<endl;
+		std::cout<<"LockManager: Remove Lock interval["<<interval.start<<","<<interval.finish<<"]"<<endl;
 	#endif
-	Timestamp searchTimestamp = write_interval.start;
+
+	/*
+	Timestamp searchTimestamp = interval.start;
 	IntervalLock* node = head;
 	for(int level=node->top_level-1; level >=0; level--) {
 		while (node->next[level] != NULL && (node->next[level]->interval).start < searchTimestamp ) {
@@ -234,9 +237,9 @@ bool LockManager::RemoveLock(TimestampInterval write_interval){
 	}
 
 	IntervalLock* nextNode = node->next[0];
-	while((nextNode->interval).start == write_interval.start)
+	while((nextNode->interval).start == interval.start)
 	{
-		if((nextNode->interval).start == write_interval.start && (nextNode->interval).finish == write_interval.finish){
+		if((nextNode->interval).start == interval.start && (nextNode->interval).finish == interval.finish){
 			for(int i=0;i<node->top_level;i++){
 				node->next[i] = nextNode->next[0];
 			}
@@ -246,11 +249,31 @@ bool LockManager::RemoveLock(TimestampInterval write_interval){
 		nextNode = nextNode->next[0];
 	}
 	return false;
+	*/
+
+	Timestamp searchTimestamp = interval.start;
+	IntervalLock* node = head;
+	int level = 0;
+	//for(int level=node->top_level-1; level >=0; level--) {
+		while (node->next[level] != NULL && (node->next[level]->interval).start <= searchTimestamp ) {
+			if(node->next[level]->transaction_id == tid){
+				IntervalLock* nextNode = node->next[0];
+				for(int i=0;i<node->top_level;i++){
+					node->next[i] = nextNode->next[0];
+				}
+				delete nextNode;				
+			}
+			else{
+				node = node->next[level];
+			}
+		}
+	//}
+	return true;
 }
 
-bool LockManager::GarbageCollection(Timestamp time){
+bool LockManager::GarbageCollection(Timestamp ts){
 	IntervalLock* node = head->next[0];
-	while (node->next[0] != NULL && (node->next[0]->interval).start <= time) {
+	while (node->next[0] != NULL && (node->next[0]->interval).start <= ts) {
 		IntervalLock* cur = node;
 		node = node->next[0];
 		delete cur;
