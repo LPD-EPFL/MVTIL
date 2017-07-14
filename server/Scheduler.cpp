@@ -170,19 +170,16 @@ void Scheduler::HandleAbort(AbortReply& _return, const TransactionId tid){
 	#endif
 
 	std::unordered_map<Key, std::pair<Value,TimestampInterval>> write_set;
-	if(!pendingWriteSets.find(tid, write_set)){
-		_return.state = OperationState::WRITES_NOT_FOUND;
-		_return.tid = tid;
-		return;
-	}
 	bool suss = true;
-	for(const auto& item:write_set){
-		suss &= version_manager.RemoveVersion(tid, item.first, item.second.second);
+	if(pendingWriteSets.find(tid, write_set)){
+		for(const auto& item:write_set){
+			suss &= version_manager.RemoveVersion(tid, item.first, item.second.second);
+		}
+		pendingWriteSets.erase(tid);
 	}
-	
+
 	//Not sure
-	write_set.clear();
-	pendingWriteSets.erase(tid);
+	//write_set.clear();
 	if(suss){
 		_return.state = OperationState::ABORT_OK;
 	}
@@ -210,15 +207,12 @@ void Scheduler::HandleCommit(CommitReply& _return, const TransactionId tid, cons
 	std::unordered_map<Key, std::pair<Value,TimestampInterval>> write_set;
 	bool suss = true;
 	if(pendingWriteSets.find(tid, write_set)){
-		// #ifdef DEBUG
-		// 	std::cout<<write_set.size()<<endl;
-		// #endif
 		for(const auto& item:write_set){
 			suss &= version_manager.UpdateAndPersistVersion(tid,item.first,item.second.first,ts);
 		}
+		pendingWriteSets.erase(tid);
 	}
 
-	pendingWriteSets.erase(tid);
 	if(suss){
 		_return.state = OperationState::COMMIT_OK;
 	}

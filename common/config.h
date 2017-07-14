@@ -39,8 +39,8 @@
 //Test
 #define TEST_DURATION_MS			10000
 #define MAX_NUM_THREADS				5000
-#define RO_SIZE						20
-#define RW_SIZE						10
+#define RO_SIZE						100
+#define RW_SIZE						50
 
 typedef enum {READ_ONLY, MANY_READS_ONE_WRITE, WRITE_INTENSIVE, RW_ONE_KEY, RW_SHORT, MIX} TransactionType;
 
