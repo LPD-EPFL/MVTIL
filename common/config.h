@@ -25,7 +25,7 @@
 
 //Client
 #define C_THREAD_CNT				100
-#define KEY_SPACE					8000
+#define KEY_SPACE					200000
 #define INTERVAL_DURATION			10
 #define TEST_TYPE					MIX
 
