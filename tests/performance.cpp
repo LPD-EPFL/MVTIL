@@ -18,35 +18,40 @@
 #include <chrono>
 #include <iostream>
 
-#define KEY_SIZE 4
+//Get Local IP
+#include <cstdio>
+#include <cstring>
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <sys/ioctl.h>
+#include <netinet/in.h>
+#include <net/if.h>
+#include <unistd.h>
+#include <arpa/inet.h>
+
+using namespace std;
+
+//#define KEY_SIZE 5
 #define VALUE_SIZE 100
 
 volatile bool start;
 volatile bool stop;
-volatile uint64_t thr[NUM_THREADS];
-volatile uint64_t commit[NUM_THREADS];
+volatile uint64_t thr[MAX_NUM_THREADS];
+volatile uint64_t commit[MAX_NUM_THREADS];
 
 TransactionManager* transactionManager;
 
-//function from https://stackoverflow.com/a/12468109
-std::string random_string( size_t length )
+// defined in parser.cpp
+void parser_client(int argc, char * argv[]);
+
+std::string random_string(int num)
 {
-    auto randchar = []() -> char
-    {
-        const char charset[] =
-        "0123456789"
-        "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
-        "abcdefghijklmnopqrstuvwxyz";
-        const size_t max_index = (sizeof(charset) - 1);
-        return charset[ rand() % max_index ]; //TODO change rand function
-    };
-    std::string str(length,0);
-    std::generate_n( str.begin(), length, randchar );
+    std::string str = std::to_string(rand() % num);
     return str;
 }
 
 inline std::string generate_random_key() {
-    return random_string(KEY_SIZE);
+    return random_string(c_key_space);
 }
 
 inline std::string generate_random_value() {
@@ -55,8 +60,13 @@ inline std::string generate_random_value() {
 
 //typedef enum {READ_ONLY, MANY_READS_ONE_WRITE, WRITE_INTENSIVE, RW_ONE_KEY, R_ONE_KEY, RW_SHORT, NUM_TTYPES} TransactionType;
 
-inline TransactionType get_random_transaction_type() {
-  return static_cast<TransactionType>(rand() % MIX);   //TODO change rand function
+inline TransactionType get_random_transaction_type(int type) {
+    if(type < MIX){
+        return static_cast<TransactionType>(type);
+    }
+    else{
+        return static_cast<TransactionType>(rand() % MIX);   //TODO change rand function
+    }
 }
 
 int execute_transaction(TransactionType type) {
@@ -126,7 +136,7 @@ int execute_transaction(TransactionType type) {
     return suss;
 }
 
-void execute_test(int threadId) {
+void execute_test(int threadId, int type) {
     uint64_t myThroughput = 0;
     uint64_t nu_commit = 0;
 
@@ -136,7 +146,7 @@ void execute_test(int threadId) {
     }
 
     while (stop == false) {
-       TransactionType t = get_random_transaction_type();
+       TransactionType t = get_random_transaction_type(type);
        nu_commit += execute_transaction(t);
        myThroughput++; 
     }
@@ -146,27 +156,45 @@ void execute_test(int threadId) {
     //cout<<"Thread Id:"<<threadId <<" finish!"<<endl; 
 }
 
+int generate_client_id(){
+    int fd;
+    struct ifreq ifr;
+    char iface[] = "eth0";
+    fd = socket(AF_INET, SOCK_DGRAM, 0);
+    ifr.ifr_addr.sa_family = AF_INET;
+    strncpy(ifr.ifr_name , iface , IFNAMSIZ-1);
+    ioctl(fd, SIOCGIFADDR, &ifr);
+    close(fd);
+    unsigned short a, b, c, d;
+    sscanf(inet_ntoa(((struct sockaddr_in *)&ifr.ifr_addr )->sin_addr), "%hu.%hu.%hu.%hu", &a, &b, &c, &d);
+    return d;
+}
+
 int main(int argc, char **argv) {
+    
+    parser_client(argc, argv);
+
     start = false;
     stop = false;
     std::vector<std::thread> threads;
     uint32_t i;
 
-    transactionManager=new TransactionManager(0);
+    int client_id = generate_client_id();
+    transactionManager = new TransactionManager(client_id);
 
-    for  (i = 0; i < NUM_THREADS; i++) {
+    for  (i = 0; i < c_thread_cnt; i++) {
         thr[i] = 0;
     }
 
-    for  (i = 0; i < NUM_THREADS; i++) {
-       threads.push_back(std::thread(&execute_test, i)); 
+    for  (i = 0; i < c_thread_cnt; i++) {
+       threads.push_back(std::thread(&execute_test, i, c_test_type));
     }
 
     //allow threads to start 
     start = true;
 
     //sleep
-    std::this_thread::sleep_for(std::chrono::milliseconds(TEST_DURATION_MS));
+    std::this_thread::sleep_for(std::chrono::milliseconds(c_test_duration));
 
     stop = true; 
 
@@ -178,7 +206,7 @@ int main(int argc, char **argv) {
     uint64_t total_throughput = 0;
     uint64_t total_commit = 0;
     
-    for  (i = 0; i < NUM_THREADS; i++) {
+    for  (i = 0; i < c_thread_cnt; i++) {
         total_throughput+=thr[i]; 
         total_commit+=commit[i];
     }

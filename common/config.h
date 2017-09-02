@@ -24,10 +24,12 @@
 
 
 //Client
+#define MAX_RESTART					3				
 #define C_THREAD_CNT				100
-#define KEY_SPACE					200000
+#define KEY_SPACE					8000
 #define INTERVAL_DURATION			10
 #define TEST_TYPE					MIX
+#define LOW_BITE					12
 
 // #define READ_ONLY					0
 // #define MANY_READS_ONE_WRITE		1
@@ -39,8 +41,8 @@
 //Test
 #define TEST_DURATION_MS			10000
 #define MAX_NUM_THREADS				5000
-#define RO_SIZE						100
-#define RW_SIZE						50
+#define RO_SIZE						40
+#define RW_SIZE						20
 
 typedef enum {READ_ONLY, MANY_READS_ONE_WRITE, WRITE_INTENSIVE, RW_ONE_KEY, RW_SHORT, MIX} TransactionType;
 

@@ -8,40 +8,44 @@
 
 #define TX_START \
     { \
-    Transaction* t; \
+    Transaction* tx; \
     while (1) { \
-        t = transactionManager->StartTransaction();
+        tx = transactionManager->StartTransaction();
 
 #define TX_START_D \
     { \
-    Transaction* t; \
+    Transaction* tx; \
     while (1) { \
-        t = transactionManager->StartTransactionWithDuration(duration);
+        tx = transactionManager->StartTransactionWithDuration(duration);
 
 #define TX_COMMIT \
-        if(transactionManager->CommitTransaction(t) == 1){ \
+        if(transactionManager->CommitTransaction(tx) == 1){ \
             suss++; \
         } \
         break ; \
     } \
-    delete t; \
+    delete tx; \
     }
 
 #define TX_READ(key, val) \
-    if (transactionManager->ReadData(t, key, val) == 0) { \
-        break; \
+    if (transactionManager->ReadData(tx, key, val) == 0) { \
+        if(transactionManager->RestartTransaction(tx) == 0) { \
+            break; \
+        }\
     }
 
 #define TX_WRITE(key, val) \
-    if (transactionManager->WriteData(t, key, val) == 0) { \
-        break; \
+    if (transactionManager->WriteData(tx, key, val) == 0) { \
+        if(transactionManager->RestartTransaction(tx) == 0) { \
+            break; \
+        }\
     }
 
 #define TX_ABORT \
-        transactionManager->AbortTransaction(t); \
+        transactionManager->AbortTransaction(tx); \
         break ; \
     } \
-    delete t; \
+    delete tx; \
     }
 
 
@@ -57,10 +61,11 @@ class TransactionManager
 		~TransactionManager();
 		Transaction* StartTransaction();
 		Transaction* StartTransactionWithDuration(int duration);
-		bool CommitTransaction(Transaction* transaction);
-		bool AbortTransaction(Transaction* transaction);
-		bool ReadData(Transaction* transaction, Key key, Value& value);
-		bool WriteData(Transaction* transaction, Key key, Value value);
+        bool RestartTransaction(Transaction* tx);
+		bool CommitTransaction(Transaction* tx);
+		bool AbortTransaction(Transaction* tx);
+		bool ReadData(Transaction* tx, Key key, Value& value);
+		bool WriteData(Transaction* tx, Key key, Value value);
 
 		inline bool intersects(TimestampInterval i1, TimestampInterval i2) {
             if ((i1.finish < i2.start) || (i2.finish < i1.start)) {

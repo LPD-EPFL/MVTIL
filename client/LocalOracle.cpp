@@ -4,7 +4,7 @@
 LocalOracle::LocalOracle(int64_t cid):client_id(cid){
     crt = 1;
     std::tm tm = {};
-    strptime("Sun Jan 1 2017 00:00:00", "%a %b %d %Y %H:%M:%S", &tm);
+    strptime("Thu Aug 10 2017 00:00:00", "%a %b %d %Y %H:%M:%S", &tm);
     initialTime = std::chrono::system_clock::from_time_t(std::mktime(&tm));
     //initialTime = std::chrono::system_clock::now();
 }
@@ -13,10 +13,8 @@ LocalOracle::~LocalOracle(){
 }
 
 Timestamp LocalOracle::GetTimestamp(){
-    //auto now = std::chrono::high_resolution_clock::now();
-    //Timestamp duration = (std::chrono::duration_cast<std::chrono::milliseconds>(now.time_since_epoch()).count() << 5) + crt; 
-    // << 5 + crt;
-    Timestamp start_ts = ((std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now() - initialTime).count()) << 8) + (client_id << 5) + crt % 512;
+    //Timestamp start_ts = ((std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now() - initialTime).count()) << 10) + client_id % 1024;
+    Timestamp start_ts = ((std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now() - initialTime).count()) << LOW_BITE) + ((client_id % 216) << 4) + crt % 16;
     return start_ts;
 }
 

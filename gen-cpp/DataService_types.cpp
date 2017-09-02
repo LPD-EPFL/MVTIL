@@ -368,10 +368,6 @@ void ServerGenericReply::__set_interval(const TimestampInterval& val) {
   this->interval = val;
 }
 
-void ServerGenericReply::__set_potential(const TimestampInterval& val) {
-  this->potential = val;
-}
-
 void ServerGenericReply::__set_key(const std::string& val) {
   this->key = val;
 }
@@ -438,14 +434,6 @@ uint32_t ServerGenericReply::read(::apache::thrift::protocol::TProtocol* iprot) 
         }
         break;
       case 5:
-        if (ftype == ::apache::thrift::protocol::T_STRUCT) {
-          xfer += this->potential.read(iprot);
-          this->__isset.potential = true;
-        } else {
-          xfer += iprot->skip(ftype);
-        }
-        break;
-      case 6:
         if (ftype == ::apache::thrift::protocol::T_STRING) {
           xfer += iprot->readString(this->key);
           this->__isset.key = true;
@@ -453,7 +441,7 @@ uint32_t ServerGenericReply::read(::apache::thrift::protocol::TProtocol* iprot) 
           xfer += iprot->skip(ftype);
         }
         break;
-      case 7:
+      case 6:
         if (ftype == ::apache::thrift::protocol::T_STRING) {
           xfer += iprot->readString(this->value);
           this->__isset.value = true;
@@ -494,15 +482,11 @@ uint32_t ServerGenericReply::write(::apache::thrift::protocol::TProtocol* oprot)
   xfer += this->interval.write(oprot);
   xfer += oprot->writeFieldEnd();
 
-  xfer += oprot->writeFieldBegin("potential", ::apache::thrift::protocol::T_STRUCT, 5);
-  xfer += this->potential.write(oprot);
-  xfer += oprot->writeFieldEnd();
-
-  xfer += oprot->writeFieldBegin("key", ::apache::thrift::protocol::T_STRING, 6);
+  xfer += oprot->writeFieldBegin("key", ::apache::thrift::protocol::T_STRING, 5);
   xfer += oprot->writeString(this->key);
   xfer += oprot->writeFieldEnd();
 
-  xfer += oprot->writeFieldBegin("value", ::apache::thrift::protocol::T_STRING, 7);
+  xfer += oprot->writeFieldBegin("value", ::apache::thrift::protocol::T_STRING, 6);
   xfer += oprot->writeString(this->value);
   xfer += oprot->writeFieldEnd();
 
@@ -517,7 +501,6 @@ void swap(ServerGenericReply &a, ServerGenericReply &b) {
   swap(a.op, b.op);
   swap(a.state, b.state);
   swap(a.interval, b.interval);
-  swap(a.potential, b.potential);
   swap(a.key, b.key);
   swap(a.value, b.value);
   swap(a.__isset, b.__isset);
@@ -528,7 +511,6 @@ ServerGenericReply::ServerGenericReply(const ServerGenericReply& other7) {
   op = other7.op;
   state = other7.state;
   interval = other7.interval;
-  potential = other7.potential;
   key = other7.key;
   value = other7.value;
   __isset = other7.__isset;
@@ -538,7 +520,6 @@ ServerGenericReply& ServerGenericReply::operator=(const ServerGenericReply& othe
   op = other8.op;
   state = other8.state;
   interval = other8.interval;
-  potential = other8.potential;
   key = other8.key;
   value = other8.value;
   __isset = other8.__isset;
@@ -551,7 +532,6 @@ void ServerGenericReply::printTo(std::ostream& out) const {
   out << ", " << "op=" << to_string(op);
   out << ", " << "state=" << to_string(state);
   out << ", " << "interval=" << to_string(interval);
-  out << ", " << "potential=" << to_string(potential);
   out << ", " << "key=" << to_string(key);
   out << ", " << "value=" << to_string(value);
   out << ")";
@@ -568,10 +548,6 @@ void ReadReply::__set_tid(const TransactionId val) {
 
 void ReadReply::__set_interval(const TimestampInterval& val) {
   this->interval = val;
-}
-
-void ReadReply::__set_potential(const TimestampInterval& val) {
-  this->potential = val;
 }
 
 void ReadReply::__set_state(const OperationState::type val) {
@@ -624,14 +600,6 @@ uint32_t ReadReply::read(::apache::thrift::protocol::TProtocol* iprot) {
         }
         break;
       case 3:
-        if (ftype == ::apache::thrift::protocol::T_STRUCT) {
-          xfer += this->potential.read(iprot);
-          this->__isset.potential = true;
-        } else {
-          xfer += iprot->skip(ftype);
-        }
-        break;
-      case 4:
         if (ftype == ::apache::thrift::protocol::T_I32) {
           int32_t ecast9;
           xfer += iprot->readI32(ecast9);
@@ -641,7 +609,7 @@ uint32_t ReadReply::read(::apache::thrift::protocol::TProtocol* iprot) {
           xfer += iprot->skip(ftype);
         }
         break;
-      case 5:
+      case 4:
         if (ftype == ::apache::thrift::protocol::T_STRING) {
           xfer += iprot->readString(this->key);
           this->__isset.key = true;
@@ -649,7 +617,7 @@ uint32_t ReadReply::read(::apache::thrift::protocol::TProtocol* iprot) {
           xfer += iprot->skip(ftype);
         }
         break;
-      case 6:
+      case 5:
         if (ftype == ::apache::thrift::protocol::T_STRING) {
           xfer += iprot->readString(this->value);
           this->__isset.value = true;
@@ -682,19 +650,15 @@ uint32_t ReadReply::write(::apache::thrift::protocol::TProtocol* oprot) const {
   xfer += this->interval.write(oprot);
   xfer += oprot->writeFieldEnd();
 
-  xfer += oprot->writeFieldBegin("potential", ::apache::thrift::protocol::T_STRUCT, 3);
-  xfer += this->potential.write(oprot);
-  xfer += oprot->writeFieldEnd();
-
-  xfer += oprot->writeFieldBegin("state", ::apache::thrift::protocol::T_I32, 4);
+  xfer += oprot->writeFieldBegin("state", ::apache::thrift::protocol::T_I32, 3);
   xfer += oprot->writeI32((int32_t)this->state);
   xfer += oprot->writeFieldEnd();
 
-  xfer += oprot->writeFieldBegin("key", ::apache::thrift::protocol::T_STRING, 5);
+  xfer += oprot->writeFieldBegin("key", ::apache::thrift::protocol::T_STRING, 4);
   xfer += oprot->writeString(this->key);
   xfer += oprot->writeFieldEnd();
 
-  xfer += oprot->writeFieldBegin("value", ::apache::thrift::protocol::T_STRING, 6);
+  xfer += oprot->writeFieldBegin("value", ::apache::thrift::protocol::T_STRING, 5);
   xfer += oprot->writeString(this->value);
   xfer += oprot->writeFieldEnd();
 
@@ -707,7 +671,6 @@ void swap(ReadReply &a, ReadReply &b) {
   using ::std::swap;
   swap(a.tid, b.tid);
   swap(a.interval, b.interval);
-  swap(a.potential, b.potential);
   swap(a.state, b.state);
   swap(a.key, b.key);
   swap(a.value, b.value);
@@ -717,7 +680,6 @@ void swap(ReadReply &a, ReadReply &b) {
 ReadReply::ReadReply(const ReadReply& other10) {
   tid = other10.tid;
   interval = other10.interval;
-  potential = other10.potential;
   state = other10.state;
   key = other10.key;
   value = other10.value;
@@ -726,7 +688,6 @@ ReadReply::ReadReply(const ReadReply& other10) {
 ReadReply& ReadReply::operator=(const ReadReply& other11) {
   tid = other11.tid;
   interval = other11.interval;
-  potential = other11.potential;
   state = other11.state;
   key = other11.key;
   value = other11.value;
@@ -738,7 +699,6 @@ void ReadReply::printTo(std::ostream& out) const {
   out << "ReadReply(";
   out << "tid=" << to_string(tid);
   out << ", " << "interval=" << to_string(interval);
-  out << ", " << "potential=" << to_string(potential);
   out << ", " << "state=" << to_string(state);
   out << ", " << "key=" << to_string(key);
   out << ", " << "value=" << to_string(value);
@@ -756,10 +716,6 @@ void WriteReply::__set_tid(const TransactionId val) {
 
 void WriteReply::__set_interval(const TimestampInterval& val) {
   this->interval = val;
-}
-
-void WriteReply::__set_potential(const TimestampInterval& val) {
-  this->potential = val;
 }
 
 void WriteReply::__set_state(const OperationState::type val) {
@@ -808,14 +764,6 @@ uint32_t WriteReply::read(::apache::thrift::protocol::TProtocol* iprot) {
         }
         break;
       case 3:
-        if (ftype == ::apache::thrift::protocol::T_STRUCT) {
-          xfer += this->potential.read(iprot);
-          this->__isset.potential = true;
-        } else {
-          xfer += iprot->skip(ftype);
-        }
-        break;
-      case 4:
         if (ftype == ::apache::thrift::protocol::T_I32) {
           int32_t ecast12;
           xfer += iprot->readI32(ecast12);
@@ -825,7 +773,7 @@ uint32_t WriteReply::read(::apache::thrift::protocol::TProtocol* iprot) {
           xfer += iprot->skip(ftype);
         }
         break;
-      case 5:
+      case 4:
         if (ftype == ::apache::thrift::protocol::T_STRING) {
           xfer += iprot->readString(this->key);
           this->__isset.key = true;
@@ -858,15 +806,11 @@ uint32_t WriteReply::write(::apache::thrift::protocol::TProtocol* oprot) const {
   xfer += this->interval.write(oprot);
   xfer += oprot->writeFieldEnd();
 
-  xfer += oprot->writeFieldBegin("potential", ::apache::thrift::protocol::T_STRUCT, 3);
-  xfer += this->potential.write(oprot);
-  xfer += oprot->writeFieldEnd();
-
-  xfer += oprot->writeFieldBegin("state", ::apache::thrift::protocol::T_I32, 4);
+  xfer += oprot->writeFieldBegin("state", ::apache::thrift::protocol::T_I32, 3);
   xfer += oprot->writeI32((int32_t)this->state);
   xfer += oprot->writeFieldEnd();
 
-  xfer += oprot->writeFieldBegin("key", ::apache::thrift::protocol::T_STRING, 5);
+  xfer += oprot->writeFieldBegin("key", ::apache::thrift::protocol::T_STRING, 4);
   xfer += oprot->writeString(this->key);
   xfer += oprot->writeFieldEnd();
 
@@ -879,7 +823,6 @@ void swap(WriteReply &a, WriteReply &b) {
   using ::std::swap;
   swap(a.tid, b.tid);
   swap(a.interval, b.interval);
-  swap(a.potential, b.potential);
   swap(a.state, b.state);
   swap(a.key, b.key);
   swap(a.__isset, b.__isset);
@@ -888,7 +831,6 @@ void swap(WriteReply &a, WriteReply &b) {
 WriteReply::WriteReply(const WriteReply& other13) {
   tid = other13.tid;
   interval = other13.interval;
-  potential = other13.potential;
   state = other13.state;
   key = other13.key;
   __isset = other13.__isset;
@@ -896,7 +838,6 @@ WriteReply::WriteReply(const WriteReply& other13) {
 WriteReply& WriteReply::operator=(const WriteReply& other14) {
   tid = other14.tid;
   interval = other14.interval;
-  potential = other14.potential;
   state = other14.state;
   key = other14.key;
   __isset = other14.__isset;
@@ -907,7 +848,6 @@ void WriteReply::printTo(std::ostream& out) const {
   out << "WriteReply(";
   out << "tid=" << to_string(tid);
   out << ", " << "interval=" << to_string(interval);
-  out << ", " << "potential=" << to_string(potential);
   out << ", " << "state=" << to_string(state);
   out << ", " << "key=" << to_string(key);
   out << ")";
@@ -1126,6 +1066,94 @@ void AbortReply::printTo(std::ostream& out) const {
   out << "AbortReply(";
   out << "tid=" << to_string(tid);
   out << ", " << "state=" << to_string(state);
+  out << ")";
+}
+
+
+GCReply::~GCReply() throw() {
+}
+
+
+void GCReply::__set_state(const OperationState::type val) {
+  this->state = val;
+}
+
+uint32_t GCReply::read(::apache::thrift::protocol::TProtocol* iprot) {
+
+  apache::thrift::protocol::TInputRecursionTracker tracker(*iprot);
+  uint32_t xfer = 0;
+  std::string fname;
+  ::apache::thrift::protocol::TType ftype;
+  int16_t fid;
+
+  xfer += iprot->readStructBegin(fname);
+
+  using ::apache::thrift::protocol::TProtocolException;
+
+
+  while (true)
+  {
+    xfer += iprot->readFieldBegin(fname, ftype, fid);
+    if (ftype == ::apache::thrift::protocol::T_STOP) {
+      break;
+    }
+    switch (fid)
+    {
+      case 1:
+        if (ftype == ::apache::thrift::protocol::T_I32) {
+          int32_t ecast21;
+          xfer += iprot->readI32(ecast21);
+          this->state = (OperationState::type)ecast21;
+          this->__isset.state = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      default:
+        xfer += iprot->skip(ftype);
+        break;
+    }
+    xfer += iprot->readFieldEnd();
+  }
+
+  xfer += iprot->readStructEnd();
+
+  return xfer;
+}
+
+uint32_t GCReply::write(::apache::thrift::protocol::TProtocol* oprot) const {
+  uint32_t xfer = 0;
+  apache::thrift::protocol::TOutputRecursionTracker tracker(*oprot);
+  xfer += oprot->writeStructBegin("GCReply");
+
+  xfer += oprot->writeFieldBegin("state", ::apache::thrift::protocol::T_I32, 1);
+  xfer += oprot->writeI32((int32_t)this->state);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldStop();
+  xfer += oprot->writeStructEnd();
+  return xfer;
+}
+
+void swap(GCReply &a, GCReply &b) {
+  using ::std::swap;
+  swap(a.state, b.state);
+  swap(a.__isset, b.__isset);
+}
+
+GCReply::GCReply(const GCReply& other22) {
+  state = other22.state;
+  __isset = other22.__isset;
+}
+GCReply& GCReply::operator=(const GCReply& other23) {
+  state = other23.state;
+  __isset = other23.__isset;
+  return *this;
+}
+void GCReply::printTo(std::ostream& out) const {
+  using ::apache::thrift::to_string;
+  out << "GCReply(";
+  out << "state=" << to_string(state);
   out << ")";
 }
 

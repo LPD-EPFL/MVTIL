@@ -25,7 +25,7 @@ class DataServiceIf {
   virtual void HandleCommit(CommitReply& _return, const TransactionId tid, const Timestamp ts) = 0;
   virtual void HandleReadRequest(ReadReply& _return, const TransactionId tid, const TimestampInterval& interval, const Key& k) = 0;
   virtual void HandleWriteRequest(WriteReply& _return, const TransactionId tid, const TimestampInterval& interval, const Key& k, const Value& v) = 0;
-  virtual void HandleFreezeReadRequest(ReadReply& _return, const TransactionId tid, const TimestampInterval& interval, const Key& k) = 0;
+  virtual void GarbageCollection(GCReply& _return, const Timestamp ts) = 0;
 };
 
 class DataServiceIfFactory {
@@ -67,7 +67,7 @@ class DataServiceNull : virtual public DataServiceIf {
   void HandleWriteRequest(WriteReply& /* _return */, const TransactionId /* tid */, const TimestampInterval& /* interval */, const Key& /* k */, const Value& /* v */) {
     return;
   }
-  void HandleFreezeReadRequest(ReadReply& /* _return */, const TransactionId /* tid */, const TimestampInterval& /* interval */, const Key& /* k */) {
+  void GarbageCollection(GCReply& /* _return */, const Timestamp /* ts */) {
     return;
   }
 };
@@ -530,49 +530,37 @@ class DataService_HandleWriteRequest_presult {
 
 };
 
-typedef struct _DataService_HandleFreezeReadRequest_args__isset {
-  _DataService_HandleFreezeReadRequest_args__isset() : tid(false), interval(false), k(false) {}
-  bool tid :1;
-  bool interval :1;
-  bool k :1;
-} _DataService_HandleFreezeReadRequest_args__isset;
+typedef struct _DataService_GarbageCollection_args__isset {
+  _DataService_GarbageCollection_args__isset() : ts(false) {}
+  bool ts :1;
+} _DataService_GarbageCollection_args__isset;
 
-class DataService_HandleFreezeReadRequest_args {
+class DataService_GarbageCollection_args {
  public:
 
-  DataService_HandleFreezeReadRequest_args(const DataService_HandleFreezeReadRequest_args&);
-  DataService_HandleFreezeReadRequest_args& operator=(const DataService_HandleFreezeReadRequest_args&);
-  DataService_HandleFreezeReadRequest_args() : tid(0), k() {
+  DataService_GarbageCollection_args(const DataService_GarbageCollection_args&);
+  DataService_GarbageCollection_args& operator=(const DataService_GarbageCollection_args&);
+  DataService_GarbageCollection_args() : ts(0) {
   }
 
-  virtual ~DataService_HandleFreezeReadRequest_args() throw();
-  TransactionId tid;
-  TimestampInterval interval;
-  Key k;
+  virtual ~DataService_GarbageCollection_args() throw();
+  Timestamp ts;
 
-  _DataService_HandleFreezeReadRequest_args__isset __isset;
+  _DataService_GarbageCollection_args__isset __isset;
 
-  void __set_tid(const TransactionId val);
+  void __set_ts(const Timestamp val);
 
-  void __set_interval(const TimestampInterval& val);
-
-  void __set_k(const Key& val);
-
-  bool operator == (const DataService_HandleFreezeReadRequest_args & rhs) const
+  bool operator == (const DataService_GarbageCollection_args & rhs) const
   {
-    if (!(tid == rhs.tid))
-      return false;
-    if (!(interval == rhs.interval))
-      return false;
-    if (!(k == rhs.k))
+    if (!(ts == rhs.ts))
       return false;
     return true;
   }
-  bool operator != (const DataService_HandleFreezeReadRequest_args &rhs) const {
+  bool operator != (const DataService_GarbageCollection_args &rhs) const {
     return !(*this == rhs);
   }
 
-  bool operator < (const DataService_HandleFreezeReadRequest_args & ) const;
+  bool operator < (const DataService_GarbageCollection_args & ) const;
 
   uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
   uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
@@ -580,69 +568,67 @@ class DataService_HandleFreezeReadRequest_args {
 };
 
 
-class DataService_HandleFreezeReadRequest_pargs {
+class DataService_GarbageCollection_pargs {
  public:
 
 
-  virtual ~DataService_HandleFreezeReadRequest_pargs() throw();
-  const TransactionId* tid;
-  const TimestampInterval* interval;
-  const Key* k;
+  virtual ~DataService_GarbageCollection_pargs() throw();
+  const Timestamp* ts;
 
   uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
 
 };
 
-typedef struct _DataService_HandleFreezeReadRequest_result__isset {
-  _DataService_HandleFreezeReadRequest_result__isset() : success(false) {}
+typedef struct _DataService_GarbageCollection_result__isset {
+  _DataService_GarbageCollection_result__isset() : success(false) {}
   bool success :1;
-} _DataService_HandleFreezeReadRequest_result__isset;
+} _DataService_GarbageCollection_result__isset;
 
-class DataService_HandleFreezeReadRequest_result {
+class DataService_GarbageCollection_result {
  public:
 
-  DataService_HandleFreezeReadRequest_result(const DataService_HandleFreezeReadRequest_result&);
-  DataService_HandleFreezeReadRequest_result& operator=(const DataService_HandleFreezeReadRequest_result&);
-  DataService_HandleFreezeReadRequest_result() {
+  DataService_GarbageCollection_result(const DataService_GarbageCollection_result&);
+  DataService_GarbageCollection_result& operator=(const DataService_GarbageCollection_result&);
+  DataService_GarbageCollection_result() {
   }
 
-  virtual ~DataService_HandleFreezeReadRequest_result() throw();
-  ReadReply success;
+  virtual ~DataService_GarbageCollection_result() throw();
+  GCReply success;
 
-  _DataService_HandleFreezeReadRequest_result__isset __isset;
+  _DataService_GarbageCollection_result__isset __isset;
 
-  void __set_success(const ReadReply& val);
+  void __set_success(const GCReply& val);
 
-  bool operator == (const DataService_HandleFreezeReadRequest_result & rhs) const
+  bool operator == (const DataService_GarbageCollection_result & rhs) const
   {
     if (!(success == rhs.success))
       return false;
     return true;
   }
-  bool operator != (const DataService_HandleFreezeReadRequest_result &rhs) const {
+  bool operator != (const DataService_GarbageCollection_result &rhs) const {
     return !(*this == rhs);
   }
 
-  bool operator < (const DataService_HandleFreezeReadRequest_result & ) const;
+  bool operator < (const DataService_GarbageCollection_result & ) const;
 
   uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
   uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
 
 };
 
-typedef struct _DataService_HandleFreezeReadRequest_presult__isset {
-  _DataService_HandleFreezeReadRequest_presult__isset() : success(false) {}
+typedef struct _DataService_GarbageCollection_presult__isset {
+  _DataService_GarbageCollection_presult__isset() : success(false) {}
   bool success :1;
-} _DataService_HandleFreezeReadRequest_presult__isset;
+} _DataService_GarbageCollection_presult__isset;
 
-class DataService_HandleFreezeReadRequest_presult {
+class DataService_GarbageCollection_presult {
  public:
 
 
-  virtual ~DataService_HandleFreezeReadRequest_presult() throw();
-  ReadReply* success;
+  virtual ~DataService_GarbageCollection_presult() throw();
+  GCReply* success;
 
-  _DataService_HandleFreezeReadRequest_presult__isset __isset;
+  _DataService_GarbageCollection_presult__isset __isset;
 
   uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
 
@@ -685,9 +671,9 @@ class DataServiceClient : virtual public DataServiceIf {
   void HandleWriteRequest(WriteReply& _return, const TransactionId tid, const TimestampInterval& interval, const Key& k, const Value& v);
   void send_HandleWriteRequest(const TransactionId tid, const TimestampInterval& interval, const Key& k, const Value& v);
   void recv_HandleWriteRequest(WriteReply& _return);
-  void HandleFreezeReadRequest(ReadReply& _return, const TransactionId tid, const TimestampInterval& interval, const Key& k);
-  void send_HandleFreezeReadRequest(const TransactionId tid, const TimestampInterval& interval, const Key& k);
-  void recv_HandleFreezeReadRequest(ReadReply& _return);
+  void GarbageCollection(GCReply& _return, const Timestamp ts);
+  void send_GarbageCollection(const Timestamp ts);
+  void recv_GarbageCollection(GCReply& _return);
  protected:
   boost::shared_ptr< ::apache::thrift::protocol::TProtocol> piprot_;
   boost::shared_ptr< ::apache::thrift::protocol::TProtocol> poprot_;
@@ -707,7 +693,7 @@ class DataServiceProcessor : public ::apache::thrift::TDispatchProcessor {
   void process_HandleCommit(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_HandleReadRequest(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_HandleWriteRequest(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
-  void process_HandleFreezeReadRequest(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
+  void process_GarbageCollection(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
  public:
   DataServiceProcessor(boost::shared_ptr<DataServiceIf> iface) :
     iface_(iface) {
@@ -715,7 +701,7 @@ class DataServiceProcessor : public ::apache::thrift::TDispatchProcessor {
     processMap_["HandleCommit"] = &DataServiceProcessor::process_HandleCommit;
     processMap_["HandleReadRequest"] = &DataServiceProcessor::process_HandleReadRequest;
     processMap_["HandleWriteRequest"] = &DataServiceProcessor::process_HandleWriteRequest;
-    processMap_["HandleFreezeReadRequest"] = &DataServiceProcessor::process_HandleFreezeReadRequest;
+    processMap_["GarbageCollection"] = &DataServiceProcessor::process_GarbageCollection;
   }
 
   virtual ~DataServiceProcessor() {}
@@ -784,13 +770,13 @@ class DataServiceMultiface : virtual public DataServiceIf {
     return;
   }
 
-  void HandleFreezeReadRequest(ReadReply& _return, const TransactionId tid, const TimestampInterval& interval, const Key& k) {
+  void GarbageCollection(GCReply& _return, const Timestamp ts) {
     size_t sz = ifaces_.size();
     size_t i = 0;
     for (; i < (sz - 1); ++i) {
-      ifaces_[i]->HandleFreezeReadRequest(_return, tid, interval, k);
+      ifaces_[i]->GarbageCollection(_return, ts);
     }
-    ifaces_[i]->HandleFreezeReadRequest(_return, tid, interval, k);
+    ifaces_[i]->GarbageCollection(_return, ts);
     return;
   }
 
@@ -836,9 +822,9 @@ class DataServiceConcurrentClient : virtual public DataServiceIf {
   void HandleWriteRequest(WriteReply& _return, const TransactionId tid, const TimestampInterval& interval, const Key& k, const Value& v);
   int32_t send_HandleWriteRequest(const TransactionId tid, const TimestampInterval& interval, const Key& k, const Value& v);
   void recv_HandleWriteRequest(WriteReply& _return, const int32_t seqid);
-  void HandleFreezeReadRequest(ReadReply& _return, const TransactionId tid, const TimestampInterval& interval, const Key& k);
-  int32_t send_HandleFreezeReadRequest(const TransactionId tid, const TimestampInterval& interval, const Key& k);
-  void recv_HandleFreezeReadRequest(ReadReply& _return, const int32_t seqid);
+  void GarbageCollection(GCReply& _return, const Timestamp ts);
+  int32_t send_GarbageCollection(const Timestamp ts);
+  void recv_GarbageCollection(GCReply& _return, const int32_t seqid);
  protected:
   boost::shared_ptr< ::apache::thrift::protocol::TProtocol> piprot_;
   boost::shared_ptr< ::apache::thrift::protocol::TProtocol> poprot_;

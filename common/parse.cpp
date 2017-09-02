@@ -70,6 +70,8 @@ void parser_client(int argc, char * argv[]) {
 			c_interval_duration = atoi( &argv[i][2] );
 		else if (argv[i][1] == 't')
 			c_test_type = atoi( &argv[i][2] );
+		else if (argv[i][1] == 'l')
+			c_test_duration = atoi( &argv[i][2] );
 		else{
 			print_client_usage();
 			exit(0);

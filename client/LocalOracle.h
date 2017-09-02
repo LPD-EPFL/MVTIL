@@ -12,7 +12,7 @@
 #include <thrift/transport/TSocket.h>
 #include <thrift/transport/TBufferTransports.h>
 
-#define MAX_FACTOR 32768
+#define MAX_FACTOR 8196
 
 using namespace apache::thrift;
 using namespace apache::thrift::protocol;

@@ -853,11 +853,11 @@ uint32_t DataService_HandleWriteRequest_presult::read(::apache::thrift::protocol
 }
 
 
-DataService_HandleFreezeReadRequest_args::~DataService_HandleFreezeReadRequest_args() throw() {
+DataService_GarbageCollection_args::~DataService_GarbageCollection_args() throw() {
 }
 
 
-uint32_t DataService_HandleFreezeReadRequest_args::read(::apache::thrift::protocol::TProtocol* iprot) {
+uint32_t DataService_GarbageCollection_args::read(::apache::thrift::protocol::TProtocol* iprot) {
 
   apache::thrift::protocol::TInputRecursionTracker tracker(*iprot);
   uint32_t xfer = 0;
@@ -880,24 +880,8 @@ uint32_t DataService_HandleFreezeReadRequest_args::read(::apache::thrift::protoc
     {
       case -1:
         if (ftype == ::apache::thrift::protocol::T_I64) {
-          xfer += iprot->readI64(this->tid);
-          this->__isset.tid = true;
-        } else {
-          xfer += iprot->skip(ftype);
-        }
-        break;
-      case -2:
-        if (ftype == ::apache::thrift::protocol::T_STRUCT) {
-          xfer += this->interval.read(iprot);
-          this->__isset.interval = true;
-        } else {
-          xfer += iprot->skip(ftype);
-        }
-        break;
-      case -3:
-        if (ftype == ::apache::thrift::protocol::T_STRING) {
-          xfer += iprot->readString(this->k);
-          this->__isset.k = true;
+          xfer += iprot->readI64(this->ts);
+          this->__isset.ts = true;
         } else {
           xfer += iprot->skip(ftype);
         }
@@ -914,21 +898,13 @@ uint32_t DataService_HandleFreezeReadRequest_args::read(::apache::thrift::protoc
   return xfer;
 }
 
-uint32_t DataService_HandleFreezeReadRequest_args::write(::apache::thrift::protocol::TProtocol* oprot) const {
+uint32_t DataService_GarbageCollection_args::write(::apache::thrift::protocol::TProtocol* oprot) const {
   uint32_t xfer = 0;
   apache::thrift::protocol::TOutputRecursionTracker tracker(*oprot);
-  xfer += oprot->writeStructBegin("DataService_HandleFreezeReadRequest_args");
+  xfer += oprot->writeStructBegin("DataService_GarbageCollection_args");
 
-  xfer += oprot->writeFieldBegin("k", ::apache::thrift::protocol::T_STRING, -3);
-  xfer += oprot->writeString(this->k);
-  xfer += oprot->writeFieldEnd();
-
-  xfer += oprot->writeFieldBegin("interval", ::apache::thrift::protocol::T_STRUCT, -2);
-  xfer += this->interval.write(oprot);
-  xfer += oprot->writeFieldEnd();
-
-  xfer += oprot->writeFieldBegin("tid", ::apache::thrift::protocol::T_I64, -1);
-  xfer += oprot->writeI64(this->tid);
+  xfer += oprot->writeFieldBegin("ts", ::apache::thrift::protocol::T_I64, -1);
+  xfer += oprot->writeI64(this->ts);
   xfer += oprot->writeFieldEnd();
 
   xfer += oprot->writeFieldStop();
@@ -937,25 +913,17 @@ uint32_t DataService_HandleFreezeReadRequest_args::write(::apache::thrift::proto
 }
 
 
-DataService_HandleFreezeReadRequest_pargs::~DataService_HandleFreezeReadRequest_pargs() throw() {
+DataService_GarbageCollection_pargs::~DataService_GarbageCollection_pargs() throw() {
 }
 
 
-uint32_t DataService_HandleFreezeReadRequest_pargs::write(::apache::thrift::protocol::TProtocol* oprot) const {
+uint32_t DataService_GarbageCollection_pargs::write(::apache::thrift::protocol::TProtocol* oprot) const {
   uint32_t xfer = 0;
   apache::thrift::protocol::TOutputRecursionTracker tracker(*oprot);
-  xfer += oprot->writeStructBegin("DataService_HandleFreezeReadRequest_pargs");
+  xfer += oprot->writeStructBegin("DataService_GarbageCollection_pargs");
 
-  xfer += oprot->writeFieldBegin("k", ::apache::thrift::protocol::T_STRING, -3);
-  xfer += oprot->writeString((*(this->k)));
-  xfer += oprot->writeFieldEnd();
-
-  xfer += oprot->writeFieldBegin("interval", ::apache::thrift::protocol::T_STRUCT, -2);
-  xfer += (*(this->interval)).write(oprot);
-  xfer += oprot->writeFieldEnd();
-
-  xfer += oprot->writeFieldBegin("tid", ::apache::thrift::protocol::T_I64, -1);
-  xfer += oprot->writeI64((*(this->tid)));
+  xfer += oprot->writeFieldBegin("ts", ::apache::thrift::protocol::T_I64, -1);
+  xfer += oprot->writeI64((*(this->ts)));
   xfer += oprot->writeFieldEnd();
 
   xfer += oprot->writeFieldStop();
@@ -964,11 +932,11 @@ uint32_t DataService_HandleFreezeReadRequest_pargs::write(::apache::thrift::prot
 }
 
 
-DataService_HandleFreezeReadRequest_result::~DataService_HandleFreezeReadRequest_result() throw() {
+DataService_GarbageCollection_result::~DataService_GarbageCollection_result() throw() {
 }
 
 
-uint32_t DataService_HandleFreezeReadRequest_result::read(::apache::thrift::protocol::TProtocol* iprot) {
+uint32_t DataService_GarbageCollection_result::read(::apache::thrift::protocol::TProtocol* iprot) {
 
   apache::thrift::protocol::TInputRecursionTracker tracker(*iprot);
   uint32_t xfer = 0;
@@ -1009,11 +977,11 @@ uint32_t DataService_HandleFreezeReadRequest_result::read(::apache::thrift::prot
   return xfer;
 }
 
-uint32_t DataService_HandleFreezeReadRequest_result::write(::apache::thrift::protocol::TProtocol* oprot) const {
+uint32_t DataService_GarbageCollection_result::write(::apache::thrift::protocol::TProtocol* oprot) const {
 
   uint32_t xfer = 0;
 
-  xfer += oprot->writeStructBegin("DataService_HandleFreezeReadRequest_result");
+  xfer += oprot->writeStructBegin("DataService_GarbageCollection_result");
 
   if (this->__isset.success) {
     xfer += oprot->writeFieldBegin("success", ::apache::thrift::protocol::T_STRUCT, 0);
@@ -1026,11 +994,11 @@ uint32_t DataService_HandleFreezeReadRequest_result::write(::apache::thrift::pro
 }
 
 
-DataService_HandleFreezeReadRequest_presult::~DataService_HandleFreezeReadRequest_presult() throw() {
+DataService_GarbageCollection_presult::~DataService_GarbageCollection_presult() throw() {
 }
 
 
-uint32_t DataService_HandleFreezeReadRequest_presult::read(::apache::thrift::protocol::TProtocol* iprot) {
+uint32_t DataService_GarbageCollection_presult::read(::apache::thrift::protocol::TProtocol* iprot) {
 
   apache::thrift::protocol::TInputRecursionTracker tracker(*iprot);
   uint32_t xfer = 0;
@@ -1309,21 +1277,19 @@ void DataServiceClient::recv_HandleWriteRequest(WriteReply& _return)
   throw ::apache::thrift::TApplicationException(::apache::thrift::TApplicationException::MISSING_RESULT, "HandleWriteRequest failed: unknown result");
 }
 
-void DataServiceClient::HandleFreezeReadRequest(ReadReply& _return, const TransactionId tid, const TimestampInterval& interval, const Key& k)
+void DataServiceClient::GarbageCollection(GCReply& _return, const Timestamp ts)
 {
-  send_HandleFreezeReadRequest(tid, interval, k);
-  recv_HandleFreezeReadRequest(_return);
+  send_GarbageCollection(ts);
+  recv_GarbageCollection(_return);
 }
 
-void DataServiceClient::send_HandleFreezeReadRequest(const TransactionId tid, const TimestampInterval& interval, const Key& k)
+void DataServiceClient::send_GarbageCollection(const Timestamp ts)
 {
   int32_t cseqid = 0;
-  oprot_->writeMessageBegin("HandleFreezeReadRequest", ::apache::thrift::protocol::T_CALL, cseqid);
+  oprot_->writeMessageBegin("GarbageCollection", ::apache::thrift::protocol::T_CALL, cseqid);
 
-  DataService_HandleFreezeReadRequest_pargs args;
-  args.tid = &tid;
-  args.interval = &interval;
-  args.k = &k;
+  DataService_GarbageCollection_pargs args;
+  args.ts = &ts;
   args.write(oprot_);
 
   oprot_->writeMessageEnd();
@@ -1331,7 +1297,7 @@ void DataServiceClient::send_HandleFreezeReadRequest(const TransactionId tid, co
   oprot_->getTransport()->flush();
 }
 
-void DataServiceClient::recv_HandleFreezeReadRequest(ReadReply& _return)
+void DataServiceClient::recv_GarbageCollection(GCReply& _return)
 {
 
   int32_t rseqid = 0;
@@ -1351,12 +1317,12 @@ void DataServiceClient::recv_HandleFreezeReadRequest(ReadReply& _return)
     iprot_->readMessageEnd();
     iprot_->getTransport()->readEnd();
   }
-  if (fname.compare("HandleFreezeReadRequest") != 0) {
+  if (fname.compare("GarbageCollection") != 0) {
     iprot_->skip(::apache::thrift::protocol::T_STRUCT);
     iprot_->readMessageEnd();
     iprot_->getTransport()->readEnd();
   }
-  DataService_HandleFreezeReadRequest_presult result;
+  DataService_GarbageCollection_presult result;
   result.success = &_return;
   result.read(iprot_);
   iprot_->readMessageEnd();
@@ -1366,7 +1332,7 @@ void DataServiceClient::recv_HandleFreezeReadRequest(ReadReply& _return)
     // _return pointer has now been filled
     return;
   }
-  throw ::apache::thrift::TApplicationException(::apache::thrift::TApplicationException::MISSING_RESULT, "HandleFreezeReadRequest failed: unknown result");
+  throw ::apache::thrift::TApplicationException(::apache::thrift::TApplicationException::MISSING_RESULT, "GarbageCollection failed: unknown result");
 }
 
 bool DataServiceProcessor::dispatchCall(::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, const std::string& fname, int32_t seqid, void* callContext) {
@@ -1604,38 +1570,38 @@ void DataServiceProcessor::process_HandleWriteRequest(int32_t seqid, ::apache::t
   }
 }
 
-void DataServiceProcessor::process_HandleFreezeReadRequest(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext)
+void DataServiceProcessor::process_GarbageCollection(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext)
 {
   void* ctx = NULL;
   if (this->eventHandler_.get() != NULL) {
-    ctx = this->eventHandler_->getContext("DataService.HandleFreezeReadRequest", callContext);
+    ctx = this->eventHandler_->getContext("DataService.GarbageCollection", callContext);
   }
-  ::apache::thrift::TProcessorContextFreer freer(this->eventHandler_.get(), ctx, "DataService.HandleFreezeReadRequest");
+  ::apache::thrift::TProcessorContextFreer freer(this->eventHandler_.get(), ctx, "DataService.GarbageCollection");
 
   if (this->eventHandler_.get() != NULL) {
-    this->eventHandler_->preRead(ctx, "DataService.HandleFreezeReadRequest");
+    this->eventHandler_->preRead(ctx, "DataService.GarbageCollection");
   }
 
-  DataService_HandleFreezeReadRequest_args args;
+  DataService_GarbageCollection_args args;
   args.read(iprot);
   iprot->readMessageEnd();
   uint32_t bytes = iprot->getTransport()->readEnd();
 
   if (this->eventHandler_.get() != NULL) {
-    this->eventHandler_->postRead(ctx, "DataService.HandleFreezeReadRequest", bytes);
+    this->eventHandler_->postRead(ctx, "DataService.GarbageCollection", bytes);
   }
 
-  DataService_HandleFreezeReadRequest_result result;
+  DataService_GarbageCollection_result result;
   try {
-    iface_->HandleFreezeReadRequest(result.success, args.tid, args.interval, args.k);
+    iface_->GarbageCollection(result.success, args.ts);
     result.__isset.success = true;
   } catch (const std::exception& e) {
     if (this->eventHandler_.get() != NULL) {
-      this->eventHandler_->handlerError(ctx, "DataService.HandleFreezeReadRequest");
+      this->eventHandler_->handlerError(ctx, "DataService.GarbageCollection");
     }
 
     ::apache::thrift::TApplicationException x(e.what());
-    oprot->writeMessageBegin("HandleFreezeReadRequest", ::apache::thrift::protocol::T_EXCEPTION, seqid);
+    oprot->writeMessageBegin("GarbageCollection", ::apache::thrift::protocol::T_EXCEPTION, seqid);
     x.write(oprot);
     oprot->writeMessageEnd();
     oprot->getTransport()->writeEnd();
@@ -1644,17 +1610,17 @@ void DataServiceProcessor::process_HandleFreezeReadRequest(int32_t seqid, ::apac
   }
 
   if (this->eventHandler_.get() != NULL) {
-    this->eventHandler_->preWrite(ctx, "DataService.HandleFreezeReadRequest");
+    this->eventHandler_->preWrite(ctx, "DataService.GarbageCollection");
   }
 
-  oprot->writeMessageBegin("HandleFreezeReadRequest", ::apache::thrift::protocol::T_REPLY, seqid);
+  oprot->writeMessageBegin("GarbageCollection", ::apache::thrift::protocol::T_REPLY, seqid);
   result.write(oprot);
   oprot->writeMessageEnd();
   bytes = oprot->getTransport()->writeEnd();
   oprot->getTransport()->flush();
 
   if (this->eventHandler_.get() != NULL) {
-    this->eventHandler_->postWrite(ctx, "DataService.HandleFreezeReadRequest", bytes);
+    this->eventHandler_->postWrite(ctx, "DataService.GarbageCollection", bytes);
   }
 }
 
@@ -2007,22 +1973,20 @@ void DataServiceConcurrentClient::recv_HandleWriteRequest(WriteReply& _return, c
   } // end while(true)
 }
 
-void DataServiceConcurrentClient::HandleFreezeReadRequest(ReadReply& _return, const TransactionId tid, const TimestampInterval& interval, const Key& k)
+void DataServiceConcurrentClient::GarbageCollection(GCReply& _return, const Timestamp ts)
 {
-  int32_t seqid = send_HandleFreezeReadRequest(tid, interval, k);
-  recv_HandleFreezeReadRequest(_return, seqid);
+  int32_t seqid = send_GarbageCollection(ts);
+  recv_GarbageCollection(_return, seqid);
 }
 
-int32_t DataServiceConcurrentClient::send_HandleFreezeReadRequest(const TransactionId tid, const TimestampInterval& interval, const Key& k)
+int32_t DataServiceConcurrentClient::send_GarbageCollection(const Timestamp ts)
 {
   int32_t cseqid = this->sync_.generateSeqId();
   ::apache::thrift::async::TConcurrentSendSentry sentry(&this->sync_);
-  oprot_->writeMessageBegin("HandleFreezeReadRequest", ::apache::thrift::protocol::T_CALL, cseqid);
+  oprot_->writeMessageBegin("GarbageCollection", ::apache::thrift::protocol::T_CALL, cseqid);
 
-  DataService_HandleFreezeReadRequest_pargs args;
-  args.tid = &tid;
-  args.interval = &interval;
-  args.k = &k;
+  DataService_GarbageCollection_pargs args;
+  args.ts = &ts;
   args.write(oprot_);
 
   oprot_->writeMessageEnd();
@@ -2033,7 +1997,7 @@ int32_t DataServiceConcurrentClient::send_HandleFreezeReadRequest(const Transact
   return cseqid;
 }
 
-void DataServiceConcurrentClient::recv_HandleFreezeReadRequest(ReadReply& _return, const int32_t seqid)
+void DataServiceConcurrentClient::recv_GarbageCollection(GCReply& _return, const int32_t seqid)
 {
 
   int32_t rseqid = 0;
@@ -2062,7 +2026,7 @@ void DataServiceConcurrentClient::recv_HandleFreezeReadRequest(ReadReply& _retur
         iprot_->readMessageEnd();
         iprot_->getTransport()->readEnd();
       }
-      if (fname.compare("HandleFreezeReadRequest") != 0) {
+      if (fname.compare("GarbageCollection") != 0) {
         iprot_->skip(::apache::thrift::protocol::T_STRUCT);
         iprot_->readMessageEnd();
         iprot_->getTransport()->readEnd();
@@ -2071,7 +2035,7 @@ void DataServiceConcurrentClient::recv_HandleFreezeReadRequest(ReadReply& _retur
         using ::apache::thrift::protocol::TProtocolException;
         throw TProtocolException(TProtocolException::INVALID_DATA);
       }
-      DataService_HandleFreezeReadRequest_presult result;
+      DataService_GarbageCollection_presult result;
       result.success = &_return;
       result.read(iprot_);
       iprot_->readMessageEnd();
@@ -2083,7 +2047,7 @@ void DataServiceConcurrentClient::recv_HandleFreezeReadRequest(ReadReply& _retur
         return;
       }
       // in a bad state, don't commit
-      throw ::apache::thrift::TApplicationException(::apache::thrift::TApplicationException::MISSING_RESULT, "HandleFreezeReadRequest failed: unknown result");
+      throw ::apache::thrift::TApplicationException(::apache::thrift::TApplicationException::MISSING_RESULT, "GarbageCollection failed: unknown result");
     }
     // seqid != rseqid
     this->sync_.updatePending(fname, mtype, rseqid);

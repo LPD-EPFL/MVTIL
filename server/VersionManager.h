@@ -3,20 +3,9 @@
 
 #include "LockManager.h"
 #include "LockSet.h"
-//#include "server.h"
 
-#include <libcuckoo/cuckoohash_map.hh>
-#include <libcuckoo/city_hasher.hh>
-
-//#define MIN_TIMESTAMP 0
-//#define MAX_TIMESTAMP 0xFFFF
-
-// typedef struct LockInfo {
-//     LockState state; //the status the operation finished with
-//     TimestampInterval locked; //the interval that was successfully locked
-//     TimestampInterval potential; //the potential interval that could have been locked had there not been the initial bounds
-//     Version* version; //the version that was locked or created
-// } LockInfo;
+#include "tbb/concurrent_hash_map.h"
+#include "tbb/tbb.h"
 
 class VersionManager{
 
@@ -24,8 +13,6 @@ class VersionManager{
 
         class VersionEntry{
             //friend class VersionManager;
-            private:
-                std::mutex lock;
             public:
                 Key key;
                 VersionList versions;
@@ -40,42 +27,27 @@ class VersionManager{
                     return false;
                 }
 
-                inline void lockEntry() {
-                    lock.lock();
-                }
-
-                inline void unlockEntry() {
-                    lock.unlock();
-                }
-
         };
 
-        std::unordered_map<Key, std::shared_ptr<VersionEntry>> all_versions;
-        LockSet lockSet;
-
-        //cuckoohash_map<Key, std::shared_ptr<VersionEntry>, CityHasher<Key>> all_versions;
-
-        ///std::unordered_map<Key, std::shared_ptr<LockManager>> locks_manager;
+        typedef tbb::concurrent_hash_map<Key, std::shared_ptr<VersionEntry>> VersionMap;
+        VersionMap all_versions;
         
     public:
-
-        std::shared_ptr<VersionEntry> AddEntry(Key k, VersionManager* ve);
-        std::shared_ptr<VersionEntry> CreateNewEntry(Key k);
-        std::shared_ptr<VersionEntry> GetVersionList(Key k);
-
-        //int RemoveVersion(Key k, Version* v);
 
         //Acquire a read lock
         void TryReadLock(TransactionId tid, Key k, TimestampInterval interval, LockInfo& lockInfo);
         //Acquire a write lock
         void TryWriteLock(TransactionId tid, Key k, TimestampInterval interval, LockInfo& lockInfo);
         //Persist a version
-        bool UpdateAndPersistVersion(TransactionId tid, Key k, Value value, Timestamp new_ts);
+        bool UpdateAndPersistVersion(TransactionId tid, Key k, Value value, Timestamp old_ts, Timestamp new_ts);
+        //Persist read lock
+        bool PersistReadLock(TransactionId tid, Key key, Timestamp old_ts, Timestamp new_ts);
         //Remove a lock
-        bool RemoveVersion(TransactionId tid, Key k, TimestampInterval interval);
+        bool RemoveVersion(TransactionId tid, Key k, Timestamp old_ts);
         //Remove eariler versions and locks
-        bool GarbageCollection(Timestamp time);
-
+        bool GarbageCollection(Timestamp ts);
+        //Get size of versions and locks
+        bool GetSize(int& version_len, int& lock_len);
 };
 
 #endif

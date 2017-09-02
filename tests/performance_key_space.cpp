@@ -168,7 +168,7 @@ int main(int argc, char **argv) {
     start = true;
 
     //sleep
-    std::this_thread::sleep_for(std::chrono::milliseconds(TEST_DURATION_MS));
+    std::this_thread::sleep_for(std::chrono::milliseconds(c_test_duration));
 
     stop = true; 
 

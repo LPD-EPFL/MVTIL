@@ -20,3 +20,7 @@ ServerConnection* CommunicationService::GetServer(Key key){
     return servers[hash_value%size];
 
 }
+
+std::vector<ServerConnection*> CommunicationService::GetAllServers(){
+    return servers;
+}
