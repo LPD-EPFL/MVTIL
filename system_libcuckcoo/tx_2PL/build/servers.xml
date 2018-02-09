@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<DataServers>
+    <DataServer>
+        <ip>127.0.0.1</ip>
+        <port>9090</port>
+    </DataServer>
+    <DataServer>
+        <ip>127.0.0.1</ip>
+        <port>8080</port>
+    </DataServer>
+    <DataServer>
+        <ip>127.0.0.1</ip>
+        <port>7070</port>
+    </DataServer>
+</DataServers>

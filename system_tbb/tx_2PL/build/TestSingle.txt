@@ -1,0 +1,14 @@
+T1 Create
+T2 Create
+T3 Create
+T1 Read A
+T2 Read A
+T2 Write A 12
+T2 Write B 13
+T2 Write C 14
+T2 Commit
+T1 Write A 34
+T1 Commit
+T3 Read A
+T3 Write A 56
+T3 Commit
