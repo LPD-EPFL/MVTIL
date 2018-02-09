@@ -15,6 +15,7 @@ class CommunicationService
 		CommunicationService();
 		~CommunicationService();
 		ServerConnection* GetServer(Key key);
+		std::vector<ServerConnection*> GetAllServers();
 	
 	private:
 		std::vector<ServerConnection*> servers;

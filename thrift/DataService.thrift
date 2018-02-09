@@ -45,26 +45,23 @@ struct ServerGenericReply {
     2: Operation op,
     3: OperationState state,
     4: TimestampInterval interval,
-    5: TimestampInterval potential,
-    6: string key,
-    7: string value,
+    5: string key,
+    6: string value,
 }
 
 struct ReadReply {
     1: TransactionId tid,
     2: TimestampInterval interval,
-    3: TimestampInterval potential,
-    4: OperationState state,
-    5: Key key,
-    6: Value value,   
+    3: OperationState state,
+    4: Key key,
+    5: Value value,   
 }
 
 struct WriteReply {
     1: TransactionId tid,
     2: TimestampInterval interval,
-    3: TimestampInterval potential,
-    4: OperationState state,
-    5: Key key,
+    3: OperationState state,
+    4: Key key,
 }
 
 struct CommitReply {
@@ -77,6 +74,10 @@ struct AbortReply {
     2: OperationState state,
 }
 
+struct GCReply{
+    1: OperationState state
+} 
+
 service DataService {
     AbortReply HandleAbort(TransactionId tid),
 
@@ -86,5 +87,5 @@ service DataService {
 
     WriteReply HandleWriteRequest(TransactionId tid, TimestampInterval interval, Key k, Value v),
 
-    ReadReply HandleFreezeReadRequest(TransactionId tid, TimestampInterval interval, Key k),
+    GCReply GarbageCollection(Timestamp ts)
 }

@@ -4,14 +4,14 @@ ifeq ($(DEBUG),1)
   DEBUG_FLAGS=-Wall -ggdb -g -DDEBUG
   CFLAGS += -O0 -fno-inline -DHAVE_INTTYPES_H -DHAVE_NETINET_IN_H
 else
-  DEBUG_FLAGS=-Wall 
+  DEBUG_FLAGS=-Wall
   CFLAGS += -O3 -DHAVE_INTTYPES_H -DHAVE_NETINET_IN_H
 endif
 
 CC        := g++
 LD        := g++
 
-LIBS := -lpthread -lthrift -lthriftnb -levent -lcityhash 
+LIBS := -lboost_system -lboost_thread -lpthread -lthrift -lthriftnb -levent -lcityhash -ltbb -lrt
 LIB_DIR := -L/usr/local/lib -L/home/jwang/lib 
 
 FILTER_FILE := gen-cpp/OracleServer_server.skeleton.cpp gen-cpp/DataServer_server.skeleton.cpp
@@ -57,10 +57,10 @@ endef
 
 .PHONY: all checkdirs thrift clean
 
-all: checkdirs thrift build/server_exec build/client_exec build/test_single_client build/test_multi_client build/performance_key_space 
+all: checkdirs thrift build/server_exec build/client_exec build/test_single_client build/test_multi_client build/performance_key_space build/performance build/test_server build/gc_exec build/server_gc_exec
 
-#build/performance_single build/performance_multi 
-#build/performance_scale_key_space build/server_exec2 
+#build/performance_single build/performance_multi
+#build/performance_scale_key_space build/server_exec2
 
 #server
 build/server_exec: $(OBJ_SERVER) build/server_exec.o
@@ -69,16 +69,32 @@ build/server_exec: $(OBJ_SERVER) build/server_exec.o
 build/server_exec.o: tests/server_exec.cpp
 	$(CC) $(INCLUDES_SERVER) $(CFLAGS) $(DEBUG_FLAGS) -c $< -o $@
 
+build/test_server: $(OBJ_SERVER) build/test_server.o
+	$(LD) $(CFLAGS) $(DEBUG_FLAGS) $^ -o $@ $(LIB_DIR) $(LIBS)
+
+build/test_server.o: tests/test_server.cpp
+	$(CC) $(INCLUDES_SERVER) $(CFLAGS) $(DEBUG_FLAGS) -c $< -o $@
+
 #build/server_exec2: $(OBJ_SERVER) build/server_exec2.o
 #	$(LD) $(CFLAGS) $(DEBUG_FLAGS) $^ -o $@ $(LIB_DIR) $(LIBS)
 
 #build/server_exec2.o: tests/server_exec2.cpp
 #	$(CC) $(INCLUDES_SERVER) $(CFLAGS) $(DEBUG_FLAGS) -c $< -o $@
 
-#client
-# build/client_exec: $(OBJ_CLIENT) build/performance.o
-# 	$(LD) $(CFLAGS) $(DEBUG_FLAGS) $^ -o $@ -L/usr/local/lib $(LIBS)
+build/server_gc_exec: $(OBJ_SERVER) build/server_gc_exec.o
+	$(LD) $(CFLAGS) $(DEBUG_FLAGS) $^ -o $@ $(LIB_DIR) $(LIBS)
 
+build/server_gc_exec.o: tests/server_gc_exec.cpp
+	$(CC) $(INCLUDES_SERVER) $(CFLAGS) $(DEBUG_FLAGS) -c $< -o $@
+
+#GC
+build/gc_exec: $(OBJ_CLIENT) build/gc_exec.o
+	$(LD) $(CFLAGS) $(DEBUG_FLAGS) $^ -o $@ $(LIB_DIR) $(LIBS)
+
+build/gc_exec.o: tests/gc_exec.cpp
+	$(CC) $(INCLUDES_CLIENT) $(CFLAGS) $(DEBUG_FLAGS) -c $< -o $@
+
+#client
 build/client_exec: $(OBJ_CLIENT) build/client_exec.o
 	$(LD) $(CFLAGS) $(DEBUG_FLAGS) $^ -o $@ $(LIB_DIR) $(LIBS)
 
@@ -113,6 +129,12 @@ build/performance_key_space: $(OBJ_CLIENT) build/performance_key_space.o
 	$(LD) $(CFLAGS) $(DEBUG_FLAGS) $^ -o $@ $(LIB_DIR) $(LIBS)
 
 build/performance_key_space.o: tests/performance_key_space.cpp
+	$(CC) $(INCLUDES_CLIENT) $(CFLAGS) $(DEBUG_FLAGS) -c $< -o $@
+
+build/performance: $(OBJ_CLIENT) build/performance.o
+	$(LD) $(CFLAGS) $(DEBUG_FLAGS) $^ -o $@ $(LIB_DIR) $(LIBS)
+
+build/performance.o: tests/performance.cpp
 	$(CC) $(INCLUDES_CLIENT) $(CFLAGS) $(DEBUG_FLAGS) -c $< -o $@
 
 #build/performance_scale_key_space: $(OBJ_CLIENT) build/performance_scale_key_space.o

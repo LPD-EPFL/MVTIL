@@ -6,16 +6,16 @@
 #include "DataService.h"
 #include <chrono>
 #include <thread>
+#include <unordered_set>
 
-#include <libcuckoo/cuckoohash_map.hh>
-#include <libcuckoo/city_hasher.hh>
+#include "tbb/concurrent_hash_map.h"
 
 class Scheduler : virtual public DataServiceIf {
   public:
 	
 	Scheduler() {
 	  wait_time = s_timeout;
-	  read_retry = s_retry;
+	  retry = s_retry;
 	}
 	~Scheduler(){}
 	
@@ -23,18 +23,21 @@ class Scheduler : virtual public DataServiceIf {
 	void HandleCommit(CommitReply& _return, const TransactionId tid, const Timestamp ts);
 	void HandleReadRequest(ReadReply& _return, const TransactionId tid, const TimestampInterval& interval, const Key& k);
 	void HandleWriteRequest(WriteReply& _return, const TransactionId tid, const TimestampInterval& interval, const Key& k, const Value& v);
-	void HandleFreezeReadRequest(ReadReply& _return, const TransactionId tid, const TimestampInterval& interval, const Key& k);
+	void GarbageCollection(GCReply& _return, const Timestamp ts);
+	void GetSize(int& version_len, int& lock_len);
 
   private:
 	int wait_time;
-	int read_retry;
+	int retry;
 	VersionManager version_manager;
 
 	//For the concurrent hash table implementation, see https://github.com/efficient/libcuckoo
 	//Map
-	//cuckoohash_map<TransactionId, cuckoohash_map<Key, std::pair<Value,TimestampInterval>, CityHasher<Key>>, CityHasher<TransactionId>> pendingWriteSets;
-	cuckoohash_map<TransactionId, unordered_map<Key, std::pair<Value,TimestampInterval>>, CityHasher<TransactionId>> pendingWriteSets;
-
+	typedef tbb::concurrent_hash_map<TransactionId, std::unordered_map<Key, std::pair<Value, Timestamp>>> WriteMap;
+	typedef tbb::concurrent_hash_map<TransactionId, std::unordered_map<Key, Timestamp>> ReadMap;
+	WriteMap pendingWriteSets;
+	ReadMap pendingReadSets;
+	
 	inline bool timeout(std::chrono::time_point<std::chrono::high_resolution_clock> start, std::chrono::time_point<std::chrono::high_resolution_clock> end) {
 		auto diff = end - start;
 		auto ms = std::chrono::duration_cast<std::chrono::milliseconds>(diff);

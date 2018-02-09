@@ -9,6 +9,7 @@
 
 #include "common.h"
 #include <iosfwd>
+
 #include <thrift/Thrift.h>
 #include <thrift/TApplicationException.h>
 #include <thrift/TBase.h>
@@ -48,13 +49,13 @@ struct OperationState {
 
 extern const std::map<int, const char*> _OperationState_VALUES_TO_NAMES;
 
-// typedef int64_t TransactionId;
+//typedef int64_t TransactionId;
 
-// typedef int64_t Timestamp;
+//typedef int64_t Timestamp;
 
-// typedef std::string Key;
+//typedef std::string Key;
 
-// typedef std::string Value;
+//typedef std::string Value;
 
 class TimestampInterval;
 
@@ -69,6 +70,8 @@ class WriteReply;
 class CommitReply;
 
 class AbortReply;
+
+class GCReply;
 
 typedef struct _TimestampInterval__isset {
   _TimestampInterval__isset() : lock_start(false), start(false), finish(false) {}
@@ -199,12 +202,11 @@ inline std::ostream& operator<<(std::ostream& out, const ClientGenericRequest& o
 }
 
 typedef struct _ServerGenericReply__isset {
-  _ServerGenericReply__isset() : tid(false), op(false), state(false), interval(false), potential(false), key(false), value(false) {}
+  _ServerGenericReply__isset() : tid(false), op(false), state(false), interval(false), key(false), value(false) {}
   bool tid :1;
   bool op :1;
   bool state :1;
   bool interval :1;
-  bool potential :1;
   bool key :1;
   bool value :1;
 } _ServerGenericReply__isset;
@@ -222,7 +224,6 @@ class ServerGenericReply : public virtual ::apache::thrift::TBase {
   Operation::type op;
   OperationState::type state;
   TimestampInterval interval;
-  TimestampInterval potential;
   std::string key;
   std::string value;
 
@@ -235,8 +236,6 @@ class ServerGenericReply : public virtual ::apache::thrift::TBase {
   void __set_state(const OperationState::type val);
 
   void __set_interval(const TimestampInterval& val);
-
-  void __set_potential(const TimestampInterval& val);
 
   void __set_key(const std::string& val);
 
@@ -251,8 +250,6 @@ class ServerGenericReply : public virtual ::apache::thrift::TBase {
     if (!(state == rhs.state))
       return false;
     if (!(interval == rhs.interval))
-      return false;
-    if (!(potential == rhs.potential))
       return false;
     if (!(key == rhs.key))
       return false;
@@ -281,10 +278,9 @@ inline std::ostream& operator<<(std::ostream& out, const ServerGenericReply& obj
 }
 
 typedef struct _ReadReply__isset {
-  _ReadReply__isset() : tid(false), interval(false), potential(false), state(false), key(false), value(false) {}
+  _ReadReply__isset() : tid(false), interval(false), state(false), key(false), value(false) {}
   bool tid :1;
   bool interval :1;
-  bool potential :1;
   bool state :1;
   bool key :1;
   bool value :1;
@@ -301,7 +297,6 @@ class ReadReply : public virtual ::apache::thrift::TBase {
   virtual ~ReadReply() throw();
   TransactionId tid;
   TimestampInterval interval;
-  TimestampInterval potential;
   OperationState::type state;
   Key key;
   Value value;
@@ -311,8 +306,6 @@ class ReadReply : public virtual ::apache::thrift::TBase {
   void __set_tid(const TransactionId val);
 
   void __set_interval(const TimestampInterval& val);
-
-  void __set_potential(const TimestampInterval& val);
 
   void __set_state(const OperationState::type val);
 
@@ -325,8 +318,6 @@ class ReadReply : public virtual ::apache::thrift::TBase {
     if (!(tid == rhs.tid))
       return false;
     if (!(interval == rhs.interval))
-      return false;
-    if (!(potential == rhs.potential))
       return false;
     if (!(state == rhs.state))
       return false;
@@ -357,10 +348,9 @@ inline std::ostream& operator<<(std::ostream& out, const ReadReply& obj)
 }
 
 typedef struct _WriteReply__isset {
-  _WriteReply__isset() : tid(false), interval(false), potential(false), state(false), key(false) {}
+  _WriteReply__isset() : tid(false), interval(false), state(false), key(false) {}
   bool tid :1;
   bool interval :1;
-  bool potential :1;
   bool state :1;
   bool key :1;
 } _WriteReply__isset;
@@ -376,7 +366,6 @@ class WriteReply : public virtual ::apache::thrift::TBase {
   virtual ~WriteReply() throw();
   TransactionId tid;
   TimestampInterval interval;
-  TimestampInterval potential;
   OperationState::type state;
   Key key;
 
@@ -385,8 +374,6 @@ class WriteReply : public virtual ::apache::thrift::TBase {
   void __set_tid(const TransactionId val);
 
   void __set_interval(const TimestampInterval& val);
-
-  void __set_potential(const TimestampInterval& val);
 
   void __set_state(const OperationState::type val);
 
@@ -397,8 +384,6 @@ class WriteReply : public virtual ::apache::thrift::TBase {
     if (!(tid == rhs.tid))
       return false;
     if (!(interval == rhs.interval))
-      return false;
-    if (!(potential == rhs.potential))
       return false;
     if (!(state == rhs.state))
       return false;
@@ -525,6 +510,52 @@ class AbortReply : public virtual ::apache::thrift::TBase {
 void swap(AbortReply &a, AbortReply &b);
 
 inline std::ostream& operator<<(std::ostream& out, const AbortReply& obj)
+{
+  obj.printTo(out);
+  return out;
+}
+
+typedef struct _GCReply__isset {
+  _GCReply__isset() : state(false) {}
+  bool state :1;
+} _GCReply__isset;
+
+class GCReply : public virtual ::apache::thrift::TBase {
+ public:
+
+  GCReply(const GCReply&);
+  GCReply& operator=(const GCReply&);
+  GCReply() : state((OperationState::type)0) {
+  }
+
+  virtual ~GCReply() throw();
+  OperationState::type state;
+
+  _GCReply__isset __isset;
+
+  void __set_state(const OperationState::type val);
+
+  bool operator == (const GCReply & rhs) const
+  {
+    if (!(state == rhs.state))
+      return false;
+    return true;
+  }
+  bool operator != (const GCReply &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const GCReply & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(GCReply &a, GCReply &b);
+
+inline std::ostream& operator<<(std::ostream& out, const GCReply& obj)
 {
   obj.printTo(out);
   return out;

@@ -42,9 +42,9 @@ class DataServiceHandler : virtual public DataServiceIf {
     printf("HandleWriteRequest\n");
   }
 
-  void HandleFreezeReadRequest(ReadReply& _return, const TransactionId tid, const TimestampInterval& interval, const Key& k) {
+  void GarbageCollection(GCReply& _return, const Timestamp ts) {
     // Your implementation goes here
-    printf("HandleFreezeReadRequest\n");
+    printf("GarbageCollection\n");
   }
 
 };
