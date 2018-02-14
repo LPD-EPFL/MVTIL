@@ -1,11 +1,25 @@
-//
-//  ConfigLoader.h
-//  MVCC
-//
-//  Created by OVSS on 16/02/17.
-//  Copyright © 2017 OVSS. All rights reserved.
-//
-
+/*   
+ *   File: ConfigLoader.h
+ *   Author: Junxiong Wang <junxiong.wang@epfl.ch>
+ *   Description: 
+ *   ConfigLoader.h is part of MVTLSYS
+ *
+ * Copyright (c) 2017 Junxiong Wang <junxiong.wang@epfl.ch>,
+ *                Tudor David <tudor.david@epfl.ch>
+ *                Distributed Programming Lab (LPD), EPFL
+ *
+ * MVTLSYS is free software: you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation, version 2
+ * of the License.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ */
+ 
 #ifndef _CONFIG_LOADER_H_
 #define _CONFIG_LOADER_H_
 

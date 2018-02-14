@@ -1,3 +1,21 @@
+/*   
+ * Copyright (c) 2017 Junxiong Wang <junxiong.wang@epfl.ch>,
+ *                Tudor David <tudor.david@epfl.ch>
+ *                Distributed Programming Lab (LPD), EPFL
+ *
+ * MVTLSYS is free software: you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation, version 2
+ * of the License.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ */
+
+
 #include "TransactionManager.h"
 
 #include <iostream>
@@ -6,14 +24,6 @@
 #include <sstream>
 #include <vector>
 #include <boost/algorithm/string.hpp>
-// #include <thrift/protocol/TBinaryProtocol.h>
-// #include <thrift/transport/TSocket.h>
-// #include <thrift/transport/TBufferTransports.h>
-
-// using namespace apache::thrift;
-// using namespace apache::thrift::protocol;
-// using namespace apache::thrift::transport;
-//using namespace ::apache::thrift::server;
 
 using boost::shared_ptr;
 using namespace std;
