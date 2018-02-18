@@ -1,4 +1,4 @@
-# Distributed Transactions Using Adjustable Serialization Timestamp Intervals
+# Mult-Version Timestamp Interval Locking (MVTIL)
 
 ## Dependecies:
 
