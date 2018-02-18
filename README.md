@@ -1,4 +1,4 @@
-# Mult-Version Timestamp Interval Locking (MVTIL)
+# Multi-Version Timestamp Interval Locking (MVTIL)
 
 ## Dependecies:
 
