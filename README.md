@@ -29,21 +29,21 @@ The system configuration can be changed in `common/config.h` file. Here we list 
 
 
 	S_THREAD_CNT		:	Number of threads running simultaneously in this server
-	PORT				:	Service port
+	PORT			:	Service port
 	DEFAULT_TIMEOUT		:	Timeout for one opertaion
 	MIN_NUM_RETRIES		:	Minimum retry number of one read operation.
-	MAX_RESTART			:	Maximum retry number of one transaction
+	MAX_RESTART		:	Maximum retry number of one transaction
 	C_THREAD_CNT		:	Number of concurrent transactions in this client
-	KEY_SPACE			:	Size of key space size
-	TEST_TYPE			:	Type of the tested transaction. Five types of transactions are supported (Read-Only, Read-Intensive, Write-Intensive, Short, Mix)
-	CLIENT_ID			:	Client Id
+	KEY_SPACE		:	Size of key space size
+	TEST_TYPE		:	Type of the tested transaction. Five types of transactions are supported (Read-Only, Read-Intensive, Write-Intensive, Short, Mix)
+	CLIENT_ID		:	Client Id
 	TEST_DURATION_MS	:	Test Duration
 
 For each protocol, there are some separate configurations.
 
 MVTIL: 
 
-	MVTL_POLICY			:	LOCK_FIRST_INTERVAL or LOCK_LAST_INTERVAL are supported
+	MVTL_POLICY		:	LOCK_FIRST_INTERVAL or LOCK_LAST_INTERVAL are supported
 	INTERVAL_DURATION	:	Initial interval length
 
 
@@ -56,16 +56,4 @@ It also contains the alternative protocols 2PL and MVTO
 
 
 
-
-## Dependecies:
-
-* boost
-
-* thrift
-
-* libcuckoo (https://github.com/efficient/libcuckoo.git)
-
-* cityhash (https://github.com/google/cityhash)
-
-* tbb (https://github.com/01org/tbb)
 
