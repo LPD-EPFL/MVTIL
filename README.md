@@ -51,11 +51,11 @@ MVTIL:
 
 EC2 Deployment
 --------------
-Step 1. Launch EC2 instances and install SSM Agent (**https://docs.aws.amazon.com/systems-manager/latest/userguide/sysman-install-startup-linux.html**)
+Step 1. Launch EC2 instances and [install SSM Agent](**https://docs.aws.amazon.com/systems-manager/latest/userguide/sysman-install-startup-linux.html**)
 
-Step 2. Download system code and run `ec2_deploy.sh` on each instance. 
+Step 2. Use EC2 [run command](**https://docs.aws.amazon.com/systems-manager/latest/userguide/rc-console.html**) to download system code and run `ec2_deploy.sh` on each instance. 
 
-Step 3. Run evaluation script.
+Step 3. Run evaluation scripts.
 
 
 
