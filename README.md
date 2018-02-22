@@ -29,11 +29,11 @@ The system configuration can be changed in `common/config.h` file. Here we list 
 
 
 	S_THREAD_CNT		:	Number of threads running simultaneously in this server
-	PORT			:	Service port
-	DEFAULT_TIMEOUT		:	Timeout for one opertaion
-	MIN_NUM_RETRIES		:	Minimum retry number of one read operation.
-	MAX_RESTART		:	Maximum retry number of one transaction
+	PORT			:	Server port
+	DEFAULT_TIMEOUT		:	Timeout for one operation
+	MIN_NUM_RETRIES		:	Minimum retry number of one read operation
 	C_THREAD_CNT		:	Number of concurrent transactions in this client
+	MAX_RESTART		:	Maximum restart number of one transaction
 	KEY_SPACE		:	Size of key space size
 	TEST_TYPE		:	Type of the tested transaction. Five types of transactions are supported (Read-Only, Read-Intensive, Write-Intensive, Short, Mix)
 	CLIENT_ID		:	Client Id
@@ -43,7 +43,7 @@ For each protocol, there are some separate configurations.
 
 MVTIL: 
 
-	MVTL_POLICY		:	LOCK_FIRST_INTERVAL or LOCK_LAST_INTERVAL are supported
+	MVTL_POLICY		:	MVTIL-early (LOCK_FIRST_INTERVAL) and MVTIL-late (LOCK_LAST_INTERVAL) are supported.
 	INTERVAL_DURATION	:	Initial interval length
 
 
@@ -51,8 +51,13 @@ MVTIL:
 
 EC2 Deployment
 --------------
+Step 1. Launch EC2 instances and install SSM Agent (**https://docs.aws.amazon.com/systems-manager/latest/userguide/sysman-install-startup-linux.html**)
 
-It also contains the alternative protocols 2PL and MVTO 
+Step 2. Download system code and run `ec2_deploy.sh` on each instance. 
+
+Step 3. Run evaluation script.
+
+
 
 
 
