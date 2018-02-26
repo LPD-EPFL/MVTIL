@@ -39,7 +39,7 @@ The system configuration can be changed in `common/config.h` file. Here we list 
 	CLIENT_ID		:	Client Id
 	TEST_DURATION_MS	:	Test Duration
 
-For each protocol, there are some separate configurations.
+For each protocol, there are a number of separate configuration parameters.
 
 MVTIL: 
 
