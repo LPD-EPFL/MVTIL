@@ -1,11 +1,11 @@
 Multi-Version Timestamp Interval Locking (MVTIL)
 ================================================
 
-MVTIL is a distributed concurrency control protocol based on multiversion timestamp locking (MVTL). Here we compare it with the alternative protocols, like 2PL and MVTO+ to demonstrate its advantage. More details can be found here: 
+MVTIL is a distributed concurrency control protocol based on multiversion timestamp locking (MVTL). Here, we implement and compare it with alternative protocols, such as 2PL and MVTO+.
 
 Compilation
 -----------
-The libraries required in this system are 
+The required libraries are 
 
   * Boost
   * Apache Thrift
@@ -25,7 +25,7 @@ To test the system
 
 Configuration
 -------------
-The system configuration can be changed in `common/config.h` file. Here we list the meaning of some important configurations.
+The system configuration can be changed in `common/config.h` file. Here we list the meaning of some important parameters.
 
 
 	S_THREAD_CNT		:	Number of threads running simultaneously in this server
