@@ -23,12 +23,13 @@ To build the system
 To test the system
 
 1. Run system manually
-	* Start each server by running `./server_exec` one by one
-	* Add servers information in the `servers.xml`
+	* Start servers by running `./server_exec` one by one
+	* Add servers information in the `servers.xml` and put it into the test fold of client
 	* Test client by running `./performance`
 
 2. Run system with fabric API
 	* Install fabric by using `pip install fabric3`
+	* Add servers information in the `servers.xml` and put it into the test fold of client
 	* Test the performance of system by using `python run_local_cluster.py`
 
 
