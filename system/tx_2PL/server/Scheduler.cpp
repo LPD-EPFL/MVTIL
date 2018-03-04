@@ -1,4 +1,9 @@
 /*   
+ *   File: Scheduler.cpp
+ *   Author: Junxiong Wang <junxiong.wang@epfl.ch>
+ *   Description: 
+ *   Scheduler.cpp is part of MVTLSYS
+ *
  * Copyright (c) 2017 Junxiong Wang <junxiong.wang@epfl.ch>,
  *                Tudor David <tudor.david@epfl.ch>
  *                Distributed Programming Lab (LPD), EPFL
@@ -149,8 +154,7 @@ void Scheduler::HandleReadRequest(ReadReply& _return, const TransactionId tid, c
 		}
 
 		auto now = std::chrono::high_resolution_clock::now();
-		//!isReadOnly()
-		if(numRetries > read_retry && timeout(tStart,now)){
+		if(numRetries > read_retry && timeout(tStart,now) && !isReadOnly){
 			#ifdef DEBUG
 				cout<<"Read lock failed on key:"<<k<<" "<<endl;		
 			#endif

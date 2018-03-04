@@ -1,4 +1,4 @@
-CFLAGS:=-std=c++1y
+CFLAGS:=-std=c++14
 
 ifeq ($(DEBUG),1)
   DEBUG_FLAGS=-Wall -ggdb -g -DDEBUG

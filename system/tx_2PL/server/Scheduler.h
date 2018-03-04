@@ -1,4 +1,9 @@
 /*   
+ *   File: Scheduler.h
+ *   Author: Junxiong Wang <junxiong.wang@epfl.ch>
+ *   Description: 
+ *   Scheduler.h is part of MVTLSYS
+ *
  * Copyright (c) 2017 Junxiong Wang <junxiong.wang@epfl.ch>,
  *                Tudor David <tudor.david@epfl.ch>
  *                Distributed Programming Lab (LPD), EPFL
@@ -31,9 +36,6 @@
 
 #include "tbb/concurrent_hash_map.h"
 
-//#define DEFAULT_TIMEOUT 10 //in milliseconds
-//#define MIN_NUM_RETRIES 5
-//#define PAUSE_LENGTH 1ms
 
 using namespace ::TxProtocol;
 using namespace tbb;
@@ -50,9 +52,8 @@ class Scheduler : virtual public DataServiceIf {
 		typedef concurrent_hash_map<Key, Value> DataMap;
 
 		Scheduler() {
-			// Your initialization goes here
-				wait_time = s_timeout;
-				read_retry = s_retry;
+			wait_time = s_timeout;
+			read_retry = s_retry;
 		}
 		~Scheduler(){  
 		}
@@ -67,7 +68,6 @@ class Scheduler : virtual public DataServiceIf {
 		Locks data_locks;
 		TxMap pending_operations;
 		DataMap persist_versions;
-		//LockSet lockSet;
 		int wait_time;
 		int read_retry;
 
