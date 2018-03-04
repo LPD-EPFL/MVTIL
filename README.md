@@ -61,11 +61,15 @@ MVTIL:
 
 EC2 Deployment
 --------------
-Step 1. Launch EC2 instances and install SSM Agent(**https://docs.aws.amazon.com/systems-manager/latest/userguide/sysman-install-startup-linux.html**)
+Step 1. Launch EC2 instances and install SSM Agent (**https://docs.aws.amazon.com/systems-manager/latest/userguide/sysman-install-startup-linux.html**)
 
-Step 2. Use EC2 run command(**https://docs.aws.amazon.com/systems-manager/latest/userguide/rc-console.html**) to download system code and run `ec2_deploy.sh` on each instance. 
+Step 2. Use EC2 run command tools (**https://docs.aws.amazon.com/systems-manager/latest/userguide/rc-console.html**) to download system code and run `ec2_deploy.sh` on all instances. 
 
-Step 3. Run evaluation scripts.
+Step 3. Install fabric API on your local computer `pip install fabirc3`
+
+Step 4. Add EC2 configure settings (security credentials and the default region) to your home directory (**https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-getting-started.html**).
+
+Step 4. Run evaluation scripts `python run_ec2_client_scale.py`.
 
 
 
