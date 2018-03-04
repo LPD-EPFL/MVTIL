@@ -1,5 +1,4 @@
 #!/bin/sh
-
 sudo yum -y install gcc-c++
 sudo yum -y install unzip
 sudo yum -y install zlib-devel openssl-devel

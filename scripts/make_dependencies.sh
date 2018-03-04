@@ -1,3 +1,5 @@
+#!/bin/sh
+
 #install boost
 cd /tmp
 
