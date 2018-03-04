@@ -20,9 +20,6 @@
 
 #include "ServerConnection.h"
 #include "ConfigLoader.h"
-// #include <thrift/protocol/TBinaryProtocol.h>
-// #include <thrift/transport/TSocket.h>
-// #include <thrift/transport/TBufferTransports.h>
 
 #include <boost/property_tree/xml_parser.hpp>
 #include <boost/property_tree/ptree.hpp>

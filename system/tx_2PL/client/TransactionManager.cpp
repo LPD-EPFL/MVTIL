@@ -139,13 +139,10 @@ bool TransactionManager::AbortTransaction(Transaction *tx){
 	tx->read_set.clear(); 
 	tx->write_set.clear();
 	tx->lockSetServers.clear();
-	//tx->is_abort = true;
 	return true;
 }
 
 bool TransactionManager::RestartTransaction(Transaction* tx){
-	//tx->is_abort = true;
-	//return false;
 	bool suss;
 	std::vector<std::tuple<Key, Value, TransactionOperation>> operationSet = tx->pendingOperations;
 	while(tx->restart_num <= c_restart){

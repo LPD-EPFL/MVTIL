@@ -30,8 +30,8 @@ typedef std::string Key;
 typedef std::string Value;
 
 typedef struct DS{
-    std::string host;
-    int port;
+	std::string host;
+	int port;
 }DataServerInfo;
 
 const std::string NULL_VALUE = "_";

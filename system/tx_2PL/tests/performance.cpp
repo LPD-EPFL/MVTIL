@@ -1,4 +1,4 @@
- * /* 
+ /* 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -182,9 +182,9 @@ void execute_test(int threadId, int type) {
 	}
 
 	while (stop == false) {
-	   TransactionType t = get_random_transaction_type(type);
-	   nu_commit += execute_transaction(t);
-	   myThroughput++; 
+		TransactionType t = get_random_transaction_type(type);
+		nu_commit += execute_transaction(t);
+		myThroughput++; 
 	}
 
 	thr[threadId] = myThroughput;
