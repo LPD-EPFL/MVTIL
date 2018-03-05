@@ -22,14 +22,12 @@ LocalOracle::LocalOracle(int64_t cid):client_id(cid){
     std::tm tm = {};
     strptime("Wed Sept 20 2017 00:00:00", "%a %b %d %Y %H:%M:%S", &tm);
     initialTime = std::chrono::system_clock::from_time_t(std::mktime(&tm));
-    //initialTime = std::chrono::system_clock::now();
 }
 
 LocalOracle::~LocalOracle(){
 }
 
 Timestamp LocalOracle::GetTimestamp(){
-    //Timestamp start_ts = ((std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now() - initialTime).count()) << 10) + client_id % 1024;
     Timestamp start_ts = ((std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now() - initialTime).count()) << LOW_BITE) + (client_id << 10) + crt % 1024;
     return start_ts;
 }

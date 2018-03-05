@@ -1,4 +1,9 @@
 /*   
+ *   File: VersionManager.h
+ *   Author: Junxiong Wang <junxiong.wang@epfl.ch>
+ *   Description: 
+ *   VersionManager.h is part of MVTLSYS
+ *
  * Copyright (c) 2017 Junxiong Wang <junxiong.wang@epfl.ch>,
  *                Tudor David <tudor.david@epfl.ch>
  *                Distributed Programming Lab (LPD), EPFL

@@ -21,7 +21,6 @@
 
 using namespace std;
 
-//#define KEY_SIZE 5
 #define VALUE_SIZE 100
 
 volatile bool start;
