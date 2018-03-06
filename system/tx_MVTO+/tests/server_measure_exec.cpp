@@ -49,14 +49,14 @@ using namespace  ::TxProtocol;
 void parser_server(int argc, char * argv[]);
 
 void print(const boost::system::error_code& /*e*/,
-    boost::asio::deadline_timer* t, Scheduler* scheduler)
+	boost::asio::deadline_timer* t, Scheduler* scheduler)
 {
 	int version_len = 0;
 	scheduler->GetSize(version_len);
 	std::cout<<version_len<<std::endl;
-    t->expires_at(t->expires_at() + boost::posix_time::seconds(MEASURE_DURATION));
-    t->async_wait(boost::bind(print,
-          boost::asio::placeholders::error, t, scheduler));
+	t->expires_at(t->expires_at() + boost::posix_time::seconds(MEASURE_DURATION));
+	t->async_wait(boost::bind(print,
+		boost::asio::placeholders::error, t, scheduler));
 }
 
 
