@@ -92,9 +92,6 @@ int main(int argc, char **argv) {
 		TThreadPoolServer server(processor, serverTransport, transportFactory, protocolFactory,threadManager);
 		server.serve();
 	}
-
-
-
 	return 0;
 }
 

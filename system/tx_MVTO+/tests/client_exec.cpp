@@ -25,7 +25,6 @@ using namespace std;
 using namespace ::TxProtocol;
 
 int main(int argc, char **argv) {
-
 	TransactionManager* manager = new TransactionManager(1);
 	Transaction* tx1 = manager->StartTransaction();
 	Transaction* tx2 = manager->StartTransaction();
