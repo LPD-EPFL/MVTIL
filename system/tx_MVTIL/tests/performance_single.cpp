@@ -1,4 +1,4 @@
-/* 
+ /* 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -12,15 +12,26 @@
  * limitations under the License.
  */
 
-#include "client.h"
 #include "TransactionManager.h"
 #include <string>
 #include <thread>
 #include <chrono>
 #include <iostream>
 
+//Get Local IP
+#include <cstdio>
+#include <cstring>
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <sys/ioctl.h>
+#include <netinet/in.h>
+#include <net/if.h>
+#include <unistd.h>
+#include <arpa/inet.h>
+
 using namespace std;
 
+//#define KEY_SIZE 5
 #define VALUE_SIZE 100
 
 volatile bool start;
@@ -28,7 +39,7 @@ volatile bool stop;
 volatile uint64_t thr[MAX_NUM_THREADS];
 volatile uint64_t commit[MAX_NUM_THREADS];
 
-TransactionManager* managers[MAX_NUM_THREADS];
+TransactionManager* transactionManager;
 
 // defined in parser.cpp
 void parser_client(int argc, char * argv[]);
@@ -47,40 +58,81 @@ inline std::string generate_random_value() {
 	return random_string(VALUE_SIZE);
 }
 
+
 inline TransactionType get_random_transaction_type(int type) {
-	 return static_cast<TransactionType>(type);
+	if(type < MIX){
+		return static_cast<TransactionType>(type);
+	}
+	else{
+		return static_cast<TransactionType>(rand() % MIX);   //TODO change rand function
+	}
 }
 
-int execute_transaction(int threadId, TransactionType type) {
-	TransactionManager* transactionManager = managers[threadId];
+int execute_transaction(TransactionType type) {
 	int suss = 0;
 	int i;
 	Value val;
 	Value generated;
 	Key key;
 	switch(type) { 
-		case RW_CONFLICT:
-			{
-				std::vector<int> ops(c_test_read + c_test_write,0);
-				for(int i = 0; i < c_test_write; i++){
-					ops[i] = 1;
-				}
-				std::random_shuffle(ops.begin(),ops.end());
-				TX_START;
-				for(auto op:ops){
-					if(op == 0){
-						key = generate_random_key();
-						TX_READ(key, val);
-					}
-					else if(op == 1){
-						key = generate_random_key();
-						generated = generate_random_value();
-						TX_WRITE(key, generated);
-					}
-				}
-				TX_COMMIT;
-				break;
+		case READ_ONLY:
+			TX_START;
+			for (i=0; i<RO_SIZE; i++) {
+				key = generate_random_key();
+				TX_READ(key, val);
 			}
+			TX_COMMIT;
+			break;
+		case READ_INTENSIVE:
+			TX_START;
+			for (i=0; i<RW_SIZE; i++) {
+				key = generate_random_key();
+				TX_READ(key, val);
+			}
+			for (i=0; i<RW_SIZE/2; i++) {
+				key = generate_random_key();
+				TX_READ(key, val);
+				key = generate_random_key();
+				TX_WRITE(key, val);
+			}
+			TX_COMMIT;
+			break;
+		case WRITE_INTENSIVE:
+			TX_START;
+			for (i=0; i<RW_SIZE; i++) {
+				key = generate_random_key();
+				TX_READ(key, val);
+				key = generate_random_key();
+				TX_WRITE(key, val);
+			}
+			TX_COMMIT;
+			break;
+		case RW:
+			TX_START;
+			for (i=0; i<RW_SIZE; i++){
+				key = generate_random_key();
+				TX_READ(key, val);
+				generated = generate_random_value();
+				TX_WRITE(key, generated);
+			}
+			TX_COMMIT;
+			break;
+		case RW_SHORT:
+			TX_START;
+			key = generate_random_key();
+			TX_READ(key, val);
+			generated = generate_random_value();
+			TX_WRITE(key, generated);
+			key = generate_random_key();
+			TX_READ(key, val);
+			generated = generate_random_value();
+			TX_WRITE(key, generated);
+			key = generate_random_key();
+			TX_READ(key, val);
+			generated = generate_random_value();
+			TX_WRITE(key, generated);
+			TX_COMMIT;
+			break;
 		default:
 			std::cout<<"Unknown transaction type"<<std::endl;
 			break;
@@ -91,14 +143,15 @@ int execute_transaction(int threadId, TransactionType type) {
 void execute_test(int threadId, int type) {
 	uint64_t myThroughput = 0;
 	uint64_t nu_commit = 0;
+
 	while (start == false) {
 		//wait
 	}
 
 	while (stop == false) {
-	   TransactionType t = get_random_transaction_type(type);
-	   nu_commit += execute_transaction(threadId, t);
-	   myThroughput++; 
+		TransactionType t = get_random_transaction_type(type);
+		nu_commit += execute_transaction(t);
+		myThroughput++; 
 	}
 
 	thr[threadId] = myThroughput;
@@ -106,7 +159,7 @@ void execute_test(int threadId, int type) {
 }
 
 int main(int argc, char **argv) {
-
+	
 	parser_client(argc, argv);
 
 	start = false;
@@ -114,15 +167,17 @@ int main(int argc, char **argv) {
 	std::vector<std::thread> threads;
 	uint32_t i;
 
+	transactionManager = new TransactionManager(c_id);
+
 	for  (i = 0; i < c_thread_cnt; i++) {
 		thr[i] = 0;
-		managers[i] = new TransactionManager(c_id*c_thread_cnt + i);
 	}
 
 	for  (i = 0; i < c_thread_cnt; i++) {
-	   threads.push_back(std::thread(&execute_test, i, c_test_type)); 
+	   threads.push_back(std::thread(&execute_test, i, c_test_type));
 	}
 
+	//allow threads to start 
 	start = true;
 
 	//sleep

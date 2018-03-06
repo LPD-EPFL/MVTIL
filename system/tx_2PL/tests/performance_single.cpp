@@ -158,20 +158,6 @@ void execute_test(int threadId, int type) {
 	commit[threadId] = nu_commit;
 }
 
-int generate_client_id(){
-	int fd;
-	struct ifreq ifr;
-	char iface[] = "eth0";
-	fd = socket(AF_INET, SOCK_DGRAM, 0);
-	ifr.ifr_addr.sa_family = AF_INET;
-	strncpy(ifr.ifr_name , iface , IFNAMSIZ-1);
-	ioctl(fd, SIOCGIFADDR, &ifr);
-	close(fd);
-	unsigned short a, b, c, d;
-	sscanf(inet_ntoa(((struct sockaddr_in *)&ifr.ifr_addr )->sin_addr), "%hu.%hu.%hu.%hu", &a, &b, &c, &d);
-	return d;
-}
-
 int main(int argc, char **argv) {
 	
 	parser_client(argc, argv);
@@ -181,8 +167,7 @@ int main(int argc, char **argv) {
 	std::vector<std::thread> threads;
 	uint32_t i;
 
-	int client_id = generate_client_id();
-	transactionManager = new TransactionManager(client_id);
+	transactionManager = new TransactionManager(c_id);
 
 	for  (i = 0; i < c_thread_cnt; i++) {
 		thr[i] = 0;

@@ -57,7 +57,7 @@ endef
 
 .PHONY: all checkdirs thrift clean
 
-all: checkdirs thrift build/server_exec build/client_exec build/test_single_client build/test_multi_client build/performance_key_space build/performance build/server_gc_exec build/performance_single build/performance_conflict
+all: checkdirs thrift build/server_exec build/client_exec build/test_single_client build/test_multi_client build/performance build/server_measure_exec build/performance_single build/performance_conflict
 
 #build/performance_multi
 
@@ -68,10 +68,10 @@ build/server_exec: $(OBJ_SERVER) build/server_exec.o
 build/server_exec.o: tests/server_exec.cpp
 	$(CC) $(INCLUDES_SERVER) $(CFLAGS) $(DEBUG_FLAGS) -c $< -o $@
 
-build/server_gc_exec: $(OBJ_SERVER) build/server_gc_exec.o
+build/server_measure_exec: $(OBJ_SERVER) build/server_measure_exec.o
 	$(LD) $(CFLAGS) $(DEBUG_FLAGS) $^ -o $@ $(LIB_DIR) $(LIBS)
 
-build/server_gc_exec.o: tests/server_gc_exec.cpp
+build/server_measure_exec.o: tests/server_measure_exec.cpp
 	$(CC) $(INCLUDES_SERVER) $(CFLAGS) $(DEBUG_FLAGS) -c $< -o $@
 
 #client
@@ -97,18 +97,6 @@ build/performance_single: $(OBJ_CLIENT) build/performance_single.o
 	$(LD) $(CFLAGS) $(DEBUG_FLAGS) $^ -o $@ $(LIB_DIR) $(LIBS)
 
 build/performance_single.o: tests/performance_single.cpp
-	$(CC) $(INCLUDES_CLIENT) $(CFLAGS) $(DEBUG_FLAGS) -c $< -o $@
-
-build/performance_multi: $(OBJ_CLIENT) build/performance_multi.o
-	$(LD) $(CFLAGS) $(DEBUG_FLAGS) $^ -o $@ $(LIB_DIR) $(LIBS)
-
-build/performance_multi.o: tests/performance_multi.cpp
-	$(CC) $(INCLUDES_CLIENT) $(CFLAGS) $(DEBUG_FLAGS) -c $< -o $@
-
-build/performance_key_space: $(OBJ_CLIENT) build/performance_key_space.o
-	$(LD) $(CFLAGS) $(DEBUG_FLAGS) $^ -o $@ $(LIB_DIR) $(LIBS)
-
-build/performance_key_space.o: tests/performance_key_space.cpp
 	$(CC) $(INCLUDES_CLIENT) $(CFLAGS) $(DEBUG_FLAGS) -c $< -o $@
 
 build/performance: $(OBJ_CLIENT) build/performance.o

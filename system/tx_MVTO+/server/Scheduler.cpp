@@ -24,10 +24,10 @@
 
 void Scheduler::HandleAbort(AbortReply& _return, const TransactionId tid, const Timestamp ts){
 	#ifdef DEBUG
-    	std::cout<<"Scheduler: Abort Operation, tid:"<< tid <<endl;
+		std::cout<<"Scheduler: Abort Operation, tid:"<< tid <<endl;
 	#endif	
 
-    WriteMap::accessor writeAcc;
+	WriteMap::accessor writeAcc;
 	if(pendingWrite.find(writeAcc, tid)){
 		std::unordered_set<Key>& writeSet = writeAcc->second;
 		for(const Key& k: writeSet){
@@ -66,7 +66,7 @@ void Scheduler::HandleAbort(AbortReply& _return, const TransactionId tid, const 
 
 void Scheduler::HandleCommit(CommitReply& _return, const TransactionId tid, const Timestamp ts){
 	#ifdef DEBUG
-    	std::cout<<"Scheduler: Commit Operation, tid:"<< tid <<endl;
+		std::cout<<"Scheduler: Commit Operation, tid:"<< tid <<endl;
 	#endif
 
 	WriteMap::accessor writeAcc;
@@ -97,7 +97,7 @@ void Scheduler::HandleCommit(CommitReply& _return, const TransactionId tid, cons
 void Scheduler::HandleReadRequest(ReadReply& _return, const TransactionId tid, const Timestamp ts, const Key& k){
 	
 	#ifdef DEBUG
-    	std::cout<<"Scheduler: Read Operation, tid:"<< tid <<endl;
+		std::cout<<"Scheduler: Read Operation, tid:"<< tid <<endl;
 	#endif
 	_return.tid = tid;
 	_return.ts = ts;
@@ -120,7 +120,7 @@ void Scheduler::HandleReadRequest(ReadReply& _return, const TransactionId tid, c
 			VersionState state = prev->value.version_state;
 			if(state == VersionState::COMMITTED){
 				prev->value.read_time.insert(ts);
-			 	suss = true;
+				suss = true;
 			}
 			lockSet.unlock(k);
 			if(suss){
@@ -132,8 +132,8 @@ void Scheduler::HandleReadRequest(ReadReply& _return, const TransactionId tid, c
 				readAcc->second[k] = prev->key;
 				readAcc.release();
 				_return.value = prev->value.version_value;
-			 	_return.state = OperationState::R_SUCCESS;
-			 	return;
+				_return.state = OperationState::R_SUCCESS;
+				return;
 			}
 		}
 		else{
