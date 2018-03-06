@@ -18,10 +18,6 @@
 #ifndef _CONFIG_H_
 #define _CONFIG_H_
 
-//System
-//#define CC_ALG 				MVTL
-//#define ISOLATION_LEVEL 		SERIALIZABLE
-
 //Server
 #define S_THREAD_CNT			50
 #define PORT					6060
@@ -40,13 +36,6 @@
 #define TEST_TYPE				MIX
 #define CLIENT_ID				0
 
-// #define READ_ONLY			0
-// #define MANY_READS_ONE_WRITE	1
-// #define WRITE_INTENSIVE		2
-// #define RW_ONE_KEY			3
-// #define RW_SHORT				4
-// #define MIX					5
-
 //Test
 #define TEST_DURATION_MS		10000
 #define MAX_NUM_THREADS			5000
@@ -54,6 +43,6 @@
 #define RW_SIZE					10
 
 typedef enum {READ_ONLY, READ_INTENSIVE, WRITE_INTENSIVE, RW_ONE_KEY, RW_SHORT, MIX, RW_LONG, RW_CONFLICT} TransactionType;
+//typedef enum {RW_CONFLICT} TransactionType;
 
-//#define WORKLOAD 				YCSB
 #endif

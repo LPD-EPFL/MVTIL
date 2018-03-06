@@ -45,13 +45,11 @@ class OracleHandler : virtual public OracleServiceIf {
   }
 
   Timestamp GetTimestamp() {
-    // Your implementation goes here
     Timestamp duration = ((std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now() -initialTime).count()) << 5) + unique_id;
     return duration;
   }
 
   TransactionId GetTransactionId() {
-    // Your implementation goes here
     unique_id++;
     return unique_id;
   }

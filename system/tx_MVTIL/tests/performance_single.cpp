@@ -21,7 +21,6 @@
 
 using namespace std;
 
-//#define KEY_SIZE 5
 #define VALUE_SIZE 100
 
 volatile bool start;
@@ -48,15 +47,8 @@ inline std::string generate_random_value() {
 	return random_string(VALUE_SIZE);
 }
 
-//typedef enum {READ_ONLY, MANY_READS_ONE_WRITE, WRITE_INTENSIVE, RW_ONE_KEY, R_ONE_KEY, RW_SHORT, NUM_TTYPES} TransactionType;
-
 inline TransactionType get_random_transaction_type(int type) {
-	if(type < MIX){
-		return static_cast<TransactionType>(type);
-	}
-	else{
-		return static_cast<TransactionType>(rand() % MIX);   //TODO change rand function
-	}
+	 return static_cast<TransactionType>(type);
 }
 
 int execute_transaction(int threadId, TransactionType type) {
@@ -66,100 +58,29 @@ int execute_transaction(int threadId, TransactionType type) {
 	Value val;
 	Value generated;
 	Key key;
-	Key key_set[RW_SIZE];
 	switch(type) { 
-		case READ_ONLY:
-			TX_START;
-			for (i=0; i<RO_SIZE; i++) {
-				key = generate_random_key();
-				TX_READ(key, val);
+		case RW_CONFLICT:
+			{
+				std::vector<int> ops(c_test_read + c_test_write,0);
+				for(int i = 0; i < c_test_write; i++){
+					ops[i] = 1;
+				}
+				std::random_shuffle(ops.begin(),ops.end());
+				TX_START;
+				for(auto op:ops){
+					if(op == 0){
+						key = generate_random_key();
+						TX_READ(key, val);
+					}
+					else if(op == 1){
+						key = generate_random_key();
+						generated = generate_random_value();
+						TX_WRITE(key, generated);
+					}
+				}
+				TX_COMMIT;
+				break;
 			}
-			TX_COMMIT;
-			break;
-		/*
-		case MANY_READS_ONE_WRITE:
-			TX_START;
-			Key w = generate_random_key();
-			for (i=0; i<RO_SIZE; i++) {
-				key = generate_random_key();
-				TX_READ(key, val);
-			}
-			generated = generate_random_value();
-			TX_WRITE(w, generated);
-			TX_COMMIT;
-			break;
-		*/
-		case READ_INTENSIVE: 
-			TX_START;
-			for (i=0; i<RW_SIZE; i++) {
-				key = generate_random_key();
-				TX_READ(key, val);
-			}
-			for (i=0; i<RW_SIZE/2; i++) {
-				key = generate_random_key();
-				TX_READ(key, val);
-				key = generate_random_key();
-				TX_WRITE(key, val);
-			}
-			TX_COMMIT;
-			break;
-		case WRITE_INTENSIVE:
-			TX_START;
-			for (i=0; i<RW_SIZE; i++) {
-				key = generate_random_key();
-				TX_READ(key, val);
-				key = generate_random_key();
-				TX_WRITE(key, val);
-			}
-			TX_COMMIT;
-			break;
-		case RW_ONE_KEY:
-			TX_START;
-			for (i=0; i<RW_SIZE; i++){
-				key = generate_random_key();
-				TX_READ(key, val);
-			}
-			for(i=0; i<RW_SIZE; i++){
-				key = generate_random_key();
-				generated = generate_random_value();
-				TX_WRITE(key, generated);
-			}
-			TX_COMMIT;
-			break;
-		case RW_LONG:
-			TX_START;
-			key = generate_random_key();
-			TX_READ(key, val);
-			generated = generate_random_value();
-			TX_WRITE(key, generated);
-			std::this_thread::sleep_for(std::chrono::milliseconds(5));
-			key = generate_random_key();
-			TX_READ(key, val);
-			generated = generate_random_value();
-			TX_WRITE(key, generated);
-			std::this_thread::sleep_for(std::chrono::milliseconds(5));
-			key = generate_random_key();
-			TX_READ(key, val);
-			generated = generate_random_value();
-			TX_WRITE(key, generated);
-			TX_COMMIT;
-			break;
-		case RW_SHORT:
-			TX_START;
-			key = generate_random_key();
-			TX_READ(key, val);
-			generated = generate_random_value();
-			TX_WRITE(key, generated);
-			key = generate_random_key();
-			TX_READ(key, val);
-			generated = generate_random_value();
-			TX_WRITE(key, generated);
-			key = generate_random_key();
-			TX_READ(key, val);
-			generated = generate_random_value();
-			TX_WRITE(key, generated);
-			TX_COMMIT;
-			break;
 		default:
 			std::cout<<"Unknown transaction type"<<std::endl;
 			break;
@@ -170,8 +91,6 @@ int execute_transaction(int threadId, TransactionType type) {
 void execute_test(int threadId, int type) {
 	uint64_t myThroughput = 0;
 	uint64_t nu_commit = 0;
-
-	//cout<<"Thread Id:"<<threadId <<"start!"<<endl;
 	while (start == false) {
 		//wait
 	}
@@ -184,7 +103,6 @@ void execute_test(int threadId, int type) {
 
 	thr[threadId] = myThroughput;
 	commit[threadId] = nu_commit;
-	//cout<<"Thread Id:"<<threadId <<" finish!"<<endl; 
 }
 
 int main(int argc, char **argv) {
@@ -225,15 +143,6 @@ int main(int argc, char **argv) {
 		total_commit+=commit[i];
 	}
 
-	//auto print_start = std::chrono::system_clock::to_time_t(startTime);
-	//auto print_end = std::chrono::system_clock::to_time_t(endTime);
-
-	//cout<<"Total Threads:"<<argv[1]<<endl;
-	//cout<<"Start time:"<<std::ctime(&print_start);
-	//cout<<"End time:"<<std::ctime(&print_end);
-
-	//cout<<"Total throughput:"<<total_throughput<<" in "<< TEST_DURATION_MS <<"ms"<<endl;
-	//cout<<"Total commit:"<<total_commit<<endl;
 	cout<<total_commit<<" "<<total_throughput<<endl;
 	return 0;
 }

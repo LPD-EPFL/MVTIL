@@ -24,30 +24,21 @@
 #include <chrono>
 #include <ctime>
 
-// #include <thrift/protocol/TBinaryProtocol.h>
-// #include <thrift/transport/TSocket.h>
-// #include <thrift/transport/TBufferTransports.h>
-
-// using namespace apache::thrift;
-// using namespace apache::thrift::protocol;
-// using namespace apache::thrift::transport;
-//using namespace ::Oracle;
-
 #define MAX_FACTOR 8192
 
 class LocalOracle
 {
 private:
-    int64_t client_id;
-    int64_t crt;
-    std::chrono::time_point<std::chrono::system_clock> initialTime;
+	int64_t client_id;
+	int64_t crt;
+	std::chrono::time_point<std::chrono::system_clock> initialTime;
 public:
-    Timestamp GetTimestamp();
-    TransactionId GetTransactionId();
-    //Timestamp GetGlobalTimestamp();
-    //TransactionId GetGlobalTransactionId();
-    LocalOracle(int64_t cid);
-    ~LocalOracle();
+	Timestamp GetTimestamp();
+	TransactionId GetTransactionId();
+	Timestamp GetGlobalTimestamp();
+	TransactionId GetGlobalTransactionId();
+	LocalOracle(int64_t cid);
+	~LocalOracle();
 };
 
 #endif

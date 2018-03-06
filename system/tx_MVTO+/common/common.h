@@ -18,8 +18,6 @@
 #ifndef _COMMON_H
 #define _COMMON_H
 
-// #include <cstdint>
-// #include <vector>
 #include <string>
 #include <cstdint>
 

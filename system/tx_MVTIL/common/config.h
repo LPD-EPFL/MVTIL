@@ -62,6 +62,6 @@
 #define RW_SIZE					10
 
 typedef enum {READ_ONLY, READ_INTENSIVE, WRITE_INTENSIVE, RW_ONE_KEY, RW_SHORT, MIX, RW_LONG, RW_CONFLICT} TransactionType;
+//typedef enum {RW_CONFLICT} TransactionType;
 
-//#define WORKLOAD 				YCSB
 #endif

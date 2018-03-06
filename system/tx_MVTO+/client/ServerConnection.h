@@ -30,37 +30,37 @@ using namespace apache::thrift::protocol;
 using namespace apache::thrift::transport;
 
 class ServerConnection {
-    
+	
 private:
-    boost::shared_ptr<TSocket> socket;
-    boost::shared_ptr<TTransport> transport;
-    boost::shared_ptr<TProtocol> protocol;
-    std::mutex mutex;
+	boost::shared_ptr<TSocket> socket;
+	boost::shared_ptr<TTransport> transport;
+	boost::shared_ptr<TProtocol> protocol;
+	std::mutex mutex;
 
 public:
 	std::string host;
-    int port;
+	int port;
 	DataServiceClient *client;
-    ServerConnection(std::string host,int port);
+	ServerConnection(std::string host,int port);
 	virtual ~ServerConnection();
-    inline void lock(){
-        mutex.lock();
-    }
-    inline void unlock(){
-        mutex.unlock();
-    }
+	inline void lock(){
+		mutex.lock();
+	}
+	inline void unlock(){
+		mutex.unlock();
+	}
 };
 
 
 struct ServerConnectionHasher
 {
-    friend class ServerConnection;
-    std::size_t operator()(const ServerConnection* sc) const
-    {
-        using std::size_t;
-        using std::hash;
-        using std::string;
-        return (hash<string>()(sc->host+std::to_string(sc->port)));
-    }
+	friend class ServerConnection;
+	std::size_t operator()(const ServerConnection* sc) const
+	{
+		using std::size_t;
+		using std::hash;
+		using std::string;
+		return (hash<string>()(sc->host+std::to_string(sc->port)));
+	}
 };
 #endif /* CLIENT_SERVERCONNECTION_H_ */

@@ -24,10 +24,6 @@
 #include <string>
 #include <iostream>
 
-//#define MIN_KEY 0
-//#define MAX_KEY 0xFFFF
-//#define SKIP_LIST_MAXLEVEL 4
-
 using namespace std;
 
 template <class K,class V,int MAXLEVEL>

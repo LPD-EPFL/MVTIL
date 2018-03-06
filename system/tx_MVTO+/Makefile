@@ -12,7 +12,7 @@ CC        := g++
 LD        := g++
 
 LIBS := -lboost_system -lboost_thread -lpthread -lthrift -lthriftnb -levent -ltbb -lrt
-LIB_DIR := -L/usr/local/lib -L/home/jwang/lib 
+LIB_DIR := -L/usr/local/lib
 
 FILTER_FILE := gen-cpp/OracleServer_server.skeleton.cpp gen-cpp/DataServer_server.skeleton.cpp
 
