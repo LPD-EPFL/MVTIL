@@ -25,7 +25,7 @@
 void VersionManager::TryReadLock(TransactionId tid, Key key, TimestampInterval interval, LockInfo& lockInfo)
 {
 	#ifdef DEBUG
-		//std::cout<<"VersionManager: Read Key:"<<key<<",Timestamp interval["<<interval.start<<","<<interval.finish<<"]"<<endl;
+		std::cout<<"VersionManager: Read Key:"<<key<<",Timestamp interval["<<interval.start<<","<<interval.finish<<"]"<<endl;
 	#endif
 
 	VersionMap::accessor veAcc;
@@ -50,12 +50,6 @@ void VersionManager::TryReadLock(TransactionId tid, Key key, TimestampInterval i
 		candidateInterval.start = interval.start;
 		candidateInterval.lock_start = prev->key + 1;
 		candidateInterval.finish = min(interval.finish, curr->key - 1);
-		/*
-		if(candidateInterval.lock_start > candidateInterval.finish){
-			lockInfo.state = OperationState::FAIL_PENDING_VERSION;
-			return;
-		}
-		*/
 		bool is_success = ve->manager.LockReadInterval(tid, candidateInterval);
 		ve->unlockEntry();
 		if(!is_success){
@@ -84,7 +78,7 @@ void VersionManager::TryWriteLock(TransactionId tid, Key key, TimestampInterval 
 {
 
 	#ifdef DEBUG
-		//std::cout<<"VersionManager: Write Key:"<<key<<",Timestamp interval ["<<interval.start<<","<<interval.finish<<"]"<<endl;
+		std::cout<<"VersionManager: Write Key:"<<key<<",Timestamp interval ["<<interval.start<<","<<interval.finish<<"]"<<endl;
 	#endif
 
 	VersionMap::accessor veAcc;
@@ -116,7 +110,7 @@ void VersionManager::TryWriteLock(TransactionId tid, Key key, TimestampInterval 
 bool VersionManager::UpdateAndPersistVersion(TransactionId tid, Key key, Value value, Timestamp old_ts, Timestamp new_ts) {
 
 	#ifdef DEBUG
-		//std::cout<<"VersionManager: Persist Key:"<<key<<",Timestamp:"<<new_ts<<endl;
+		std::cout<<"VersionManager: Persist Key:"<<key<<",Timestamp:"<<new_ts<<endl;
 	#endif
 
 	VersionMap::accessor veAcc;
@@ -128,8 +122,6 @@ bool VersionManager::UpdateAndPersistVersion(TransactionId tid, Key key, Value v
 		ve->unlockEntry();
 	}
 
-	//GC
-	//GarbageCollection(new_ts - (100 << 8));
 	veAcc.release();
 	return true;
 }

@@ -27,8 +27,6 @@
 #include "CapabilityOperation.h"
 #include <mutex>
 
-//#define MAX_LEVEL 4
-
 typedef struct IL{
 	TransactionId transaction_id; 
 	TimestampInterval interval;
