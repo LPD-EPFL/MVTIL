@@ -36,7 +36,7 @@ SRC_CLIENT       := $(foreach sdir,$(SRC_DIR_CLIENT),$(filter-out $FILTER_FILE, 
 OBJ_CLIENT       :=  $(patsubst %.cpp,build/%.o,$(SRC_CLIENT))
 INCLUDES_CLIENT  := $(addprefix -I,$(SRC_DIR_CLIENT))
 
-INCLUDES_CLIENT += -I/usr/local/include -I/home/jwang/include
+INCLUDES_CLIENT += -I/usr/local/include
 
 
 ALL_MODULES :=  $(sort $(MODULES_SERVER) $(MODULES_CLIENT))

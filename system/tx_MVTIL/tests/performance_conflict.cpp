@@ -54,7 +54,6 @@ inline TransactionType get_random_transaction_type(int type) {
 int execute_transaction(int threadId, TransactionType type) {
 	TransactionManager* transactionManager = managers[threadId];
 	int suss = 0;
-	int i;
 	Value val;
 	Value generated;
 	Key key;
@@ -62,7 +61,7 @@ int execute_transaction(int threadId, TransactionType type) {
 		case RW_CONFLICT:
 			{
 				std::vector<int> ops(c_test_read + c_test_write,0);
-				for(int i = 0; i < c_test_write; i++){
+				for(uint32_t i = 0; i < c_test_write; i++){
 					ops[i] = 1;
 				}
 				std::random_shuffle(ops.begin(),ops.end());

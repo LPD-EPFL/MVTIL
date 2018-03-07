@@ -25,7 +25,7 @@ SRC_SERVER       := $(foreach sdir,$(SRC_DIR_SERVER),$(filter-out $FILTER_FILE, 
 OBJ_SERVER       :=  $(patsubst %.cpp,build/%.o,$(SRC_SERVER))
 INCLUDES_SERVER  := $(addprefix -I,$(SRC_DIR_SERVER))
 
-INCLUDES_SERVER += -I/usr/local/include -I/home/jwang/include
+INCLUDES_SERVER += -I/usr/local/include
 
 #client
 MODULES_CLIENT   := common client gen-cpp
@@ -36,7 +36,7 @@ SRC_CLIENT       := $(foreach sdir,$(SRC_DIR_CLIENT),$(filter-out $FILTER_FILE, 
 OBJ_CLIENT       :=  $(patsubst %.cpp,build/%.o,$(SRC_CLIENT))
 INCLUDES_CLIENT  := $(addprefix -I,$(SRC_DIR_CLIENT))
 
-INCLUDES_CLIENT += -I/usr/local/include -I/home/jwang/include
+INCLUDES_CLIENT += -I/usr/local/include
 
 
 ALL_MODULES :=  $(sort $(MODULES_SERVER) $(MODULES_CLIENT))

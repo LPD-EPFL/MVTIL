@@ -76,7 +76,7 @@ def client_start(hosts,alg,test_id,c_threads,tx_info):
 def client_run(alg,test_id,c_threads):
 	cid = c_hosts.index(env.host)
 	with shell_env(LD_LIBRARY_PATH="/home/jwang/lib:/usr/lib:/usr/local/lib"):
-		command = '%stx_%s/build/performance_single -l20000 -t%d -c%d -i%d -k%d'%(alg_dir,alg,test_id,c_threads,cid,key_space)
+		command = '%stx_%s/build/performance -l20000 -t%d -c%d -i%d -k%d'%(alg_dir,alg,test_id,c_threads,cid,key_space)
 		output = run(command).split()
 		return output
 

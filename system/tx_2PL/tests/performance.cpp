@@ -64,7 +64,6 @@ int execute_transaction(int threadId, TransactionType type) {
 	Value val;
 	Value generated;
 	Key key;
-	Key key_set[RW_SIZE];
 	switch(type) { 
 		case READ_ONLY:
 			TX_START;

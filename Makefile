@@ -1,6 +1,6 @@
 TOPTARGETS := all clean
 
-SUBDIRS := system/tx_2PL system/tx_MVTIL system/MVTO+
+SUBDIRS := system/tx_2PL system/tx_MVTIL system/tx_MVTO+
 
 $(TOPTARGETS): $(SUBDIRS)
 $(SUBDIRS):

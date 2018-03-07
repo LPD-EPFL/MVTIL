@@ -24,6 +24,15 @@
 #include <chrono>
 #include <ctime>
 
+#include <thrift/protocol/TBinaryProtocol.h>
+#include <thrift/transport/TSocket.h>
+#include <thrift/transport/TBufferTransports.h>
+
+using namespace apache::thrift;
+using namespace apache::thrift::protocol;
+using namespace apache::thrift::transport;
+using namespace ::Oracle;
+
 #define MAX_FACTOR 8192
 
 class LocalOracle
