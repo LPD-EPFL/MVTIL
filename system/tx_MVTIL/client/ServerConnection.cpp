@@ -18,7 +18,6 @@
 #include "ServerConnection.h"
 
 ServerConnection::ServerConnection(std::string h,int prt):host(h),port(prt) {
-	// TODO Auto-generated constructor stub
     boost::shared_ptr<TSocket> s(new TSocket(host, port));
     if(c_stype == NON_BLOCKING_SERVER)
     {
@@ -39,7 +38,6 @@ ServerConnection::ServerConnection(std::string h,int prt):host(h),port(prt) {
 }
 
 ServerConnection::~ServerConnection() {
-	// TODO Auto-generated destructor stub
     if(transport->isOpen()){
         transport->close();
     }
