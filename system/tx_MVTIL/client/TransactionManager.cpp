@@ -188,7 +188,7 @@ bool TransactionManager::RestartTransaction(Transaction* tx){
 
     bool suss = false;
     std::vector<std::tuple<Key, Value, TransactionOperation>> operationSet = tx->pendingOperations;
-    while(tx->restart_num <= c_restart){
+    while(tx->restart_num <= c_restart && !suss){
         suss = true;
         tx->restart_num++;
         tx->UpdateInterval(oracle.GetTimestamp());
@@ -201,43 +201,11 @@ bool TransactionManager::RestartTransaction(Transaction* tx){
                 suss &= WriteData(tx, std::get<0>(operation), std::get<1>(operation));
             }
             if(!suss){
-                //tx->is_abort = true;
-                //tx->pendingOperations.clear();
                 break;
             }
-        }
-        if(suss){
-            break;
         }
     }
     tx->is_abort = !suss;
     return suss;
-
-    /*
-    std::vector<std::tuple<Key, Value, TransactionOperation>> operationSet = tx->pendingOperations;
-    if(tx->restart_num <= c_restart){
-        bool suss = true;
-        tx->restart_num++;
-        std::vector<std::tuple<Key, Value, TransactionOperation>> operationSet = tx->pendingOperations;
-        tx->UpdateInterval(oracle.GetTimestamp());
-        tx->pendingOperations.clear();
-        for(auto operation:operationSet){
-            if(std::get<2>(operation) == TransactionOperation::READ){
-                suss &= ReadData(tx, std::get<0>(operation), std::get<1>(operation));
-            }
-            else if(std::get<2>(operation) == TransactionOperation::WRITE){
-                suss &= WriteData(tx, std::get<0>(operation), std::get<1>(operation));
-            }
-            if(!suss){
-                break;
-            }
-        }
-        tx->is_abort = !suss;
-        return suss;
-    }
-    else{
-        tx->is_abort = true;
-        return false;
-    }
-    */  
+    
 }

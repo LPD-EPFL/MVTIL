@@ -148,9 +148,9 @@ bool TransactionManager::AbortTransaction(Transaction *tx){
 }
 
 bool TransactionManager::RestartTransaction(Transaction* tx){
-    bool suss;
+    bool suss = false;
     std::vector<std::tuple<Key, Value, TransactionOperation>> operationSet = tx->pendingOperations;
-    while(tx->restart_num <= c_restart){
+    while(tx->restart_num <= c_restart && !suss){
         suss = true;
         tx->restart_num++;
         tx->pendingOperations.clear();
@@ -164,9 +164,6 @@ bool TransactionManager::RestartTransaction(Transaction* tx){
             if(!suss){
                 break;
             }
-        }
-        if(suss){
-            break;
         }
     }
     tx->is_abort = !suss;
