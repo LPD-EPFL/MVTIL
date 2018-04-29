@@ -36,40 +36,40 @@ using namespace tbb;
 using namespace ::TxProtocol;
 
 class Scheduler : virtual public DataServiceIf {
-	public:
-		Scheduler() {
-			wait_time = s_timeout;
-			read_retry = s_retry;
-		}
+    public:
+        Scheduler() {
+            wait_time = s_timeout;
+            read_retry = s_retry;
+        }
 
-		~Scheduler(){ 
-		}
+        ~Scheduler(){ 
+        }
 
-		void HandleAbort(AbortReply& _return, const TransactionId tid, const Timestamp ts);
-		void HandleCommit(CommitReply& _return, const TransactionId tid, const Timestamp ts);
-		void HandleReadRequest(ReadReply& _return, const TransactionId tid, const Timestamp ts, const Key& k);
-		void HandleWriteRequest(WriteReply& _return, const TransactionId tid, const Timestamp ts, const Key& k, const Value& v);
-		void GetSize(int& version_len);
+        void HandleAbort(AbortReply& _return, const TransactionId tid, const Timestamp ts);
+        void HandleCommit(CommitReply& _return, const TransactionId tid, const Timestamp ts);
+        void HandleReadRequest(ReadReply& _return, const TransactionId tid, const Timestamp ts, const Key& k);
+        void HandleWriteRequest(WriteReply& _return, const TransactionId tid, const Timestamp ts, const Key& k, const Value& v);
+        void GetSize(int& version_len);
 
-	private:
-		typedef concurrent_hash_map<Key, std::shared_ptr<VersionList>> VersionMap;
-		typedef concurrent_hash_map<TransactionId, std::unordered_set<Key>> WriteMap;
-		typedef concurrent_hash_map<TransactionId, std::unordered_map<Key, Timestamp>> ReadMap;
-		VersionMap versions;//versions for all key
-		WriteMap pendingWrite;
-		ReadMap pendingRead;
-		LockSet lockSet;
-		int wait_time;
-		int read_retry;
+    private:
+        typedef concurrent_hash_map<Key, std::shared_ptr<VersionList>> VersionMap;
+        typedef concurrent_hash_map<TransactionId, std::unordered_set<Key>> WriteMap;
+        typedef concurrent_hash_map<TransactionId, std::unordered_map<Key, Timestamp>> ReadMap;
+        VersionMap versions;//versions for all key
+        WriteMap pendingWrite;
+        ReadMap pendingRead;
+        LockSet lockSet;
+        int wait_time;
+        int read_retry;
 
-		inline bool timeout(std::chrono::time_point<std::chrono::high_resolution_clock> start, std::chrono::time_point<std::chrono::high_resolution_clock> end) {
-			 auto diff = end - start;
-			 auto ms = std::chrono::duration_cast<std::chrono::milliseconds>(diff);
-			 if (ms.count() > wait_time) {
-				return true;
-			 }
-			 return false;
-		}
+        inline bool timeout(std::chrono::time_point<std::chrono::high_resolution_clock> start, std::chrono::time_point<std::chrono::high_resolution_clock> end) {
+             auto diff = end - start;
+             auto ms = std::chrono::duration_cast<std::chrono::milliseconds>(diff);
+             if (ms.count() > wait_time) {
+                return true;
+             }
+             return false;
+        }
 
 };
 #endif

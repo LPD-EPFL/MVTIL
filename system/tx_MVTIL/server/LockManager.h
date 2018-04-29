@@ -28,24 +28,24 @@
 #include <mutex>
 
 typedef struct IL{
-	TransactionId transaction_id; 
-	TimestampInterval interval;
-	LockOperation lock_operation;
-	int top_level;
-	struct IL *next[MAX_LEVEL];
-	bool is_committed;
+    TransactionId transaction_id; 
+    TimestampInterval interval;
+    LockOperation lock_operation;
+    int top_level;
+    struct IL *next[MAX_LEVEL];
+    bool is_committed;
 }IntervalLock;
 
 class LockManager{
 
 private:
-	Key key;
-	IntervalLock *head;
-	double prob = 0.5;
+    Key key;
+    IntervalLock *head;
+    double prob = 0.5;
     int size = 0;
-	//std::mutex mutex;
-	
-	int GetRandomLevel() {
+    //std::mutex mutex;
+    
+    int GetRandomLevel() {
         int level = 1;        
         while ( rand_range(101) < 100*prob && level < MAX_LEVEL )
             level++;
@@ -53,20 +53,20 @@ private:
     }
 
 public:
-	LockManager(Key k);
-	bool LockReadInterval(TransactionId tid, TimestampInterval& candidate_interval);
-	bool LockWriteInterval(TransactionId tid, TimestampInterval& candidate_interval);
-	void CommitInterval(TransactionId tid, const Timestamp& old_ts,const Timestamp& commit_ts);
-	IntervalLock* CreateReadLock(TimestampInterval read_interval);
-	IntervalLock* CreateWriteLock(TimestampInterval write_interval);
-	bool RemoveLock(TransactionId tid, const Timestamp& old_ts);
-	bool GarbageCollection(Timestamp time);
+    LockManager(Key k);
+    bool LockReadInterval(TransactionId tid, TimestampInterval& candidate_interval);
+    bool LockWriteInterval(TransactionId tid, TimestampInterval& candidate_interval);
+    void CommitInterval(TransactionId tid, const Timestamp& old_ts,const Timestamp& commit_ts);
+    IntervalLock* CreateReadLock(TimestampInterval read_interval);
+    IntervalLock* CreateWriteLock(TimestampInterval write_interval);
+    bool RemoveLock(TransactionId tid, const Timestamp& old_ts);
+    bool GarbageCollection(Timestamp time);
     int GetSize() {
         return size;
     }
 
 private:
-	inline bool intersects(TimestampInterval i1, TimestampInterval i2) {
+    inline bool intersects(TimestampInterval i1, TimestampInterval i2) {
         if ((i1.finish < i2.start) || (i2.finish < i1.start)) {
             return false;
         }

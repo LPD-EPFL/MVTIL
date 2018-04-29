@@ -35,159 +35,159 @@ void parser_client(int argc, char * argv[]);
 
 std::string random_string(int num)
 {
-	std::string str = std::to_string(rand() % num);
-	return str;
+    std::string str = std::to_string(rand() % num);
+    return str;
 }
 
 inline std::string generate_random_key() {
-	return random_string(c_key_space);
+    return random_string(c_key_space);
 }
 
 inline std::string generate_random_value() {
-	return random_string(VALUE_SIZE);
+    return random_string(VALUE_SIZE);
 }
 
 
 inline TransactionType get_random_transaction_type(int type) {
-	if(type < MIX){
-		return static_cast<TransactionType>(type);
-	}
-	else{
-		return static_cast<TransactionType>(rand() % MIX);   //TODO change rand function
-	}
+    if(type < MIX){
+        return static_cast<TransactionType>(type);
+    }
+    else{
+        return static_cast<TransactionType>(rand() % MIX);   //TODO change rand function
+    }
 }
 
 int execute_transaction(int threadId, TransactionType type) {
-	TransactionManager* transactionManager = managers[threadId];
-	int suss = 0;
-	int i;
-	Value val;
-	Value generated;
-	Key key;
-	switch(type) { 
-		case READ_ONLY:
-			TX_START;
-			for (i=0; i<RO_SIZE; i++) {
-				key = generate_random_key();
-				TX_READ(key, val);
-			}
-			TX_COMMIT;
-			break;
-		case READ_INTENSIVE: 
-			TX_START;
-			for (i=0; i<RW_SIZE; i++) {
-				key = generate_random_key();
-				TX_READ(key, val);
-			}
-			for (i=0; i<RW_SIZE/2; i++) {
-				key = generate_random_key();
-				TX_READ(key, val);
-				key = generate_random_key();
-				TX_WRITE(key, val);
-			}
-			TX_COMMIT;
-			break;
-		case WRITE_INTENSIVE:
-			TX_START;
-			for (i=0; i<RW_SIZE; i++) {
-				key = generate_random_key();
-				TX_READ(key, val);
-				key = generate_random_key();
-				TX_WRITE(key, val);
-			}
-			TX_COMMIT;
-			break;
-		case RW:
-			TX_START;
-			for (i=0; i<RW_SIZE; i++){
-				key = generate_random_key();
-				TX_READ(key, val);
-			}
-			for(i=0; i<RW_SIZE; i++){
-				key = generate_random_key();
-				generated = generate_random_value();
-				TX_WRITE(key, generated);
-			}
-			TX_COMMIT;
-			break;
-		case RW_SHORT:
-			TX_START;
-			key = generate_random_key();
-			TX_READ(key, val);
-			generated = generate_random_value();
-			TX_WRITE(key, generated);
-			key = generate_random_key();
-			TX_READ(key, val);
-			generated = generate_random_value();
-			TX_WRITE(key, generated);
-			key = generate_random_key();
-			TX_READ(key, val);
-			generated = generate_random_value();
-			TX_WRITE(key, generated);
-			TX_COMMIT;
-			break;
-		default:
-			std::cout<<"Unknown transaction type"<<std::endl;
-			break;
-	}
-	return suss;
+    TransactionManager* transactionManager = managers[threadId];
+    int suss = 0;
+    int i;
+    Value val;
+    Value generated;
+    Key key;
+    switch(type) { 
+        case READ_ONLY:
+            TX_START;
+            for (i=0; i<RO_SIZE; i++) {
+                key = generate_random_key();
+                TX_READ(key, val);
+            }
+            TX_COMMIT;
+            break;
+        case READ_INTENSIVE: 
+            TX_START;
+            for (i=0; i<RW_SIZE; i++) {
+                key = generate_random_key();
+                TX_READ(key, val);
+            }
+            for (i=0; i<RW_SIZE/2; i++) {
+                key = generate_random_key();
+                TX_READ(key, val);
+                key = generate_random_key();
+                TX_WRITE(key, val);
+            }
+            TX_COMMIT;
+            break;
+        case WRITE_INTENSIVE:
+            TX_START;
+            for (i=0; i<RW_SIZE; i++) {
+                key = generate_random_key();
+                TX_READ(key, val);
+                key = generate_random_key();
+                TX_WRITE(key, val);
+            }
+            TX_COMMIT;
+            break;
+        case RW:
+            TX_START;
+            for (i=0; i<RW_SIZE; i++){
+                key = generate_random_key();
+                TX_READ(key, val);
+            }
+            for(i=0; i<RW_SIZE; i++){
+                key = generate_random_key();
+                generated = generate_random_value();
+                TX_WRITE(key, generated);
+            }
+            TX_COMMIT;
+            break;
+        case RW_SHORT:
+            TX_START;
+            key = generate_random_key();
+            TX_READ(key, val);
+            generated = generate_random_value();
+            TX_WRITE(key, generated);
+            key = generate_random_key();
+            TX_READ(key, val);
+            generated = generate_random_value();
+            TX_WRITE(key, generated);
+            key = generate_random_key();
+            TX_READ(key, val);
+            generated = generate_random_value();
+            TX_WRITE(key, generated);
+            TX_COMMIT;
+            break;
+        default:
+            std::cout<<"Unknown transaction type"<<std::endl;
+            break;
+    }
+    return suss;
 }
 
 void execute_test(int threadId, int type) {
-	uint64_t myThroughput = 0;
-	uint64_t nu_commit = 0;
-	while (start == false) {
-		//wait
-	}
+    uint64_t myThroughput = 0;
+    uint64_t nu_commit = 0;
+    while (start == false) {
+        //wait
+    }
 
-	while (stop == false) {
-	   TransactionType t = get_random_transaction_type(type);
-	   nu_commit += execute_transaction(threadId, t);
-	   myThroughput++; 
-	}
+    while (stop == false) {
+       TransactionType t = get_random_transaction_type(type);
+       nu_commit += execute_transaction(threadId, t);
+       myThroughput++; 
+    }
 
-	thr[threadId] = myThroughput;
-	commit[threadId] = nu_commit;
+    thr[threadId] = myThroughput;
+    commit[threadId] = nu_commit;
 }
 
 int main(int argc, char **argv) {
 
-	parser_client(argc, argv);
+    parser_client(argc, argv);
 
-	start = false;
-	stop = false;
-	std::vector<std::thread> threads;
-	uint32_t i;
+    start = false;
+    stop = false;
+    std::vector<std::thread> threads;
+    uint32_t i;
 
-	for  (i = 0; i < c_thread_cnt; i++) {
-		thr[i] = 0;
-		managers[i] = new TransactionManager(c_id*c_thread_cnt + i);
-	}
+    for  (i = 0; i < c_thread_cnt; i++) {
+        thr[i] = 0;
+        managers[i] = new TransactionManager(c_id*c_thread_cnt + i);
+    }
 
-	for  (i = 0; i < c_thread_cnt; i++) {
-	   threads.push_back(std::thread(&execute_test, i, c_test_type)); 
-	}
+    for  (i = 0; i < c_thread_cnt; i++) {
+       threads.push_back(std::thread(&execute_test, i, c_test_type)); 
+    }
 
-	start = true;
+    start = true;
 
-	//sleep
-	std::this_thread::sleep_for(std::chrono::milliseconds(c_test_duration));
+    //sleep
+    std::this_thread::sleep_for(std::chrono::milliseconds(c_test_duration));
 
-	stop = true; 
+    stop = true; 
 
-	for (auto& th: threads) {
-		th.join();
-	}
+    for (auto& th: threads) {
+        th.join();
+    }
 
-	//gather statistics
-	uint64_t total_throughput = 0;
-	uint64_t total_commit = 0;
-	
-	for  (i = 0; i < c_thread_cnt; i++) {
-		total_throughput+=thr[i]; 
-		total_commit+=commit[i];
-	}
-	
-	cout<<total_commit<<" "<<total_throughput<<endl;
-	return 0;
+    //gather statistics
+    uint64_t total_throughput = 0;
+    uint64_t total_commit = 0;
+    
+    for  (i = 0; i < c_thread_cnt; i++) {
+        total_throughput+=thr[i]; 
+        total_commit+=commit[i];
+    }
+    
+    cout<<total_commit<<" "<<total_throughput<<endl;
+    return 0;
 }

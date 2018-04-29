@@ -31,27 +31,27 @@
 
 class GarbageCollector
 {
-	private:
-		CommunicationService service;
-		LocalOracle oracle;
+    private:
+        CommunicationService service;
+        LocalOracle oracle;
 
-	public:
-		GarbageCollector():oracle(0){
+    public:
+        GarbageCollector():oracle(0){
 
-		}
+        }
 
-		~GarbageCollector(){
-			
-		}
+        ~GarbageCollector(){
+            
+        }
 
-		void InvokeGC(){
-			Timestamp ts = oracle.GetTimestamp() - (TD << LOW_BITE);
-			std::vector<ServerConnection*> servers = service.GetAllServers();
-			for(ServerConnection* server:servers){
-				GCReply reply;
-				server->client->GarbageCollection(reply, ts);
-			}
-		}
+        void InvokeGC(){
+            Timestamp ts = oracle.GetTimestamp() - (TD << LOW_BITE);
+            std::vector<ServerConnection*> servers = service.GetAllServers();
+            for(ServerConnection* server:servers){
+                GCReply reply;
+                server->client->GarbageCollection(reply, ts);
+            }
+        }
 };
 
 void PeriodicGC(const boost::system::error_code& /*e*/,
@@ -62,10 +62,10 @@ void PeriodicGC(const boost::system::error_code& /*e*/,
 }
 
 int main(int argc, char **argv) {
-	GarbageCollector gc;
-	boost::asio::io_service io;
-	boost::asio::deadline_timer t(io, boost::posix_time::seconds(GC_DURATION));
-	t.async_wait(boost::bind(PeriodicGC,boost::asio::placeholders::error, &t, &gc));
-	io.run();
-	return 0;
+    GarbageCollector gc;
+    boost::asio::io_service io;
+    boost::asio::deadline_timer t(io, boost::posix_time::seconds(GC_DURATION));
+    t.async_wait(boost::bind(PeriodicGC,boost::asio::placeholders::error, &t, &gc));
+    io.run();
+    return 0;
 }

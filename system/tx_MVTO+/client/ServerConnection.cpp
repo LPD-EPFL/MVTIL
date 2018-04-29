@@ -18,21 +18,21 @@
 #include "ServerConnection.h"
 
 ServerConnection::ServerConnection(std::string h,int prt):host(h),port(prt) {
-	boost::shared_ptr<TSocket> s(new TSocket(host, port));
-	boost::shared_ptr<TTransport> t(new TFramedTransport(s));
-	boost::shared_ptr<TProtocol> p(new TBinaryProtocol(t));
-	
-	socket = s;
-	transport = t;
-	protocol = p;
+    boost::shared_ptr<TSocket> s(new TSocket(host, port));
+    boost::shared_ptr<TTransport> t(new TFramedTransport(s));
+    boost::shared_ptr<TProtocol> p(new TBinaryProtocol(t));
+    
+    socket = s;
+    transport = t;
+    protocol = p;
 
-	client = new DataServiceClient(protocol);
-	transport->open();//keep the transport to open all the time
+    client = new DataServiceClient(protocol);
+    transport->open();//keep the transport to open all the time
 }
 
 ServerConnection::~ServerConnection() {
-	if(transport->isOpen()){
-		transport->close();
-	}
+    if(transport->isOpen()){
+        transport->close();
+    }
 }
 

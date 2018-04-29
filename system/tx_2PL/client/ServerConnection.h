@@ -38,11 +38,11 @@ private:
     std::mutex mutex;
 
 public:
-	std::string host;
+    std::string host;
     int port;
-	DataServiceClient *client;
+    DataServiceClient *client;
     ServerConnection(std::string host,int port);
-	virtual ~ServerConnection();
+    virtual ~ServerConnection();
     inline void lock(){
         mutex.lock();
     }

@@ -29,38 +29,38 @@ using boost::property_tree::ptree;
 
 class ConfigLoader{
 private:
-	static std::vector<DataServerInfo> data_server_info;
-	static DataServerInfo oracle_info;
+    static std::vector<DataServerInfo> data_server_info;
+    static DataServerInfo oracle_info;
 public:
-	ConfigLoader(){
-		boost::property_tree::ptree pt;
-		boost::property_tree::read_xml("servers.xml", pt);
-		BOOST_FOREACH(ptree::value_type const& v, pt.get_child("DataServers") ) {
-			if( v.first == "DataServer" ) {
-				DataServerInfo info;
-				info.host = v.second.get<std::string>("ip");
-				info.port = v.second.get<int>("port");
-				data_server_info.push_back(info);
-			}
-		}
+    ConfigLoader(){
+        boost::property_tree::ptree pt;
+        boost::property_tree::read_xml("servers.xml", pt);
+        BOOST_FOREACH(ptree::value_type const& v, pt.get_child("DataServers") ) {
+            if( v.first == "DataServer" ) {
+                DataServerInfo info;
+                info.host = v.second.get<std::string>("ip");
+                info.port = v.second.get<int>("port");
+                data_server_info.push_back(info);
+            }
+        }
 
-		boost::property_tree::read_xml("oracle.xml", pt);
-		BOOST_FOREACH(ptree::value_type const&v, pt.get_child("OracleServers"))
-		{
-			if( v.first == "OracleServer" ) {
-				oracle_info.host = v.second.get<std::string>("ip");
-				oracle_info.port   = v.second.get<int>("port");
-			}
-		}
+        boost::property_tree::read_xml("oracle.xml", pt);
+        BOOST_FOREACH(ptree::value_type const&v, pt.get_child("OracleServers"))
+        {
+            if( v.first == "OracleServer" ) {
+                oracle_info.host = v.second.get<std::string>("ip");
+                oracle_info.port   = v.second.get<int>("port");
+            }
+        }
 
-	}
+    }
 public:
-	static std::vector<DataServerInfo> GetDataServerInfo(){
-		return data_server_info;
-	}
-	static DataServerInfo GetOracleServerInfo(){
-		return oracle_info;
-	}
+    static std::vector<DataServerInfo> GetDataServerInfo(){
+        return data_server_info;
+    }
+    static DataServerInfo GetOracleServerInfo(){
+        return oracle_info;
+    }
 };
 
 #endif /* ConfigLoader_h */

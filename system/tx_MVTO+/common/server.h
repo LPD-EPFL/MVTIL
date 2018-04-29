@@ -37,11 +37,11 @@ typedef enum {COMMITTED, PENDING, ABORTED} VersionState;
 
 typedef struct VersionEntry
 {
-	Value version_value;
-	VersionState version_state;
-	std::set<Timestamp> read_time;
-	VersionEntry(){}
-	VersionEntry(Value v, VersionState s, std::set<Timestamp> r): version_value(v), version_state(s), read_time(r) {}
+    Value version_value;
+    VersionState version_state;
+    std::set<Timestamp> read_time;
+    VersionEntry(){}
+    VersionEntry(Value v, VersionState s, std::set<Timestamp> r): version_value(v), version_state(s), read_time(r) {}
 }VersionEntry;
 
 typedef skiplist<Timestamp, VersionEntry, MAX_LEVEL> VersionList;//<Write Timestamp, <All read Timestamp, Value, Version State>>

@@ -1,13 +1,13 @@
 /*   
  *   File: random.h
  *   Author: Vincent Gramoli <vincent.gramoli@sydney.edu.au>, 
- *  	     Tudor David <tudor.david@epfl.ch>
+ *         Tudor David <tudor.david@epfl.ch>
  *   Description: 
  *   random.h is part of ASCYLIB
  *
  * Copyright (c) 2014 Vasileios Trigonakis <vasileios.trigonakis@epfl.ch>,
- * 	     	      Tudor David <tudor.david@epfl.ch>
- *	      	      Distributed Programming Lab (LPD), EPFL
+ *              Tudor David <tudor.david@epfl.ch>
+ *                Distributed Programming Lab (LPD), EPFL
  *
  * ASCYLIB is free software: you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -93,7 +93,7 @@ rand_range(long r)
 #else
   int m = RAND_MAX;
   long d, v = 0;
-	
+  
   do {
     d = (m > r ? r : m);
     v += 1 + (long)(d * ((double)rand()/((double)(m)+1.0)));
@@ -115,9 +115,9 @@ rand_range_re(unsigned int *seed, long r)
 #else
   int m = RAND_MAX;
   long d, v = 0;
-	
+  
   do {
-    d = (m > r ? r : m);		
+    d = (m > r ? r : m);    
     v += 1 + (long)(d * ((double)rand_r(seed)/((double)(m)+1.0)));
     r -= m;
   } while (r > 0);

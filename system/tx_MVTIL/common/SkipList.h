@@ -34,11 +34,11 @@ template <class K,class V,int MAXLEVEL>
 
 class skiplist_node{
 
-	public:
-		K key;
-		V value;
+    public:
+        K key;
+        V value;
         int top_level;
-		skiplist_node<K,V,MAXLEVEL> *next[MAXLEVEL];
+        skiplist_node<K,V,MAXLEVEL> *next[MAXLEVEL];
 
         skiplist_node(K searchKey):key(searchKey),top_level(MAXLEVEL)
         {
@@ -47,22 +47,22 @@ class skiplist_node{
             }
         }
 
-	    skiplist_node(K searchKey,V val):key(searchKey),value(val),top_level(MAXLEVEL)
+        skiplist_node(K searchKey,V val):key(searchKey),value(val),top_level(MAXLEVEL)
         {
-	        for ( int i=0; i<MAXLEVEL; i++ ) {
-	            next[i] = NULL;
-	        }
-	    }
+            for ( int i=0; i<MAXLEVEL; i++ ) {
+                next[i] = NULL;
+            }
+        }
 
-	    skiplist_node(K searchKey,V val, int topLevel):key(searchKey),value(val),top_level(topLevel)
+        skiplist_node(K searchKey,V val, int topLevel):key(searchKey),value(val),top_level(topLevel)
         {
-	        for ( int i=0; i<MAXLEVEL; i++ ) {
-	            next[i] = NULL;
-	        }
-	    }
-	 
-	    virtual ~skiplist_node(){
-	    }
+            for ( int i=0; i<MAXLEVEL; i++ ) {
+                next[i] = NULL;
+            }
+        }
+     
+        virtual ~skiplist_node(){
+        }
 };
 
 

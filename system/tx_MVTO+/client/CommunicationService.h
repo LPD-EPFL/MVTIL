@@ -27,13 +27,13 @@
 
 class CommunicationService
 {
-	public:
-		CommunicationService();
-		~CommunicationService();
-		ServerConnection* GetServer(Key key);
-	
-	private:
-		std::vector<ServerConnection*> servers;
+    public:
+        CommunicationService();
+        ~CommunicationService();
+        ServerConnection* GetServer(Key key);
+    
+    private:
+        std::vector<ServerConnection*> servers;
 };
 
 #endif

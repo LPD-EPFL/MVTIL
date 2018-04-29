@@ -25,9 +25,9 @@ using namespace ::TxProtocol;
 
 typedef struct LockEntry 
 {
-	Value value;
-	TimestampInterval interval;
-	LockEntry(Value v, TimestampInterval i) : value(v), interval(i) {}
+    Value value;
+    TimestampInterval interval;
+    LockEntry(Value v, TimestampInterval i) : value(v), interval(i) {}
 }LockEntry;
 
 typedef struct DS{

@@ -72,23 +72,23 @@
 
 class TransactionManager
 {
-	private:
+    private:
         int64_t id; 
-		LocalOracle oracle;
-	    CommunicationService service;
+        LocalOracle oracle;
+        CommunicationService service;
         
-	public:
-		TransactionManager(int64_t cid);
-		~TransactionManager();
-		Transaction* StartTransaction();
-		Transaction* StartTransactionWithDuration(int duration);
+    public:
+        TransactionManager(int64_t cid);
+        ~TransactionManager();
+        Transaction* StartTransaction();
+        Transaction* StartTransactionWithDuration(int duration);
         bool RestartTransaction(Transaction* tx);
-		bool CommitTransaction(Transaction* tx);
-		bool AbortTransaction(Transaction* tx);
-		bool ReadData(Transaction* tx, Key key, Value& value);
-		bool WriteData(Transaction* tx, Key key, Value value);
+        bool CommitTransaction(Transaction* tx);
+        bool AbortTransaction(Transaction* tx);
+        bool ReadData(Transaction* tx, Key key, Value& value);
+        bool WriteData(Transaction* tx, Key key, Value value);
 
-		inline bool intersects(TimestampInterval i1, TimestampInterval i2) {
+        inline bool intersects(TimestampInterval i1, TimestampInterval i2) {
             if ((i1.finish < i2.start) || (i2.finish < i1.start)) {
                 return false;
             }

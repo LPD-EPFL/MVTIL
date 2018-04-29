@@ -32,7 +32,7 @@ class LockSet {
         std::array<std::recursive_mutex, NUM_LOCKS> theLocks;
         std::hash<std::string> hasher;
         size_t hashKey(Key k);
-	std::thread::id threadId;
+        std::thread::id threadId;
 };
 
 #endif
