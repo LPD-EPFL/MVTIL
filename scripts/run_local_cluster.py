@@ -28,8 +28,8 @@ def server_start(alg,param):
 
 #Invoke server start command
 def server_run(alg,param):
-	command = alg_dir + 'tx_'+alg+'/build/server_exec -p'+str(server_port)+" "+param
-	with shell_env(LD_LIBRARY_PATH="/home/jwang/lib:/usr/lib:/usr/local/lib"):
+	command = '%stx_%s/build/server_exec -p%d %s'%(alg_dir,alg,server_port,param)
+	with shell_env(LD_LIBRARY_PATH="/usr/lib:/usr/local/lib"):
 		with settings(warn_only=True):
 			run('kill $(lsof -i:%d -t) > /dev/null'%server_port)
 		run(command)
@@ -45,8 +45,8 @@ def client_start(alg,test_id,c_threads,tx_info):
 #Invoke client start command
 def client_run(alg,test_id,c_threads):
 	cid = c_hosts.index(env.host)
-	with shell_env(LD_LIBRARY_PATH="/home/jwang/lib:/usr/lib:/usr/local/lib"):
-		command = alg_dir + 'tx_'+alg+'/build/performance -l20000 -t'+str(test_id)+" -c"+ str(c_threads) +" -i"+ str(cid) + " -k"+str(key_space)
+	with shell_env(LD_LIBRARY_PATH="/usr/lib:/usr/local/lib"):
+		command = '%stx_%s/build/performance -l20000 -t%d -c%d -i%d -k%d'%(alg_dir,alg,test_id,c_threads,cid,key_space)
 		output = run(command).split()
 		return output
 

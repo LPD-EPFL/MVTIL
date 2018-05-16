@@ -45,7 +45,7 @@ def server_start(host_str,alg,param):
 
 def server_run(alg,param):
 	#start server command
-	command = '%stx_%s/build/server_exec %s'%(alg_dir,alg,param)
+	command = '%stx_%s/build/server_exec -p%d %s'%(alg_dir,alg,server_port,param)
 	with shell_env(LD_LIBRARY_PATH="/usr/lib:/usr/local/lib"):
 		with settings(warn_only=True):
 				run('kill $(lsof -i:%d -t) > /dev/null'%server_port)
