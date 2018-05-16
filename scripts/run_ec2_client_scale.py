@@ -40,7 +40,7 @@ def server_start(alg,param):
 
 def server_run(alg,param):
 	command = '%stx_%s/build/server_exec %s'%(alg_dir,alg,param)
-	with shell_env(LD_LIBRARY_PATH="/home/jwang/lib:/usr/lib:/usr/local/lib"):
+	with shell_env(LD_LIBRARY_PATH="usr/lib:/usr/local/lib"):
 		with settings(warn_only=True):
 			run('kill $(lsof -i:%d -t) > /dev/null'%server_port)
 		run(command)
@@ -75,7 +75,7 @@ def client_start(hosts,alg,test_id,c_threads,tx_info):
 
 def client_run(alg,test_id,c_threads):
 	cid = c_hosts.index(env.host)
-	with shell_env(LD_LIBRARY_PATH="/home/jwang/lib:/usr/lib:/usr/local/lib"):
+	with shell_env(LD_LIBRARY_PATH="/usr/lib:/usr/local/lib"):
 		command = '%stx_%s/build/performance -l20000 -t%d -c%d -i%d -k%d'%(alg_dir,alg,test_id,c_threads,cid,key_space)
 		output = run(command).split()
 		return output
@@ -117,7 +117,7 @@ def test_all():
 				    c_hosts = running_instances_ip[s_num:s_num+c_num]
 				    #invoke server command
 				    invoke_server_command(test_alg,test_param)
-				    time.sleep(15)
+				    time.sleep(20)
 				    #invoke client command
 				    commit_tx,total_tx = invoke_client_command(c_hosts,test_alg,test_id,client_threads)
 				    f.write('%d %d %d\n'%(c_num,commit_tx,total_tx))

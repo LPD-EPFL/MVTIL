@@ -41,7 +41,7 @@ def server_start(alg,param):
 
 def server_run(alg,param):
 	command = '%stx_%s/build/server_exec %s'%(alg_dir,alg,param)
-	with shell_env(LD_LIBRARY_PATH="/home/jwang/lib:/usr/lib:/usr/local/lib"):
+	with shell_env(LD_LIBRARY_PATH="/usr/lib:/usr/local/lib"):
 		with settings(warn_only=True):
 			run('kill $(lsof -i:%d -t) > /dev/null'%server_port)
 		run(command)
@@ -76,13 +76,13 @@ def client_start(alg,test_id,c_threads,tx_info):
 
 def client_run(alg,test_id,c_threads):
 	cid = c_hosts.index(env.host)
-	with shell_env(LD_LIBRARY_PATH="/home/jwang/lib:/usr/lib:/usr/local/lib"):
+	with shell_env(LD_LIBRARY_PATH="/usr/lib:/usr/local/lib"):
 		command = '%stx_%s/build/performance -l20000 -t%d -c%d -i%d -k%d'%(alg_dir,alg,test_id,c_threads,cid,key_space)
 		output = run(command).split()
 		return output
 
 def invoke_server_command(alg,param):
-	command = 'fab -f rrun_ec2_client_thread.py server_start:alg=%s,param=%s'%(alg,param)
+	command = 'fab -f run_ec2_client_thread.py server_start:alg=%s,param=%s'%(alg,param)
 	subprocess.Popen(command, shell=True)
 
 def invoke_client_command(alg,test_id,c_threads):
