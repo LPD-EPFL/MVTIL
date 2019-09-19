@@ -1,7 +1,6 @@
 Multi-Version Timestamp Interval Locking (MVTIL)
 ================================================
-
-MVTIL is a distributed concurrency control protocol based on multiversion timestamp locking (MVTL). Here, we implement and compare it with alternative protocols, such as 2PL and MVTO+.
+MVTIL is a distributed concurrency control protocol based on multiversion timestamp locking (MVTL), described in the paper <a href="https://infoscience.epfl.ch/record/229425/files/Paper.pdf">Locking Timestamps versus Locking Objects</a> at PODC 2018. Here, we implement and compare it with alternative protocols, such as 2PL and MVTO+.
 
 Compilation
 -----------
